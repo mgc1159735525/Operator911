@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Vega_\u7EC7\u5149"
+  m_EditorClassIdentifier: 
+  heroId: vega
+  codename: "\u7EC7\u5149"
+  displayName: "\u8587\u73C8"
+  archetype: 16
+  emoji: "\U0001F48E"
+  color: {r: 0.3019608, g: 0.65882355, b: 1, a: 1}
+  level: 1
+  salary: 830
+  powerName: "\u5149\u5B50\u7F16\u7EC7"
+  str: 5
+  spd: 8
+  intl: 9
+  end: 6
+  per: 7
+  quirkName: "\u5149\u654F\u5931\u8C03"
+  quirkDesc: "\u5728\u5B8C\u5168\u9ED1\u6697\u7684\u73AF\u5883\u4E2D\u80FD\u529B\u4F1A\u5927\u5E45\u8870\u51CF"
+  skills:
+  - name: "\u5149\u901F\u53CD\u5E94"
+    type: 0
+    desc: "\u9996\u6B21\u53D7\u5230\u7684\u653B\u51FB\u5FC5\u5B9A\u95EA\u907F"
+    icon: {fileID: 21300000, guid: 3ba21786d390d0645b1e116ab57b8cfd, type: 3}
+  - name: "\u5149\u5B50\u5251\u821E"
+    type: 1
+    desc: "\u51DD\u805A\u5149\u5B50\u4E3A\u591A\u628A\u5149\u5251\u8FDB\u884C\u9AD8\u901F\u8FDE\u51FB"
+    icon: {fileID: 21300000, guid: 39666890c090ad546947d7707d09d192, type: 3}
+  - name: "\u5149\u4E4B\u7EC7\u7F51"
+    type: 2
+    desc: "\u5728\u5168\u573A\u7F16\u7EC7\u5149\u5B50\u7F51\u7EDC\uFF0C\u6240\u6709\u88AB\u5149\u7EBF\u89E6\u53CA\u7684\u654C\u4EBA\u88AB\u5207\u5272\u5E76\u81F4\u76F2"
+    icon: {fileID: 21300000, guid: 5f7493e0b9b1d564e95550375a1bdfab, type: 3}
+  portraitNormal: {fileID: 21300000, guid: f4543f5b459cd1242ad9ca2e87b662d4, type: 3}
+  portraitInjured: {fileID: 21300000, guid: d57217bedb74cd045a7b46fc5e9e612c, type: 3}
+  backstory: "\u6765\u81EA\u7EC7\u5973\u661F\u7CFB\u7684\u5149\u5B50\u751F\u547D\u4F53\uFF0C\u80FD\u4EE5\u5149\u901F\u79FB\u52A8\u5E76\u64CD\u63A7\u4E00\u5207\u5149\u80FD\uFF0C\u5728\u5730\u7403\u4E0A\u5316\u8EAB\u65F6\u5C1A\u8BBE\u8BA1\u5E08\uFF0C\u5F53\u5A01\u80C1\u964D\u4E34\u65F6\u5C06\u5149\u5B50\u5316\u4E3A\u5229\u5203\u4E0E\u62A4\u76FE\u3002"

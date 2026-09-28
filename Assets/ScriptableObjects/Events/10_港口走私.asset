@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4058214d26db1b147a24aeb84e4152f2, type: 3}
+  m_Name: "10_\u6E2F\u53E3\u8D70\u79C1"
+  m_EditorClassIdentifier: 
+  eventType: 1
+  eventName: "\u6E2F\u53E3\u8D70\u79C1"
+  icon: "\U0001F4E6"
+  description: "\u60C5\u62A5\u663E\u793A\u6E2F\u53E3\u4ECA\u665A\u6709\u5927\u89C4\u6A21\u8D70\u79C1\u4EA4\u6613\u3002"
+  fogDescription: "\u6E2F\u53E3\u6709\u53EF\u7591\u6D3B\u52A8\u8FF9\u8C61\u3002"
+  needs:
+  - perception
+  - strength
+  baseGrade: B
+  baseReward: 500
+  baseReputation: 5
+  baseInjuryRisk: 10
+  baseCollateral: 10

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Spore_\u5B62\u5B50"
+  m_EditorClassIdentifier: 
+  heroId: spore
+  codename: "\u5B62\u5B50"
+  displayName: "\u65AF\u6CE2\u5C14"
+  archetype: 13
+  emoji: "\U0001F344"
+  color: {r: 0.48235294, g: 0.94509804, b: 0.65882355, a: 1}
+  level: 1
+  salary: 800
+  powerName: "\u83CC\u57DF\u63A7\u5236"
+  str: 4
+  spd: 5
+  intl: 9
+  end: 7
+  per: 10
+  quirkName: "\u5171\u751F\u4F9D\u8D56"
+  quirkDesc: "\u5FC5\u987B\u5B9A\u671F\u4E0E\u83CC\u7C7B\u5171\u751F\u5426\u5219\u514D\u75AB\u7CFB\u7EDF\u5D29\u6E83"
+  skills:
+  - name: "\u83CC\u4E1D\u611F\u77E5"
+    type: 0
+    desc: "\u80FD\u611F\u77E5\u9690\u5F62\u5355\u4F4D\uFF0C\u5E76\u964D\u4F4E\u53D7\u5230\u7684\u6BD2\u7D20\u4F24\u5BB350%"
+    icon: {fileID: 21300000, guid: 5b7e561b731ea2f4fb7587327808289c, type: 3}
+  - name: "\u6BD2\u5B62\u7206\u6563"
+    type: 1
+    desc: "\u91CA\u653E\u4E00\u7247\u6BD2\u5B62\u5B50\u4E91\uFF0C\u6301\u7EED\u5BF9\u533A\u57DF\u5185\u654C\u4EBA\u9020\u6210\u4E2D\u6BD2\u4F24\u5BB3"
+    icon: {fileID: 21300000, guid: 4959e168c231323449ebe87293c9b4b2, type: 3}
+  - name: "\u83CC\u57DF\u964D\u4E34"
+    type: 2
+    desc: "\u5168\u573A\u751F\u957F\u5DE8\u578B\u6BD2\u83CC\uFF0C\u91CA\u653E\u6BC1\u706D\u6027\u7684\u5B62\u5B50\u98CE\u66B4\u8986\u76D6\u6574\u4E2A\u6218\u573A"
+    icon: {fileID: 21300000, guid: e7e57a4fb1458b94f8e1e14b4cca9f61, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 6e9e3280ee85346498419561b912d711, type: 3}
+  portraitInjured: {fileID: 21300000, guid: acf9ff3a9b4b6664c96c2f9f8c7021f1, type: 3}
+  backstory: "\u539F\u751F\u6001\u7814\u7A76\u6240\u5B9E\u4E60\u751F\uFF0C\u771F\u83CC\u6CC4\u6F0F\u4E8B\u6545\u540E\u8EAB\u4F53\u6210\u4E3A\u8D85\u7EA7\u83CC\u7FA4\u5BBF\u4E3B\uFF0C\u80FD\u63A7\u5236\u4E00\u5207\u83CC\u7C7B\u751F\u957F\uFF0C\u901A\u8FC7\u83CC\u4E1D\u7F51\u7EDC\u611F\u77E5\u65B9\u5706\u6570\u516C\u91CC\u5185\u4E00\u5207\u751F\u7269\u6D3B\u52A8\u3002"

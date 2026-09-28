@@ -1,0 +1,586 @@
+{
+  "id": "xinjing",
+  "title": "新京二十夜",
+  "description": "在四个阶段中重建地下联络，争取民众与守军，发动最终起义。",
+  "finalMission": "uprising",
+  "turns": 20,
+  "goal": 70,
+  "income": 12,
+  "startingMoney": 48,
+  "stages": [
+    {
+      "id": "hidden",
+      "name": "蛰伏",
+      "start": 1,
+      "end": 4,
+      "pressure": 1,
+      "description": "建立安全联络，寻找可以信任的人。"
+    },
+    {
+      "id": "active",
+      "name": "活跃",
+      "start": 5,
+      "end": 10,
+      "pressure": 2,
+      "description": "联络街坊与工匠，扩大支持网络。"
+    },
+    {
+      "id": "pressure",
+      "name": "高压",
+      "start": 11,
+      "end": 16,
+      "pressure": 3,
+      "description": "敌方搜捕升级，争取守军并保护群众。"
+    },
+    {
+      "id": "final",
+      "name": "决战",
+      "start": 17,
+      "end": 20,
+      "pressure": 4,
+      "description": "行动窗口即将关闭，完成最终起义。"
+    }
+  ],
+  "characters": [
+    {
+      "id": 0,
+      "role": "地下联络员",
+      "cover": "军官",
+      "persuade": 3,
+      "organize": 3,
+      "bio": "沈默曾在城防营任职，熟悉岗哨调度。破坏行动获得1枚身份骰。"
+    },
+    {
+      "id": 1,
+      "role": "书坊伙计",
+      "cover": "教师",
+      "persuade": 3,
+      "organize": 4,
+      "bio": "顾青借抄书传授识字，熟悉学社人脉。散布思想获得1枚身份骰。"
+    },
+    {
+      "id": 2,
+      "role": "往来行商",
+      "cover": "商人",
+      "persuade": 4,
+      "organize": 2,
+      "bio": "陈砚以货物账本掩护联络，熟悉码头脚夫。秘密接头获得1枚身份骰。"
+    },
+    {
+      "id": 3,
+      "role": "城南郎中",
+      "cover": "医生",
+      "persuade": 2,
+      "organize": 3,
+      "bio": "林叔借行医走街串巷，为同伴维持最后一处落脚点。医生专属治疗尚未开放。"
+    }
+  ],
+  "missions": [
+    {
+      "task": {
+        "id": "shelter",
+        "title": "古寺落脚",
+        "body": "接头人只在暮鼓后等候。取得住持信任，为后续联络留下安全地址。",
+        "duty": "Contact",
+        "district": 4,
+        "start": 1,
+        "deadline": 4,
+        "prerequisite": "",
+        "priority": 3,
+        "intelReward": 0,
+        "progressReward": 4,
+        "failurePressure": 2
+      },
+      "pressureDelta": -3,
+      "money": 8,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "roster",
+        "title": "更夫名册",
+        "body": "西市更夫知道巡夜换岗的时辰。记录班次，避开第一次搜查。",
+        "duty": "Recon",
+        "district": 0,
+        "start": 1,
+        "deadline": 3,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 1,
+        "progressReward": 2,
+        "failurePressure": 1
+      },
+      "pressureDelta": 0,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "school",
+        "title": "书院灯火",
+        "body": "学生愿意传抄识字小册，但需要一个值得信任的组织者。",
+        "duty": "Propaganda",
+        "district": 1,
+        "start": 2,
+        "deadline": 4,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 4,
+        "failurePressure": 1
+      },
+      "pressureDelta": -2,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "goods",
+        "title": "药材暗格",
+        "body": "药材船停泊两夜。取得船主支持，把物资送进城南。",
+        "duty": "Contact",
+        "district": 5,
+        "start": 2,
+        "deadline": 4,
+        "prerequisite": "",
+        "priority": 1,
+        "intelReward": 0,
+        "progressReward": 3,
+        "failurePressure": 1
+      },
+      "pressureDelta": -2,
+      "money": 12,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "network",
+        "title": "重接旧线",
+        "body": "凭古寺约定的暗号重接街坊旧线。这是争取城防营的必要前置。",
+        "duty": "Contact",
+        "district": 0,
+        "start": 5,
+        "deadline": 10,
+        "prerequisite": "shelter",
+        "priority": 3,
+        "intelReward": 0,
+        "progressReward": 6,
+        "failurePressure": 2
+      },
+      "pressureDelta": -5,
+      "money": 8,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "print",
+        "title": "夜印文告",
+        "body": "书院愿意提供刻版。把组织的主张传到工坊与码头。",
+        "duty": "Propaganda",
+        "district": 1,
+        "start": 5,
+        "deadline": 8,
+        "prerequisite": "school",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 6,
+        "failurePressure": 1
+      },
+      "pressureDelta": 0,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "supply",
+        "title": "截断军饷",
+        "body": "沿更夫提供的空隙截走运饷账册。两夜后敌方将扩大搜查。",
+        "duty": "Sabotage",
+        "district": 5,
+        "start": 6,
+        "deadline": 9,
+        "prerequisite": "roster",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 7,
+        "failurePressure": 1
+      },
+      "pressureDelta": 2,
+      "money": 16,
+      "retaliationDelay": 2,
+      "retaliationPressure": 4,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "workers",
+        "title": "工坊盟约",
+        "body": "工匠不愿卷入无望的争斗。说服他们为城中变化留下一份力量。",
+        "duty": "Contact",
+        "district": 0,
+        "start": 7,
+        "deadline": 10,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 5,
+        "failurePressure": 1
+      },
+      "pressureDelta": -5,
+      "money": 8,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "witness",
+        "title": "失踪证人",
+        "body": "北衙书吏藏着被捕名单。设法获取名单，而不是惊动整座衙门。",
+        "duty": "Recon",
+        "district": 2,
+        "start": 8,
+        "deadline": 10,
+        "prerequisite": "",
+        "priority": 1,
+        "intelReward": 1,
+        "progressReward": 4,
+        "failurePressure": 1
+      },
+      "pressureDelta": -2,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "garrison",
+        "title": "守军密约",
+        "body": "城防营中有人愿意响应，但只相信已经建立街坊联络的组织。此约决定起义能否发动。",
+        "duty": "Contact",
+        "district": 3,
+        "start": 11,
+        "deadline": 16,
+        "prerequisite": "network",
+        "priority": 3,
+        "intelReward": 0,
+        "progressReward": 10,
+        "failurePressure": 2
+      },
+      "pressureDelta": -6,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "refuge",
+        "title": "护送街坊",
+        "body": "搜捕波及无辜家庭。联系古寺安排躲避之所，为百姓留下退路。",
+        "duty": "Contact",
+        "district": 4,
+        "start": 11,
+        "deadline": 14,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 5,
+        "failurePressure": 1
+      },
+      "pressureDelta": -4,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": "shelter_people"
+    },
+    {
+      "task": {
+        "id": "prison",
+        "title": "转押路线",
+        "body": "被捕名单对应一条新的转押路线。拿到线索后营救行动仍需单独安排。",
+        "duty": "Recon",
+        "district": 2,
+        "start": 12,
+        "deadline": 15,
+        "prerequisite": "witness",
+        "priority": 2,
+        "intelReward": 1,
+        "progressReward": 5,
+        "failurePressure": 1
+      },
+      "pressureDelta": -2,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "signal",
+        "title": "破坏警钟",
+        "body": "敌人用警钟调动巡队。破坏钟楼机关，但要准备承受两夜后的报复。",
+        "duty": "Sabotage",
+        "district": 3,
+        "start": 13,
+        "deadline": 16,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 8,
+        "failurePressure": 1
+      },
+      "pressureDelta": 0,
+      "money": 0,
+      "retaliationDelay": 2,
+      "retaliationPressure": 4,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "solidarity",
+        "title": "连夜互助",
+        "body": "让工坊中的互助成为公开的承诺，减轻街坊对搜查的恐惧。",
+        "duty": "Propaganda",
+        "district": 0,
+        "start": 14,
+        "deadline": 16,
+        "prerequisite": "workers",
+        "priority": 1,
+        "intelReward": 0,
+        "progressReward": 6,
+        "failurePressure": 1
+      },
+      "pressureDelta": -6,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "uprising",
+        "title": "最终起义",
+        "body": "守军已承诺响应。汇合街坊、发出约定信号；还需达到本局成果目标才能成功。",
+        "duty": "Propaganda",
+        "district": 0,
+        "start": 17,
+        "deadline": 20,
+        "prerequisite": "garrison",
+        "priority": 3,
+        "intelReward": 0,
+        "progressReward": 12,
+        "failurePressure": 2
+      },
+      "pressureDelta": -10,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "harbor",
+        "title": "封锁退路",
+        "body": "敌方准备从东埠撤走物资。切断这条运输线，为起义争取时间。",
+        "duty": "Sabotage",
+        "district": 5,
+        "start": 17,
+        "deadline": 19,
+        "prerequisite": "",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 7,
+        "failurePressure": 1
+      },
+      "pressureDelta": 0,
+      "money": 0,
+      "retaliationDelay": 2,
+      "retaliationPressure": 4,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "lanterns",
+        "title": "千家灯火",
+        "body": "让早先传抄的文告成为起义信号。窗前灯火亮起，街巷终于互相看见。",
+        "duty": "Propaganda",
+        "district": 1,
+        "start": 18,
+        "deadline": 20,
+        "prerequisite": "print",
+        "priority": 2,
+        "intelReward": 0,
+        "progressReward": 8,
+        "failurePressure": 1
+      },
+      "pressureDelta": -8,
+      "money": 0,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    },
+    {
+      "task": {
+        "id": "lastboat",
+        "title": "最后渡船",
+        "body": "为尚未撤离的人安排最后的渡船。即使行动失败，也要保住后来者。",
+        "duty": "Contact",
+        "district": 4,
+        "start": 18,
+        "deadline": 20,
+        "prerequisite": "",
+        "priority": 1,
+        "intelReward": 0,
+        "progressReward": 4,
+        "failurePressure": 1
+      },
+      "pressureDelta": -5,
+      "money": 8,
+      "retaliationDelay": 0,
+      "retaliationPressure": 0,
+      "flag": ""
+    }
+  ],
+  "events": [
+    {
+      "id": "curfew",
+      "title": "暮鼓后的盘查",
+      "body": "西市开始检查夜行人的路引。旧线可能已被盯上。",
+      "turn": 2,
+      "optionA": "花1情报绕开岗哨",
+      "optionB": "暂缓联络",
+      "intelA": -1,
+      "intelB": 0,
+      "pressureA": -6,
+      "pressureB": 2,
+      "progressA": 0,
+      "progressB": 0
+    },
+    {
+      "id": "courier",
+      "title": "驿使来信",
+      "body": "城外同伴送来一页名单，接信会留下踪迹。",
+      "turn": 4,
+      "optionA": "收下完整名单",
+      "optionB": "只记暗号",
+      "intelA": 2,
+      "intelB": 1,
+      "pressureA": 5,
+      "pressureB": 0,
+      "progressA": 0,
+      "progressB": 0
+    },
+    {
+      "id": "awakening",
+      "title": "城中暗流",
+      "body": "几家工坊同时询问组织的主张。活跃阶段开始。",
+      "turn": 5,
+      "optionA": "公开互助主张",
+      "optionB": "谨慎传话",
+      "intelA": 0,
+      "intelB": 1,
+      "pressureA": 3,
+      "pressureB": -2,
+      "progressA": 4,
+      "progressB": 0
+    },
+    {
+      "id": "fund",
+      "title": "商路邀约",
+      "body": "行商愿意递送消息，希望组织表明承诺。",
+      "turn": 8,
+      "optionA": "提供2份线报",
+      "optionB": "暂保密",
+      "intelA": -2,
+      "intelB": 0,
+      "pressureA": -5,
+      "pressureB": 2,
+      "progressA": 5,
+      "progressB": 0
+    },
+    {
+      "id": "hunt",
+      "title": "封城搜捕",
+      "body": "北衙增设岗哨。高压阶段，休整与身份维持更为重要。",
+      "turn": 11,
+      "optionA": "用1情报调整联络",
+      "optionB": "保持原计划",
+      "intelA": -1,
+      "intelB": 0,
+      "pressureA": -7,
+      "pressureB": 3,
+      "progressA": 0,
+      "progressB": 2
+    },
+    {
+      "id": "shelter_choice",
+      "title": "百姓的门",
+      "body": "搜捕队逐户追查。一户陌生人请求借用组织的藏身处。",
+      "turn": 13,
+      "optionA": "花2情报安排庇护",
+      "optionB": "保留安全屋",
+      "intelA": -2,
+      "intelB": 0,
+      "pressureA": 3,
+      "pressureB": -3,
+      "progressA": 2,
+      "progressB": 0
+    },
+    {
+      "id": "dawn",
+      "title": "城防营的答复",
+      "body": "决战将至。守军是否响应，取决于此前的密约任务。",
+      "turn": 16,
+      "optionA": "再送1份联络情报",
+      "optionB": "等待时机",
+      "intelA": -1,
+      "intelB": 0,
+      "pressureA": -5,
+      "pressureB": 0,
+      "progressA": 3,
+      "progressB": 0
+    },
+    {
+      "id": "signalnight",
+      "title": "决战之夜",
+      "body": "城门将于四夜后关闭。完成最终起义并达到成果目标，才能迎来黎明。",
+      "turn": 17,
+      "optionA": "提前发动街坊",
+      "optionB": "保持隐蔽",
+      "intelA": 0,
+      "intelB": 0,
+      "pressureA": 5,
+      "pressureB": -4,
+      "progressA": 4,
+      "progressB": 0
+    },
+    {
+      "id": "lastlight",
+      "title": "将熄的灯",
+      "body": "最后的行动窗口只剩两夜。所有人都在等待决定。",
+      "turn": 19,
+      "optionA": "用2情报协调行动",
+      "optionB": "保存火种",
+      "intelA": -2,
+      "intelB": 0,
+      "pressureA": -5,
+      "pressureB": 0,
+      "progressA": 5,
+      "progressB": 0
+    }
+  ]
+}

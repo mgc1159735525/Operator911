@@ -1,0 +1,13 @@
+{
+  "cycle": 3, "lifetime": 5, "expandCost": 20, "expandDeliveries": 2, "staminaCost": 12, "exposure": 6,
+  "sources": [
+    {"id":0,"district":2,"code":"渡鸦","office":"都督府机要书吏 · 接触高层公文"},
+    {"id":1,"district":3,"code":"秋雁","office":"将军府随侍 · 接触军议消息"},
+    {"id":2,"district":5,"code":"青舟","office":"军需总办账房 · 接触军需调拨"}
+  ],
+  "templates": [
+    {"title":"搜查名册的改动","body":"新一轮搜查涉及数处交通节点。名单仍待上级汇总，必须及时传出。","feedback":"上级确认收到预警，已通知相关联络点调整工作。","value":2,"progress":2,"money":6,"heat":-8},
+    {"title":"军议后的调令","body":"一份调令与先前公文出现差异。潜伏同志附上了可供上级比对的摘要。","feedback":"上级将调令并入军情研判，地区工作获得新的支持。","value":3,"progress":3,"money":6,"heat":-4},
+    {"title":"军需账目的缺口","body":"军需拨付与实际入库数目不符。这份账目摘要能补足已有情报中的空白。","feedback":"上级完成账目对照，拨下经费用于维持地区联络。","value":2,"progress":2,"money":10,"heat":-3}
+  ]
+}

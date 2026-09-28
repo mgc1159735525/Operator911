@@ -1,0 +1,1 @@
+﻿using UnityEngine; namespace Minglu { public class MingluPrototype : MonoBehaviour { public Font chineseFont; void Awake() { gameObject.AddComponent<CityGameUI>().font = chineseFont; } } }

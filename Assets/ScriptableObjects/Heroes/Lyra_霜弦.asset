@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Lyra_\u971C\u5F26"
+  m_EditorClassIdentifier: 
+  heroId: lyra
+  codename: "\u971C\u5F26"
+  displayName: "\u8389\u62C9"
+  archetype: 1
+  emoji: "\u2744\uFE0F"
+  color: {r: 0.54509807, g: 0.36078432, b: 0.9647059, a: 1}
+  level: 1
+  salary: 800
+  powerName: "\u6781\u5BD2\u5F26\u97F3"
+  str: 4
+  spd: 7
+  intl: 9
+  end: 6
+  per: 9
+  quirkName: "\u65CB\u5F8B\u6267\u5FF5"
+  quirkDesc: "\u65BD\u6CD5\u65F6\u5FC5\u987B\u54FC\u5531\uFF0C\u6C89\u9ED8\u72B6\u6001\u4F1A\u5D29\u6E83"
+  skills:
+  - name: "\u971C\u4E4B\u9886\u57DF"
+    type: 0
+    desc: "\u5468\u56F43\u7C73\u5185\u654C\u4EBA\u79FB\u901F\u964D\u4F4E20%"
+    icon: {fileID: 21300000, guid: accdd49fb3724574e90eb3b731b7b089, type: 3}
+  - name: "\u51B0\u5F26\u9707\u8361"
+    type: 1
+    desc: "\u6F14\u594F\u51B0\u6676\u5C0F\u63D0\u7434\u91CA\u653E\u9525\u5F62\u51B0\u971C\u6CE2\uFF0C\u51BB\u7ED3\u547D\u4E2D\u76EE\u68072\u79D2"
+    icon: {fileID: 21300000, guid: ded911236a9d9ad4dbb3f22fc6cb04a6, type: 3}
+  - name: "\u6C38\u51AC\u4E50\u7AE0"
+    type: 2
+    desc: "\u6F14\u594F\u7EC8\u6781\u4E50\u7AE0\uFF0C\u5168\u573A\u964D\u4E0B\u51B0\u6676\u98CE\u66B4\uFF0C\u6240\u6709\u654C\u4EBA\u8FDB\u5165\u51BB\u7ED3\u72B6\u60013\u79D2"
+    icon: {fileID: 21300000, guid: b863dabc5db95cd4e9bdd3cd33249559, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 6341ebff417868142bdaac86e5ed5d16, type: 3}
+  portraitInjured: {fileID: 21300000, guid: e74c43e4295f58047a9e3157dcbea4d0, type: 3}
+  backstory: "\u66FE\u662F\u65B0\u4E1C\u4EAC\u6700\u8D1F\u76DB\u540D\u7684\u5168\u606F\u97F3\u4E50\u4F1A\u9996\u5E2D\u6F14\u594F\u5BB6\uFF0C\u4E00\u573A\u91CF\u5B50\u4E8B\u6545\u8BA9\u5979\u7684\u58F0\u6CE2\u4E0E\u51B0\u971C\u9B54\u6CD5\u6C38\u4E45\u7ED1\u5B9A\uFF0C\u7528\u51B0\u6676\u5C0F\u63D0\u7434\u594F\u51FA\u81F4\u547D\u7684\u5BD2\u51AC\u65CB\u5F8B\u3002"

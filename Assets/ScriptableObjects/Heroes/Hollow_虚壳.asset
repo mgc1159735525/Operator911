@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Hollow_\u865A\u58F3"
+  m_EditorClassIdentifier: 
+  heroId: hollow
+  codename: "\u865A\u58F3"
+  displayName: "\u970D\u6D1B"
+  archetype: 11
+  emoji: "\U0001F480"
+  color: {r: 0.6156863, g: 0.30588236, b: 0.8666667, a: 1}
+  level: 1
+  salary: 780
+  powerName: "\u4EA1\u8005\u53F7\u4EE4"
+  str: 7
+  spd: 5
+  intl: 8
+  end: 8
+  per: 7
+  quirkName: "\u4EA1\u8005\u4F4E\u8BED"
+  quirkDesc: "\u80FD\u542C\u5230\u5468\u56F4\u4EA1\u7075\u7684\u62B1\u6028\uFF0C\u6218\u6597\u65F6\u5C24\u5176\u5608\u6742"
+  skills:
+  - name: "\u4E0D\u6B7B\u4E4B\u8EAF"
+    type: 0
+    desc: "\u9996\u6B21\u9635\u4EA1\u540E\u4EE550%HP\u590D\u6D3B\uFF0C\u51B7\u5374120\u79D2"
+    icon: {fileID: 21300000, guid: d8ed7678649d1f1418acc59e1c23ec70, type: 3}
+  - name: "\u4EA1\u8005\u53EC\u4EE4"
+    type: 1
+    desc: "\u4ECE\u5730\u9762\u53EC\u5524\u9AB7\u9AC5\u6218\u58EB\u534F\u52A9\u6218\u6597\uFF0C\u6301\u7EED10\u79D2"
+    icon: {fileID: 21300000, guid: 39201e16a62bb35499cd87ab65541807, type: 3}
+  - name: "\u4EA1\u7075\u5929\u707E"
+    type: 2
+    desc: "\u5524\u9192\u6218\u573A\u4E0B\u6240\u6709\u4EA1\u8005\uFF0C\u5F62\u6210\u4EA1\u7075\u519B\u56E2\u51B2\u950B\u5E2D\u5377\u5168\u573A"
+    icon: {fileID: 21300000, guid: aec34a5f3448f2f4182207a736f096d0, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 0d9120bd76fa0074a8ae2e8f543bc3ff, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 802e8bae2d009b84db9b12ea49e032c7, type: 3}
+  backstory: "\u672C\u8BE5\u5728\u707E\u96BE\u4E2D\u6B7B\u53BB\uFF0C\u4F46\u6B7B\u4EA1\u4E4B\u795E\u7684\u8BC5\u5492\u8BA9\u4ED6\u6210\u4E3A\u300C\u6D3B\u7740\u7684\u6B7B\u4EBA\u300D\uFF0C\u8EAB\u4F53\u7F13\u6162\u8150\u70C2\u5374\u4E0D\u4F1A\u771F\u6B63\u6B7B\u4EA1\uFF0C\u540C\u65F6\u83B7\u5F97\u4E86\u6307\u6325\u4EA1\u7075\u5927\u519B\u7684\u80FD\u529B\u3002"

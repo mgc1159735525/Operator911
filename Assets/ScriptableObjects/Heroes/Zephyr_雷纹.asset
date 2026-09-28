@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Zephyr_\u96F7\u7EB9"
+  m_EditorClassIdentifier: 
+  heroId: zephyr
+  codename: "\u96F7\u7EB9"
+  displayName: "\u6CFD\u83F2\u5C14"
+  archetype: 2
+  emoji: "\u26A1"
+  color: {r: 0.54509807, g: 0.36078432, b: 0.9647059, a: 1}
+  level: 1
+  salary: 820
+  powerName: "\u5929\u96F7\u7B26\u6587"
+  str: 5
+  spd: 8
+  intl: 9
+  end: 5
+  per: 8
+  quirkName: "\u9759\u7535\u4F53\u8D28"
+  quirkDesc: "\u60C5\u7EEA\u6FC0\u52A8\u65F6\u5468\u56F4\u7535\u5B50\u8BBE\u5907\u4F1A\u77ED\u8DEF"
+  skills:
+  - name: "\u96F7\u7535\u4EB2\u548C"
+    type: 0
+    desc: "\u53D7\u5230\u7684\u7535\u7CFB\u4F24\u5BB3\u964D\u4F4E50%\uFF0C\u5E76\u8F6C\u5316\u4E3A\u80FD\u91CF"
+    icon: {fileID: 21300000, guid: 02cb40ea794483c46bd31886b64bbf13, type: 3}
+  - name: "\u96F7\u7EB9\u7206\u88C2"
+    type: 1
+    desc: "\u5728\u5730\u9762\u7ED8\u5236\u96F7\u7EB9\u6CD5\u9635\uFF0C\u5F15\u7206\u540E\u5BF9\u8303\u56F4\u5185\u654C\u4EBA\u9020\u6210\u96F7\u7535\u4F24\u5BB3\u5E76\u7729\u6655"
+    icon: {fileID: 21300000, guid: e9fbd28d9b5c9d2468adfb21641ce37e, type: 3}
+  - name: "\u4E07\u96F7\u5929\u7262"
+    type: 2
+    desc: "\u5728\u7A7A\u4E2D\u5C55\u5F00\u5DE8\u578B\u96F7\u7EB9\u9635\uFF0C\u53EC\u5524\u8FDE\u7EED\u96F7\u51FB\u8986\u76D6\u5168\u573A\uFF0C\u6301\u7EED4\u79D2"
+    icon: {fileID: 21300000, guid: fa7c438ad48067d49ae52f636951d1d6, type: 3}
+  portraitNormal: {fileID: 21300000, guid: d8de424b6e219ee4eac993578bdd3fa1, type: 3}
+  portraitInjured: {fileID: 21300000, guid: c06602f1c520b59479d9b9d58e04ba8e, type: 3}
+  backstory: "\u51FA\u751F\u4E8E\u60AC\u6D6E\u57CE\u90A6\u963F\u74E6\u9686\u7684\u7B26\u6587\u4E16\u5BB6\uFF0C\u5C06\u53E4\u8001\u96F7\u7535\u7B26\u6587\u523B\u5165\u673A\u68B0\u4E49\u80A2\uFF0C\u6210\u4E3A\u7B2C\u4E00\u4F4D\u300C\u7B26\u6587\u673A\u68B0\u5E08\u300D\uFF0C\u88AB\u961F\u53CB\u620F\u79F0\u4E3A\u300C\u884C\u8D70\u7684EMP\u300D\u3002"

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Blaze_\u70C8\u62F3"
+  m_EditorClassIdentifier: 
+  heroId: blaze
+  codename: "\u70C8\u62F3"
+  displayName: "\u5E03\u96F7\u5179"
+  archetype: 17
+  emoji: "\U0001F44A"
+  color: {r: 1, g: 0.54901963, b: 0.25882354, a: 1}
+  level: 1
+  salary: 700
+  powerName: "\u6C14\u7130\u62F3\u6CD5"
+  str: 10
+  spd: 7
+  intl: 5
+  end: 8
+  per: 5
+  quirkName: "\u6B66\u75F4\u6210\u6027"
+  quirkDesc: "\u9047\u5230\u5F3A\u8005\u4F1A\u4E0D\u987E\u4E00\u5207\u8981\u6C42\u5207\u78CB"
+  skills:
+  - name: "\u62F3\u610F\u8D2F\u901A"
+    type: 0
+    desc: "\u8FDE\u7EED\u653B\u51FB\u540C\u4E00\u76EE\u6807\u65F6\u4F24\u5BB3\u9012\u589E\uFF0C\u6700\u9AD8+30%"
+    icon: {fileID: 21300000, guid: 825f9aeb939774749b556f94300eb535, type: 3}
+  - name: "\u70C8\u62F3\u8FDE\u6253"
+    type: 1
+    desc: "\u4EE5\u8D85\u9AD8\u901F\u6253\u51FA\u5341\u4E8C\u8FDE\u62F3\uFF0C\u6700\u540E\u4E00\u62F3\u4EA7\u751F\u51B2\u51FB\u6CE2"
+    icon: {fileID: 21300000, guid: f00d35a4a1408ab458eef9c13156cfe3, type: 3}
+  - name: "\u706D\u4E16\u4E00\u62F3"
+    type: 2
+    desc: "\u84C4\u529B\u540E\u6253\u51FA\u4E00\u62F3\uFF0C\u4EA7\u751F\u6BC1\u706D\u6027\u7684\u76F4\u7EBF\u51B2\u51FB\u6CE2\u8D2F\u7A7F\u5168\u573A"
+    icon: {fileID: 21300000, guid: cd96a2dbc6b720e4fb7cb1e5bc96c008, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 50bb00f01fab195498584ac19b34a2a9, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 2ab1253b180591d46bf345acf04c8e12, type: 3}
+  backstory: "\u65B0\u4E0A\u6D77\u5730\u4E0B\u683C\u6597\u573A\u4F20\u5947\u51A0\u519B\uFF0C\u5C06\u4F20\u7EDF\u6C14\u529F\u4E0E\u8D5B\u535A\u589E\u5F3A\u808C\u8089\u5B8C\u7F8E\u878D\u5408\uFF0C\u62F3\u5934\u80FD\u6253\u51FA\u97F3\u7206\u51B2\u51FB\u6CE2\uFF0C\u53C2\u52A0\u8054\u76DF\u53EA\u4E3A\u9047\u5230\u6700\u5F3A\u5BF9\u624B\u3002"

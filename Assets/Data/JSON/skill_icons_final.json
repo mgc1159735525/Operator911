@@ -1,0 +1,462 @@
+{
+  "kael": {
+    "name_cn": "焰心",
+    "skills": [
+      {
+        "name": "焰心不灭",
+        "type": "被动",
+        "icon_prompt": "flaming heart shield emblem",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, flaming heart shield emblem, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "七焰连珠",
+        "type": "主动",
+        "icon_prompt": "seven colored fire orbs in line",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, seven colored fire orbs in line, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "炎狱天降",
+        "type": "终极",
+        "icon_prompt": "infernal magic circle with flames",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, infernal magic circle with flames, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "lyra": {
+    "name_cn": "霜弦",
+    "skills": [
+      {
+        "name": "寒冰护体",
+        "type": "被动",
+        "icon_prompt": "snowflake radius aura",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, snowflake radius aura, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "冰弦共鸣",
+        "type": "主动",
+        "icon_prompt": "ice violin with sound waves",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, ice violin with sound waves, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "终极乐章",
+        "type": "终极",
+        "icon_prompt": "blizzard music score",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, blizzard music score, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "zephyr": {
+    "name_cn": "雷纹",
+    "skills": [
+      {
+        "name": "符文吸收",
+        "type": "被动",
+        "icon_prompt": "lightning rune absorption",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, lightning rune absorption, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "雷纹链锁",
+        "type": "主动",
+        "icon_prompt": "ground rune circle lightning",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, ground rune circle lightning, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "天雷降世",
+        "type": "终极",
+        "icon_prompt": "sky full of thunder runes",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, sky full of thunder runes, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "nova": {
+    "name_cn": "星核",
+    "skills": [
+      {
+        "name": "纳米再生",
+        "type": "被动",
+        "icon_prompt": "nanobot regeneration cross",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, nanobot regeneration cross, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "武装变形",
+        "type": "主动",
+        "icon_prompt": "arms transforming into blades",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, arms transforming into blades, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "纳米风暴",
+        "type": "终极",
+        "icon_prompt": "metallic storm vortex",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, metallic storm vortex, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "cipher": {
+    "name_cn": "零号",
+    "skills": [
+      {
+        "name": "幽灵协议",
+        "type": "被动",
+        "icon_prompt": "glitching ghost figure",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, glitching ghost figure, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "数据洪流",
+        "type": "主动",
+        "icon_prompt": "neural jack data stream",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, neural jack data stream, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "全知之眼",
+        "type": "终极",
+        "icon_prompt": "all-seeing data eye",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, all-seeing data eye, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "atlas": {
+    "name_cn": "铁壁",
+    "skills": [
+      {
+        "name": "不屈壁垒",
+        "type": "被动",
+        "icon_prompt": "shield getting stronger when cracked",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, shield getting stronger when cracked, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "能量护盾",
+        "type": "主动",
+        "icon_prompt": "giant golden energy shield",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, giant golden energy shield, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "堡垒模式",
+        "type": "终极",
+        "icon_prompt": "fortress turret transformation",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, fortress turret transformation, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "aurora": {
+    "name_cn": "曙光",
+    "skills": [
+      {
+        "name": "圣光庇护",
+        "type": "被动",
+        "icon_prompt": "golden wing revival glow",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, golden wing revival glow, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "光矛投射",
+        "type": "主动",
+        "icon_prompt": "holy light spear throw",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, holy light spear throw, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "天降神光",
+        "type": "终极",
+        "icon_prompt": "divine light pillar from heaven",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, divine light pillar from heaven, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "thorin": {
+    "name_cn": "天锤",
+    "skills": [
+      {
+        "name": "战意涌升",
+        "type": "被动",
+        "icon_prompt": "rising power flame on hammer",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, rising power flame on hammer, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "雷霆震击",
+        "type": "主动",
+        "icon_prompt": "hammer ground slam shockwave",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, hammer ground slam shockwave, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "雷神化身",
+        "type": "终极",
+        "icon_prompt": "thor god form with lightning",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, thor god form with lightning, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "raven": {
+    "name_cn": "暗蚀",
+    "skills": [
+      {
+        "name": "噬魂之爪",
+        "type": "被动",
+        "icon_prompt": "soul absorption claw",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, soul absorption claw, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "影刃斩击",
+        "type": "主动",
+        "icon_prompt": "shadow claw slash",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, shadow claw slash, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "深渊召唤",
+        "type": "终极",
+        "icon_prompt": "abyss portal with tentacles",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, abyss portal with tentacles, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "lilith": {
+    "name_cn": "血蔷",
+    "skills": [
+      {
+        "name": "血之增幅",
+        "type": "被动",
+        "icon_prompt": "blood drop with power increase",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, blood drop with power increase, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "血焰蔷薇",
+        "type": "主动",
+        "icon_prompt": "blood rose fire array",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, blood rose fire array, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "血蔷薇绽放",
+        "type": "终极",
+        "icon_prompt": "field of blood roses exploding",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, field of blood roses exploding, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "morrigan": {
+    "name_cn": "命织",
+    "skills": [
+      {
+        "name": "命运之眼",
+        "type": "被动",
+        "icon_prompt": "eye seeing thread paths",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, eye seeing thread paths, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "丝线操控",
+        "type": "主动",
+        "icon_prompt": "purple threads controlling puppet",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, purple threads controlling puppet, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "命运剪断",
+        "type": "终极",
+        "icon_prompt": "scissors cutting fate threads",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, scissors cutting fate threads, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "hollow": {
+    "name_cn": "虚壳",
+    "skills": [
+      {
+        "name": "亡灵复苏",
+        "type": "被动",
+        "icon_prompt": "skull with revival green glow",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, skull with revival green glow, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "骸骨召唤",
+        "type": "主动",
+        "icon_prompt": "skeletal hand rising from ground",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, skeletal hand rising from ground, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "亡灵军团",
+        "type": "终极",
+        "icon_prompt": "army of undead charging",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, army of undead charging, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "fang": {
+    "name_cn": "兽牙",
+    "skills": [
+      {
+        "name": "猎手本能",
+        "type": "被动",
+        "icon_prompt": "predator eye targeting wounded",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, predator eye targeting wounded, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "兽化变身",
+        "type": "主动",
+        "icon_prompt": "half-beast transformation claws",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, half-beast transformation claws, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "奇美拉形态",
+        "type": "终极",
+        "icon_prompt": "massive chimera beast form",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, massive chimera beast form, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "spore": {
+    "name_cn": "孢子",
+    "skills": [
+      {
+        "name": "菌丝感知",
+        "type": "被动",
+        "icon_prompt": "fungal network detection web",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, fungal network detection web, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "毒孢爆裂",
+        "type": "主动",
+        "icon_prompt": "toxic spore cloud burst",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, toxic spore cloud burst, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "毒蘑菇领域",
+        "type": "终极",
+        "icon_prompt": "giant toxic mushrooms field",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, giant toxic mushrooms field, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "psyche": {
+    "name_cn": "心魇",
+    "skills": [
+      {
+        "name": "心灵护盾",
+        "type": "被动",
+        "icon_prompt": "psychic shield around brain",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, psychic shield around brain, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "念力冲击",
+        "type": "主动",
+        "icon_prompt": "psychic shockwave ring",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, psychic shockwave ring, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "心灵牢笼",
+        "type": "终极",
+        "icon_prompt": "mind prison with fear eyes",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, mind prison with fear eyes, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "orion": {
+    "name_cn": "星陨",
+    "skills": [
+      {
+        "name": "星辰再生",
+        "type": "被动",
+        "icon_prompt": "star regeneration glow",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, star regeneration glow, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "流星打击",
+        "type": "主动",
+        "icon_prompt": "meteor strike from above",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, meteor strike from above, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "银河传送门",
+        "type": "终极",
+        "icon_prompt": "galaxy portal pouring starlight",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, galaxy portal pouring starlight, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "vega": {
+    "name_cn": "织光",
+    "skills": [
+      {
+        "name": "光速闪避",
+        "type": "被动",
+        "icon_prompt": "light speed dodge afterimage",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, light speed dodge afterimage, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "光晶剑阵",
+        "type": "主动",
+        "icon_prompt": "multiple light crystal swords",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, multiple light crystal swords, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "棱光之网",
+        "type": "终极",
+        "icon_prompt": "prismatic light web grid",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, prismatic light web grid, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "blaze": {
+    "name_cn": "烈拳",
+    "skills": [
+      {
+        "name": "气焰递增",
+        "type": "被动",
+        "icon_prompt": "fist with increasing power aura",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, fist with increasing power aura, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "十二连拳",
+        "type": "主动",
+        "icon_prompt": "twelve punch combo shockwave",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, twelve punch combo shockwave, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "一拳超人",
+        "type": "终极",
+        "icon_prompt": "single devastating punch wave",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, single devastating punch wave, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "shadow": {
+    "name_cn": "疾风",
+    "skills": [
+      {
+        "name": "影遁隐身",
+        "type": "被动",
+        "icon_prompt": "shadow fade stealth",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, shadow fade stealth, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "影步背刺",
+        "type": "主动",
+        "icon_prompt": "shadow teleport backstab",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, shadow teleport backstab, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "暗影维度",
+        "type": "终极",
+        "icon_prompt": "shadow dimension portal",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, shadow dimension portal, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  },
+  "titan": {
+    "name_cn": "金刚",
+    "skills": [
+      {
+        "name": "不灭之躯",
+        "type": "被动",
+        "icon_prompt": "unbreakable body shield",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, purple passive aura, unbreakable body shield, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "地震冲击",
+        "type": "主动",
+        "icon_prompt": "ground pound seismic slam",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, cyan active energy, ground pound seismic slam, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      },
+      {
+        "name": "绝对领域",
+        "type": "终极",
+        "icon_prompt": "unstopable red aura domain",
+        "full_prompt": "cyberpunk game skill icon, neon glow on dark background, pink ultimate power, unstopable red aura domain, cyberpunk neon outline, dark fill, game UI icon, 1:1"
+      }
+    ]
+  }
+}

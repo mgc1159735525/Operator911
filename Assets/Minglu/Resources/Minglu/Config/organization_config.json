@@ -1,0 +1,16 @@
+{
+  "startingMoney": 36,
+  "income": 6,
+  "maintenance": 2,
+  "neglectSuspicion": 12,
+  "maintainReduction": 6,
+  "recruitCost": 12,
+  "capacity": 6,
+  "restSpirit": 18,
+  "actionSpirit": 8,
+  "spySpirit": 6,
+  "spyDuration": 3,
+  "spyInterval": 2,
+  "intelLifetime": 3,
+  "packetValue": 3
+}

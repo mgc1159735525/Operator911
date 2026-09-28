@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Atlas_\u94C1\u58C1"
+  m_EditorClassIdentifier: 
+  heroId: atlas
+  codename: "\u94C1\u58C1"
+  displayName: "\u963F\u7279\u62C9\u65AF"
+  archetype: 5
+  emoji: "\U0001F6E1\uFE0F"
+  color: {r: 0.12941177, g: 0.9019608, b: 0.75686276, a: 1}
+  level: 1
+  salary: 750
+  powerName: "\u80FD\u91CF\u58C1\u5792"
+  str: 8
+  spd: 4
+  intl: 7
+  end: 10
+  per: 6
+  quirkName: "\u8FC7\u8F7D\u6050\u60E7"
+  quirkDesc: "\u62A4\u76FE\u7834\u788E\u540E\u4F1A\u9677\u5165\u77ED\u6682\u6050\u614C\u65E0\u6CD5\u884C\u52A8"
+  skills:
+  - name: "\u94A2\u94C1\u610F\u5FD7"
+    type: 0
+    desc: "\u751F\u547D\u503C\u8D8A\u4F4E\uFF0C\u9632\u5FA1\u529B\u8D8A\u9AD8\uFF08\u6700\u591A+40%\uFF09"
+    icon: {fileID: 21300000, guid: 33ac0371cd8ab8543a0defcfdd78c645, type: 3}
+  - name: "\u80FD\u91CF\u58C1\u5792"
+    type: 1
+    desc: "\u5C55\u5F00\u5DE8\u578B\u80FD\u91CF\u62A4\u76FE\uFF0C\u4E3A\u5168\u4F53\u961F\u53CB\u5438\u6536\u5927\u91CF\u4F24\u5BB3\u6301\u7EED4\u79D2"
+    icon: {fileID: 21300000, guid: 925034dee5155e9408c98c6eb2d1e27d, type: 3}
+  - name: "\u94C1\u58C1\u8981\u585E"
+    type: 2
+    desc: "\u53D8\u5F62\u4E3A\u56FA\u5B9A\u70AE\u53F0\u5F62\u6001\uFF0C\u83B7\u5F97\u65E0\u9650\u62A4\u76FE\u5E76\u6301\u7EED\u5632\u8BBD\u6240\u6709\u654C\u4EBA"
+    icon: {fileID: 21300000, guid: 663bb6a5c8a3e204e952b1fe54aa8066, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 7d08383ad74affe42837ff6bbef25c04, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 0d6c5d5b377b2e74f9b619a7be159695, type: 3}
+  backstory: "\u524D\u57CE\u5E02\u9632\u5FA1\u519B\u7684\u6D3B\u4F53\u76FE\u724C\uFF0C\u5168\u8EAB70%\u5DF2\u66FF\u6362\u4E3A\u519B\u7528\u7EA7\u5408\u91D1\u88C5\u7532\uFF0C\u66FE\u72EC\u81EA\u62B5\u6321\u6574\u652F\u673A\u68B0\u519B\u56E2\u7684\u8FDB\u653B\uFF0C\u9000\u5F79\u540E\u88AB\u8054\u76DF\u53EC\u56DE\u6210\u4E3A\u6700\u53EF\u9760\u7684\u9632\u7EBF\u3002"

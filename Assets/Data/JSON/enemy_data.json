@@ -1,0 +1,252 @@
+[
+  {
+    "name": "堕落天使",
+    "title": "堕光者",
+    "emoji": "😈",
+    "desc": "失去神恩的天界战士",
+    "normal": "cyberpunk creature: fallen angel, tattered grey wings, cracked armor, hollow eyes, cathedral, grey-gold",
+    "injured": "cyberpunk creature: fallen angel kneeling, wings broken, armor shattered, light completely gone, grey",
+    "category": "divine",
+    "id": "divine_1"
+  },
+  {
+    "name": "神界守卫",
+    "title": "天门哨兵",
+    "emoji": "⚔️",
+    "desc": "守护天界入口的忠诚战士",
+    "normal": "cyberpunk creature: divine guard, golden armor, four arms, celestial gate, golden-white",
+    "injured": "cyberpunk creature: guard armor dented, golden glow fading, spear cracked, standing but wounded, muted gold",
+    "category": "divine",
+    "id": "divine_2"
+  },
+  {
+    "name": "圣兽",
+    "title": "天界守护者",
+    "emoji": "🦁",
+    "desc": "天界豢养的神圣猛兽",
+    "normal": "cyberpunk creature: holy beast lion, golden fur, divine light, crystalline mane, celestial stable, gold-white",
+    "injured": "cyberpunk creature: holy beast limping, mane dulled, divine light flickering, chains of shadow, muted gold",
+    "category": "divine",
+    "id": "divine_3"
+  },
+  {
+    "name": "伪神信徒",
+    "title": "盲信者",
+    "emoji": "🙏",
+    "desc": "崇拜伪神的狂热信徒",
+    "normal": "cyberpunk creature: false prophet, fanatic, glowing purple eyes, corrupted vestments, temple, purple-gold",
+    "injured": "cyberpunk creature: prophet faith shattered, eyes dim, holy symbol cracked, doubts visible, muted purple",
+    "category": "divine",
+    "id": "divine_4"
+  },
+  {
+    "name": "神罚执行者",
+    "title": "天罚使者",
+    "emoji": "⚡",
+    "desc": "奉神界之命的执法者",
+    "normal": "cyberpunk creature: divine executioner, golden mask, lightning chains, six wings, stormy sky, gold-amber",
+    "injured": "cyberpunk creature: executioner mask cracked, chains broken, wings torn, divine authority questioned, muted gold",
+    "category": "divine",
+    "id": "divine_5"
+  },
+  {
+    "name": "天界叛军",
+    "title": "逆神者",
+    "emoji": "🔱",
+    "desc": "不满神界统治的反叛战士",
+    "normal": "cyberpunk creature: celestial rebel, broken armor, blue trident, broken chains, cloud battlefield, blue-silver",
+    "injured": "cyberpunk creature: rebel exhausted, trident cracked, blue energy fading, rebellion weary, muted blue",
+    "category": "divine",
+    "id": "divine_6"
+  },
+  {
+    "name": "神圣审判官",
+    "title": "天平之主",
+    "emoji": "⚖️",
+    "desc": "能衡量一切罪业的神圣存在",
+    "normal": "cyberpunk creature: sacred judge, golden scales, blindfolded, judgment hall, gold-white",
+    "injured": "cyberpunk creature: judge blindfold torn, scales unbalanced, golden light wavering, doubts creeping, muted gold",
+    "category": "divine",
+    "id": "divine_7"
+  },
+  {
+    "name": "灵界行者",
+    "title": "两界徘徊者",
+    "emoji": "👁️‍🗨️",
+    "desc": "能自由往返灵界的半灵体",
+    "normal": "cyberpunk creature: spirit walker, half-phased, blue glow, two realities, blue-ethereal",
+    "injured": "cyberpunk creature: spirit walker losing phase control, stuck between worlds, glitching painfully, muted blue",
+    "category": "divine",
+    "id": "divine_8"
+  },
+  {
+    "name": "星界守望者",
+    "title": "永恒之眼",
+    "emoji": "🌌",
+    "desc": "守望星界通道的古老存在",
+    "normal": "cyberpunk creature: astral watcher, massive ethereal eye, star maps, observatory, indigo-starlight",
+    "injured": "cyberpunk creature: watcher eye cracking, stars dimming, cosmic charts scattering, ancient fatigue, muted indigo",
+    "category": "divine",
+    "id": "divine_9"
+  },
+  {
+    "name": "神族遗脉",
+    "title": "最后的血脉",
+    "emoji": "🩸",
+    "desc": "最后的神族后裔",
+    "normal": "cyberpunk creature: divine remnant, faint gold marks, ancient eyes, fading aura, temple, gold-grey",
+    "injured": "cyberpunk creature: remnant exhausted, gold marks almost gone, last strength fading, temple crumbling, muted gold",
+    "category": "divine",
+    "id": "divine_10"
+  },
+  {
+    "name": "命运编织者",
+    "title": "天命裁缝",
+    "emoji": "🧵",
+    "desc": "能编织和改写命运线的神级存在",
+    "normal": "cyberpunk creature: fate weaver, threads from fingers, cosmic loom, tapestry, purple-gold",
+    "injured": "cyberpunk creature: weaver threads tangled, loom cracking, fate unraveling, cosmic order breaking, muted purple",
+    "category": "divine",
+    "id": "divine_11"
+  },
+  {
+    "name": "混沌之神碎片",
+    "title": "原初混沌",
+    "emoji": "🌑",
+    "desc": "远古混沌之神的碎片",
+    "normal": "cyberpunk creature: chaos fragment, shifting formless, void-black, reality dissolving, cosmic void, void-prismatic",
+    "injured": "cyberpunk creature: chaos fragment contained, form stabilizing painfully, void leaking, order creeping in, muted void",
+    "category": "divine",
+    "id": "divine_12"
+  },
+  {
+    "name": "低级恶魔",
+    "title": "深渊杂兵",
+    "emoji": "😈",
+    "desc": "从地狱裂隙中爬出的最低等恶魔",
+    "normal": "cyberpunk creature: lesser demon, red skin, small horns, bat wings, hellfire rift, red-dark",
+    "injured": "cyberpunk creature: demon weakened, horns cracked, wings torn, hellfire dimming, red-grey",
+    "category": "demonic",
+    "id": "demonic_1"
+  },
+  {
+    "name": "地狱猎犬",
+    "title": "冥界追猎者",
+    "emoji": "🐕‍🦺",
+    "desc": "地狱看门犬的后裔",
+    "normal": "cyberpunk creature: hell hound, three-headed shadow dog, hellfire, burning chains, dark alley, red-black",
+    "injured": "cyberpunk creature: hound limping, one head dead, chains broken, fire dimming, red-dark",
+    "category": "demonic",
+    "id": "demonic_2"
+  },
+  {
+    "name": "暗影行者",
+    "title": "暗夜潜行者",
+    "emoji": "🌑",
+    "desc": "栖息在阴影中的恶魔",
+    "normal": "cyberpunk creature: shadow stalker, living shadow, elongated limbs, white eyes, dark alley, shadow-white",
+    "injured": "cyberpunk creature: stalker exposed, shadow form evaporating, eyes wide in panic, light hurting, muted shadow",
+    "category": "demonic",
+    "id": "demonic_3"
+  },
+  {
+    "name": "血族贵族",
+    "title": "绯红伯爵",
+    "emoji": "🧛",
+    "desc": "古老的吸血鬼贵族",
+    "normal": "cyberpunk creature: vampire noble, pale, crimson eyes, blood mist, gothic penthouse, crimson-dark",
+    "injured": "cyberpunk creature: vampire weakened, fangs cracked, blood mist thinning, sunlight burning skin, muted crimson",
+    "category": "demonic",
+    "id": "demonic_4"
+  },
+  {
+    "name": "契约魔鬼",
+    "title": "交易大师",
+    "emoji": "📜",
+    "desc": "以契约收割灵魂的恶魔律师",
+    "normal": "cyberpunk creature: contract devil, businessman, golden horns, glowing contract, neon office, gold-brown",
+    "injured": "cyberpunk creature: devil contracts burning, authority crumbling, golden ink spilling, panicked, muted gold",
+    "category": "demonic",
+    "id": "demonic_5"
+  },
+  {
+    "name": "熔岩巨兽",
+    "title": "地狱锻造者",
+    "emoji": "🌋",
+    "desc": "由地狱熔岩凝聚的巨型恶魔",
+    "normal": "cyberpunk creature: lava titan, molten rock body, magma core, steam, furnace, orange-rock",
+    "injured": "cyberpunk creature: titan cooling, lava solidifying, cracks forming, steam dying, movements stiffening, muted orange",
+    "category": "demonic",
+    "id": "demonic_6"
+  },
+  {
+    "name": "恐惧领主",
+    "title": "噩梦编织者",
+    "emoji": "👁️",
+    "desc": "能将恐惧实体化的强大恶魔",
+    "normal": "cyberpunk creature: fear lord, shadowy, countless eyes, purple mist, nightmare landscape, purple-black",
+    "injured": "cyberpunk creature: fear lord's eyes closing one by one, mist thinning, nightmares dissipating, muted purple",
+    "category": "demonic",
+    "id": "demonic_7"
+  },
+  {
+    "name": "灵魂收割者",
+    "title": "死亡税吏",
+    "emoji": "💀",
+    "desc": "为地狱征收灵魂的恶魔",
+    "normal": "cyberpunk creature: soul reaper, skeletal, bone scythe, chained souls, graveyard, purple-bone",
+    "injured": "cyberpunk creature: reaper's scythe cracked, souls escaping chains, cloak tattered, power waning, muted purple",
+    "category": "demonic",
+    "id": "demonic_8"
+  },
+  {
+    "name": "深渊看守",
+    "title": "深渊之门卫士",
+    "emoji": "🚪",
+    "desc": "守护深渊入口的古老恶魔",
+    "normal": "cyberpunk creature: abyss watcher, massive fused with gateway, void eyes, hell portal, indigo-void",
+    "injured": "cyberpunk creature: watcher gate cracking behind, void eyes dimming, chains loosening, ancient fatigue, muted indigo",
+    "category": "demonic",
+    "id": "demonic_9"
+  },
+  {
+    "name": "恶魔将军",
+    "title": "地狱军团长",
+    "emoji": "⚔️",
+    "desc": "统领地狱军团的最高将领",
+    "normal": "cyberpunk creature: demon general, infernal armor, four arms, demon army, hellscape, crimson-iron",
+    "injured": "cyberpunk creature: general armor shattered, army routing, four arms wounded, banners falling, muted crimson",
+    "category": "demonic",
+    "id": "demonic_10"
+  },
+  {
+    "name": "地狱之门守卫",
+    "title": "永不开启者",
+    "emoji": "🔥",
+    "desc": "守护地狱之门的永恒哨兵",
+    "normal": "cyberpunk creature: gate keeper, colossal fused with gates, hellfire body, burning portals, hell gate, red-iron",
+    "injured": "cyberpunk creature: keeper's gate cracking, hellfire extinguishing, iron rusting, millennia of fatigue showing, muted red",
+    "category": "demonic",
+    "id": "demonic_11"
+  },
+  {
+    "name": "黑暗契约者",
+    "title": "灵魂经纪人",
+    "emoji": "🖋️",
+    "desc": "地狱最高契约官",
+    "normal": "cyberpunk creature: dark contractor, elegant demon, bone pen, scrolls, infernal court, red-black",
+    "injured": "cyberpunk creature: contractor's scrolls burning, pen breaking, elegance cracking, desperate, muted red",
+    "category": "demonic",
+    "id": "demonic_12"
+  },
+  {
+    "name": "魔王",
+    "title": "深渊至尊",
+    "emoji": "👿",
+    "desc": "统治深渊的最高恶魔领主",
+    "normal": "cyberpunk creature: demon king, soul throne, hellfire crown, six dark wings, pandemonium, crimson-void",
+    "injured": "cyberpunk creature: king dethroned, crown cracked, wings broken, throne crumbling, abyss shaking, muted crimson",
+    "category": "demonic",
+    "id": "demonic_13"
+  }
+]

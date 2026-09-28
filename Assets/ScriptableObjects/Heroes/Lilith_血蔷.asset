@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Lilith_\u8840\u8537"
+  m_EditorClassIdentifier: 
+  heroId: lilith
+  codename: "\u8840\u8537"
+  displayName: "\u8389\u8389\u4E1D"
+  archetype: 9
+  emoji: "\U0001F339"
+  color: {r: 1, g: 0.23529412, b: 0.6745098, a: 1}
+  level: 1
+  salary: 830
+  powerName: "\u8840\u7130\u5492\u672F"
+  str: 5
+  spd: 7
+  intl: 9
+  end: 6
+  per: 8
+  quirkName: "\u8840\u8109\u5171\u9E23"
+  quirkDesc: "\u53D7\u4F24\u8D8A\u91CD\u529B\u91CF\u8D8A\u5F3A\uFF0C\u4F46\u7406\u6027\u4F1A\u9010\u6B65\u4E27\u5931"
+  skills:
+  - name: "\u8840\u4E4B\u72C2\u6012"
+    type: 0
+    desc: "\u6BCF\u635F\u593110%\u751F\u547D\u503C\uFF0C\u4F24\u5BB3\u63D0\u53478%"
+    icon: {fileID: 21300000, guid: cc53a26fd89118340b61bdae8e9e22f4, type: 3}
+  - name: "\u8840\u7130\u7EFD\u653E"
+    type: 1
+    desc: "\u4EE5\u81EA\u8EAB\u8840\u6DB2\u70B9\u71C3\u73AB\u7470\u5F62\u706B\u9635\uFF0C\u5BF9\u8303\u56F4\u5185\u654C\u4EBA\u9020\u6210\u6301\u7EED\u707C\u70E7"
+    icon: {fileID: 21300000, guid: 96650a8399954e74a840d84208bf9e66, type: 3}
+  - name: "\u8840\u8537\u8587\u56ED"
+    type: 2
+    desc: "\u5168\u573A\u76DB\u653E\u5730\u72F1\u8840\u8537\u8587\uFF0C\u6BCF\u6735\u82B1\u7206\u70B8\u9020\u6210\u5927\u8303\u56F4\u8840\u7130\u4F24\u5BB3"
+    icon: {fileID: 21300000, guid: 772543b171d5a8b40a1faf2d91af16fd, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 5dcc78625d9789f4590f4abd2ea097b2, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 15ae70825423ad641b1ba322736252d4, type: 3}
+  backstory: "\u7EAF\u8840\u6076\u9B54\u4E0E\u4EBA\u7C7B\u7684\u6DF7\u8840\u540E\u88D4\uFF0C\u5728\u5730\u4E0B\u9ED1\u5E02\u4E2D\u88AB\u6076\u9B54\u5546\u4EBA\u629A\u517B\u957F\u5927\uFF0C\u5B66\u4F1A\u7528\u81EA\u8EAB\u8840\u6DB2\u70B9\u71C3\u5730\u72F1\u4E4B\u706B\uFF0C\u4EE5\u66B4\u5236\u66B4\u4EE5\u8840\u8FD8\u8840\u3002"

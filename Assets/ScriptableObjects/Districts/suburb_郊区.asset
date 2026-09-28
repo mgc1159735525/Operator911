@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c353daabf7de344387d7c9d642fc70f, type: 3}
+  m_Name: "suburb_\u90CA\u533A"
+  m_EditorClassIdentifier: 
+  districtId: suburb
+  districtName: "\u90CA\u533A"
+  emoji: "\U0001F332"
+  safety: 80
+  mapPos: {x: 0.10333335, y: 0.84883726}
+  mapSize: {x: 0.2, y: 0.18604651}
+  districtColor: {r: 0.12941177, g: 0.9019608, b: 0.75686276, a: 1}

@@ -1,0 +1,185 @@
+{
+  "kael": {
+    "选择": "The seven flames answer to me. Let's burn bright.",
+    "开战": "Time to show them what real fire looks like!",
+    "技能": "INFERNO DESCENDS! Witness the apocalypse of fire!",
+    "大招": "Hah! Is that all you've got?",
+    "受伤": "The flames never lie. And they say we won.",
+    "胜利": "The fire... it's going out... I can't...",
+    "入狱": "You know, controlling seven types of flame simultaneously is actually a great party trick."
+  },
+  "lyra": {
+    "选择": "My melody shall freeze their hearts... literally.",
+    "开战": "Shall we begin? The audience is waiting.",
+    "技能": "Listen closely... this is your lullaby.",
+    "大招": "Eternal winter movement! Let the final note echo forever!",
+    "受伤": "You... interrupted my performance.",
+    "胜利": "A standing ovation would be nice, but victory will do.",
+    "入狱": "The music... stops here...?",
+    "闲聊": "Do you think ice crystals have a favorite musical key? I think it's D minor."
+  },
+  "zephyr": {
+    "选择": "Rune circuits online. Ready to shock the system.",
+    "开战": "Let me draw a little something on the battlefield.",
+    "技能": "THUNDER PRISON! No escape from ten thousand volts!",
+    "大招": "Static interference! Systems still functional!",
+    "受伤": "Another system successfully hacked. With lightning.",
+    "胜利": "Power... draining... circuits failing..."
+  },
+  "nova": {
+    "选择": "Nanobots synced. Let me rebuild this battlefield.",
+    "开战": "Analyzing threat level. Time to upgrade our approach.",
+    "技能": "NANOSTORM UNLEASHED! Everything gets deconstructed!",
+    "大招": "Another successful field test. The data is incredible.",
+    "受伤": "Nano... swarm failing... can't... restructure...",
+    "胜利": "The nanobots get bored easily. Right now they're building tiny sculptures inside my arm."
+  },
+  "cipher": {
+    "选择": "Zero protocol initialized. I am already inside.",
+    "开战": "Connection established. Their systems are mine.",
+    "技能": "FULL SYSTEM OVERRIDE! Every machine bows to zero!",
+    "大招": "Glitch in the matrix... rerouting...",
+    "受伤": "Root access granted. As expected.",
+    "胜利": "Disconnecting... signal... lost...",
+    "入狱": "I've been alive in seventeen different simulated realities this morning. Tuesday."
+  },
+  "atlas": {
+    "选择": "Iron Wall standing by. Nothing gets past me.",
+    "开战": "Everyone behind me. NOW.",
+    "技能": "IRON FORTRESS MODE! Attack me! ALL OF YOU!",
+    "大招": "Armor holding. I've had worse from training dummies.",
+    "受伤": "Shield... shattered... everyone get... behind... *static*"
+  },
+  "aurora": {
+    "选择": "The light has not faded. I am here to protect.",
+    "开战": "May dawn's light guide us through the darkness.",
+    "技能": "HEAVENLY JUDGMENT! Let the light of paradise descend!",
+    "大招": "I can bear this pain. Others cannot.",
+    "受伤": "No one had to die today. That is the true victory.",
+    "胜利": "The light... please... don't let it go out... not yet...",
+    "入狱": "I tried to understand human fashion once. I still don't get why shoes need heels."
+  },
+  "thorin": {
+    "选择": "My hammer thirsts! Point me at the biggest one!",
+    "开战": "HAHA! Finally, a fight worth my time!",
+    "技能": "HAMMER FALL! Feel the wrath of thunder!",
+    "大招": "RAGNAROK UNLEASHED! I BECOME THE STORM ITSELF!",
+    "受伤": "HA! That tickled! Give me more!",
+    "胜利": "ANOTHER VICTORY FOR THE THUNDER! DRINKS ON ME!",
+    "入狱": "The storm... fades... but thunder... echoes... forever...",
+    "闲聊": "Last week I accidentally destroyed a vending machine. It looked at me funny. No regrets."
+  },
+  "raven": {
+    "选择": "I walk between worlds. Don't follow unless you want to die.",
+    "开战": "The shadows are hungry tonight. Feed them.",
+    "技能": "ABYSS GATE OPEN! Every sin you've committed reaches for you!",
+    "大招": "Hmph. I've felt worse from my own demons.",
+    "受伤": "Another soul harvested. But not yours... not tonight.",
+    "胜利": "The shadows... they're calling me home... not this time...",
+    "入狱": "The demon inside me has opinions about everything. Mostly negative. Currently it hates your shoes."
+  },
+  "lilith": {
+    "选择": "Blood and fire, baby. Let me paint the town red.",
+    "开战": "Ooh, fresh canvas! Let's make some art with pain.",
+    "技能": "Blood roses bloom! Isn't it beautiful, darling?",
+    "大招": "GARDEN OF BLOOD! Every petal is a kiss of death!",
+    "受伤": "Ow! ...I like it. More.",
+    "胜利": "Darling, you should've run when you had the chance.",
+    "入狱": "The blood... mine... it's so... cold...",
+    "闲聊": "People say I have a dark sense of humor. I say they haven't seen my garden at midnight."
+  },
+  "morrigan": {
+    "选择": "I've already seen how this ends. Let me show you.",
+    "开战": "The threads are clear. Your fate is... complicated.",
+    "技能": "Your strings are mine to pull now.",
+    "大招": "FINAL THREAD SEVERED! Destiny ends HERE!",
+    "受伤": "I... didn't foresee this... interesting.",
+    "胜利": "The threads weave victory. As I always knew they would.",
+    "入狱": "Even my sight... cannot see beyond... this ending..."
+  },
+  "hollow": {
+    "选择": "Death refused me. So I command it instead.",
+    "开战": "Rise, my servants. We have an appointment with the living.",
+    "技能": "Arise! March for your master!",
+    "大招": "UNDEAD SCOURGE! Every corpse in this city is MY soldier!",
+    "受伤": "Pain is just a memory. I don't have those anymore.",
+    "胜利": "The dead have spoken. They say we won.",
+    "入狱": "Finally... true rest... after all these... centuries...",
+    "闲聊": "The ghosts around me are complaining about the wifi signal again. Even in death, no peace."
+  },
+  "fang": {
+    "选择": "Twelve predators. One hunter. Let's go.",
+    "开战": "I can smell your fear. Delicious.",
+    "技能": "BEAST FORM! Claws out, fangs down!",
+    "大招": "FULL APEX PREDATOR! Twelve genes become ONE!",
+    "受伤": "RAAGH! That just made me angry!",
+    "胜利": "The hunt is over. I always catch my prey.",
+    "入狱": "The beast within... it's taking over... no... not again...",
+    "闲聊": "On a scale of one to ten, my urge to howl at the moon right now is an eleven."
+  },
+  "spore": {
+    "选择": "The mycelium network is listening. And so am I.",
+    "开战": "Shall we see what grows from this battlefield?",
+    "技能": "Spore cloud deployed. Breathe deep... or don't.",
+    "大招": "FUNGAL DOMINION! Let nature reclaim everything!",
+    "受伤": "The network feels that... everywhere...",
+    "胜利": "Decomposition complete. New growth begins.",
+    "入狱": "The mycelium... goes silent... the forest... forgets me..."
+  },
+  "psyche": {
+    "选择": "I already know what you're thinking. Don't bother.",
+    "开战": "Your mind is an open book. Let me rewrite it.",
+    "技能": "PSYCHIC STORM! Get out of my head!",
+    "大招": "ABYSS OF MIND! Face your deepest terror!",
+    "受伤": "That... was loud. My head is louder now.",
+    "胜利": "Too many voices... can't... find mine... anymore...",
+    "入狱": "Everyone around here is thinking about lunch. Except Titan. He's thinking about punching things."
+  },
+  "orion": {
+    "选择": "Stars guide my path. I will not be lost again.",
+    "开战": "By the light of a thousand suns, we fight.",
+    "技能": "STAR RIVER CASCADE! The cosmos fights alongside us!",
+    "大招": "A star does not dim from a single blow.",
+    "受伤": "The constellations align in victory. Home feels closer now.",
+    "胜利": "My light... fading... but the stars... remember...",
+    "入狱": "Earth gravity is so heavy. On my world we just... float. I miss floating sometimes."
+  },
+  "vega": {
+    "选择": "I weave light itself. Try to keep up.",
+    "开战": "A new design requires new materials. You'll do.",
+    "技能": "LIGHT WEAVE COMPLETE! You're trapped in my masterpiece!",
+    "大招": "My form flickers... how dare you damage the design!",
+    "受伤": "Perfection achieved. As always. You're welcome.",
+    "胜利": "The light... dims... my masterpiece... unfinished...",
+    "入狱": "I redesigned three combat suits this morning. The fourth one can literally walk through walls. Fashion."
+  },
+  "blaze": {
+    "选择": "My fists don't negotiate. Let's talk with knuckles.",
+    "开战": "Twelve rounds. I won't need more than one.",
+    "技能": "ONE PUNCH. ONE WORLD. ONE ME!",
+    "大招": "HAH! Good shot! Again! AGAIN!",
+    "受伤": "And the crowd goes WILD! That's championship form!",
+    "胜利": "My fists... won't... clench... anymore...",
+    "入狱": "I bench-press trucks for fun. The gym banned me after the third incident. Understandable."
+  },
+  "shadow": {
+    "选择": "You won't see me. You won't hear me. You'll just... lose.",
+    "开战": "...Target acquired. *vanishes*",
+    "技能": "Shadow step. Behind you.",
+    "大招": "SHADOW REALM DESCENDS. Welcome to my world.",
+    "受伤": "*silent* ...Hmph.",
+    "胜利": "...Done. *reappears behind you* Next.",
+    "入狱": "...The shadows... betray me... this time...",
+    "闲聊": "...No, I won't show you my face. ...No, I don't eat in front of people. ...Yes, I'm annoyed."
+  },
+  "titan": {
+    "选择": "I don't need powers. I AM the power.",
+    "开战": "Everyone stay back. This one's mine.",
+    "技能": "GROUND POUND! Feel the earth SHAKE!",
+    "大招": "ABSOLUTE DOMAIN! NOTHING. MOVES. BUT ME!",
+    "受伤": "I didn't feel that. I never feel anything.",
+    "胜利": "Still standing. As always. As I always will.",
+    "入狱": "Even mountains... eventually... crumble...",
+    "闲聊": "Doctors say I should feel pain. I tried once. Overrated. Recommend the numbness instead."
+  }
+}

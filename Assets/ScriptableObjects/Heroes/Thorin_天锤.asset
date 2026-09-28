@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Thorin_\u5929\u9524"
+  m_EditorClassIdentifier: 
+  heroId: thorin
+  codename: "\u5929\u9524"
+  displayName: "\u7D22\u6797"
+  archetype: 7
+  emoji: "\U0001F528"
+  color: {r: 1, g: 0.9019608, b: 0.42745098, a: 1}
+  level: 1
+  salary: 800
+  powerName: "\u795E\u7F5A\u4E4B\u9524"
+  str: 10
+  spd: 5
+  intl: 6
+  end: 8
+  per: 6
+  quirkName: "\u6218\u795E\u8840\u8109"
+  quirkDesc: "\u6218\u6597\u8D8A\u4E45\u8D8A\u72C2\u66B4\uFF0C\u53EF\u80FD\u8BEF\u4F24\u961F\u53CB"
+  skills:
+  - name: "\u6218\u610F\u6602\u626C"
+    type: 0
+    desc: "\u6BCF\u51FB\u6740\u4E00\u4E2A\u654C\u4EBA\uFF0C\u653B\u51FB\u529B\u63D0\u53475%\uFF0C\u53EF\u53E0\u52A0"
+    icon: {fileID: 21300000, guid: f908bef6267333a448529539c977bb6c, type: 3}
+  - name: "\u5929\u9524\u843D\u51FB"
+    type: 1
+    desc: "\u8DC3\u8D77\u540E\u4EE5\u5DE8\u9524\u7838\u5730\uFF0C\u9020\u6210\u8303\u56F4\u51B2\u51FB\u6CE2\u5E76\u51FB\u98DE\u654C\u4EBA"
+    icon: {fileID: 21300000, guid: 16bbb42aa14e34f4e9fa975334a11616, type: 3}
+  - name: "\u8BF8\u795E\u9EC4\u660F"
+    type: 2
+    desc: "\u89E3\u653E\u5168\u90E8\u795E\u529B\uFF0C\u5316\u8EAB\u96F7\u795E\u5F62\u6001\uFF0C\u6BCF\u6B21\u653B\u51FB\u9644\u5E26\u8FDE\u9501\u95EA\u7535"
+    icon: {fileID: 21300000, guid: b9350086891c6d24d94877437c02c5c3, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 4cc82249b4a1a5a4fa0a9234dc01668a, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 049028ba6919125499ca61cbc2a96000, type: 3}
+  backstory: "\u636E\u8BF4\u662F\u8FDC\u53E4\u6218\u795E\u8F6C\u4E16\uFF0C\u89C9\u9192\u4E8E\u5317\u6B27\u5E9F\u589F\u533A\uFF0C\u53F3\u81C2\u94ED\u523B\u795E\u65CF\u6587\u5B57\uFF0C\u6027\u683C\u8C6A\u8FC8\u5982\u96F7\u9706\uFF0C\u6218\u6597\u65F6\u4EFF\u4F5B\u4E00\u5C0A\u79FB\u52A8\u7684\u6218\u795E\u964D\u4E16\u3002"

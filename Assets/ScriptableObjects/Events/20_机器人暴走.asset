@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4058214d26db1b147a24aeb84e4152f2, type: 3}
+  m_Name: "20_\u673A\u5668\u4EBA\u66B4\u8D70"
+  m_EditorClassIdentifier: 
+  eventType: 2
+  eventName: "\u673A\u5668\u4EBA\u66B4\u8D70"
+  icon: "\U0001F916"
+  description: "\u5DE5\u4E1A\u533A\u673A\u5668\u4EBA\u5DE5\u5382AI\u5931\u63A7\uFF0C\u673A\u5668\u4EBA\u653B\u51FB\u5DE5\u4EBA\u3002"
+  fogDescription: "\u5DE5\u4E1A\u533A\u53D1\u751F\u5DE5\u4E1A\u4E8B\u6545\u3002"
+  needs:
+  - electronic
+  - strength
+  baseGrade: B
+  baseReward: 500
+  baseReputation: 5
+  baseInjuryRisk: 10
+  baseCollateral: 10

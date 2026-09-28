@@ -1,0 +1,298 @@
+{
+  "voice_lines": {
+    "atlas": {
+      "battle_start": "voice_atlas_battle_start.mp3",
+      "hurt": "voice_atlas_hurt.mp3",
+      "selection": "voice_atlas_selection.mp3",
+      "skill": "voice_atlas_skill.mp3",
+      "ultimate": "voice_atlas_ultimate.mp3"
+    },
+    "aurora": {
+      "arrested": "voice_aurora_arrested.mp3",
+      "battle_start": "voice_aurora_battle_start.mp3",
+      "hurt": "voice_aurora_hurt.mp3",
+      "selection": "voice_aurora_selection.mp3",
+      "skill": "voice_aurora_skill.mp3",
+      "ultimate": "voice_aurora_ultimate.mp3",
+      "victory": "voice_aurora_victory.mp3"
+    },
+    "blaze": {
+      "arrested": "voice_blaze_arrested.mp3",
+      "battle_start": "voice_blaze_battle_start.mp3",
+      "hurt": "voice_blaze_hurt.mp3",
+      "selection": "voice_blaze_selection.mp3",
+      "skill": "voice_blaze_skill.mp3",
+      "ultimate": "voice_blaze_ultimate.mp3",
+      "victory": "voice_blaze_victory.mp3"
+    },
+    "cipher": {
+      "arrested": "voice_cipher_arrested.mp3",
+      "battle_start": "voice_cipher_battle_start.mp3",
+      "hurt": "voice_cipher_hurt.mp3",
+      "selection": "voice_cipher_selection.mp3",
+      "skill": "voice_cipher_skill.mp3",
+      "ultimate": "voice_cipher_ultimate.mp3",
+      "victory": "voice_cipher_victory.mp3"
+    },
+    "fang": {
+      "arrested": "voice_fang_arrested.mp3",
+      "battle_start": "voice_fang_battle_start.mp3",
+      "hurt": "voice_fang_hurt.mp3",
+      "idle": "voice_fang_idle.mp3",
+      "selection": "voice_fang_selection.mp3",
+      "skill": "voice_fang_skill.mp3",
+      "ultimate": "voice_fang_ultimate.mp3",
+      "victory": "voice_fang_victory.mp3"
+    },
+    "hollow": {
+      "arrested": "voice_hollow_arrested.mp3",
+      "battle_start": "voice_hollow_battle_start.mp3",
+      "hurt": "voice_hollow_hurt.mp3",
+      "idle": "voice_hollow_idle.mp3",
+      "selection": "voice_hollow_selection.mp3",
+      "skill": "voice_hollow_skill.mp3",
+      "ultimate": "voice_hollow_ultimate.mp3",
+      "victory": "voice_hollow_victory.mp3"
+    },
+    "kael": {
+      "arrested": "voice_kael_arrested.mp3",
+      "battle_start": "voice_kael_battle_start.mp3",
+      "hurt": "voice_kael_hurt.mp3",
+      "selection": "voice_kael_selection.mp3",
+      "skill": "voice_kael_skill.mp3",
+      "ultimate": "voice_kael_ultimate.mp3",
+      "victory": "voice_kael_victory.mp3"
+    },
+    "lilith": {
+      "arrested": "voice_lilith_arrested.mp3",
+      "battle_start": "voice_lilith_battle_start.mp3",
+      "hurt": "voice_lilith_hurt.mp3",
+      "idle": "voice_lilith_idle.mp3",
+      "selection": "voice_lilith_selection.mp3",
+      "skill": "voice_lilith_skill.mp3",
+      "ultimate": "voice_lilith_ultimate.mp3",
+      "victory": "voice_lilith_victory.mp3"
+    },
+    "lyra": {
+      "arrested": "voice_lyra_arrested.mp3",
+      "battle_start": "voice_lyra_battle_start.mp3",
+      "hurt": "voice_lyra_hurt.mp3",
+      "idle": "voice_lyra_idle.mp3",
+      "selection": "voice_lyra_selection.mp3",
+      "skill": "voice_lyra_skill.mp3",
+      "ultimate": "voice_lyra_ultimate.mp3",
+      "victory": "voice_lyra_victory.mp3"
+    },
+    "morrigan": {
+      "arrested": "voice_morrigan_arrested.mp3",
+      "battle_start": "voice_morrigan_battle_start.mp3",
+      "hurt": "voice_morrigan_hurt.mp3",
+      "selection": "voice_morrigan_selection.mp3",
+      "skill": "voice_morrigan_skill.mp3",
+      "ultimate": "voice_morrigan_ultimate.mp3",
+      "victory": "voice_morrigan_victory.mp3"
+    },
+    "nova": {
+      "battle_start": "voice_nova_battle_start.mp3",
+      "hurt": "voice_nova_hurt.mp3",
+      "selection": "voice_nova_selection.mp3",
+      "skill": "voice_nova_skill.mp3",
+      "ultimate": "voice_nova_ultimate.mp3",
+      "victory": "voice_nova_victory.mp3"
+    },
+    "orion": {
+      "arrested": "voice_orion_arrested.mp3",
+      "battle_start": "voice_orion_battle_start.mp3",
+      "hurt": "voice_orion_hurt.mp3",
+      "selection": "voice_orion_selection.mp3",
+      "skill": "voice_orion_skill.mp3",
+      "ultimate": "voice_orion_ultimate.mp3",
+      "victory": "voice_orion_victory.mp3"
+    },
+    "psyche": {
+      "arrested": "voice_psyche_arrested.mp3",
+      "battle_start": "voice_psyche_battle_start.mp3",
+      "hurt": "voice_psyche_hurt.mp3",
+      "selection": "voice_psyche_selection.mp3",
+      "skill": "voice_psyche_skill.mp3",
+      "ultimate": "voice_psyche_ultimate.mp3",
+      "victory": "voice_psyche_victory.mp3"
+    },
+    "raven": {
+      "arrested": "voice_raven_arrested.mp3",
+      "battle_start": "voice_raven_battle_start.mp3",
+      "hurt": "voice_raven_hurt.mp3",
+      "selection": "voice_raven_selection.mp3",
+      "skill": "voice_raven_skill.mp3",
+      "ultimate": "voice_raven_ultimate.mp3",
+      "victory": "voice_raven_victory.mp3"
+    },
+    "shadow": {
+      "arrested": "voice_shadow_arrested.mp3",
+      "battle_start": "voice_shadow_battle_start.mp3",
+      "hurt": "voice_shadow_hurt.mp3",
+      "idle": "voice_shadow_idle.mp3",
+      "selection": "voice_shadow_selection.mp3",
+      "skill": "voice_shadow_skill.mp3",
+      "ultimate": "voice_shadow_ultimate.mp3",
+      "victory": "voice_shadow_victory.mp3"
+    },
+    "spore": {
+      "arrested": "voice_spore_arrested.mp3",
+      "battle_start": "voice_spore_battle_start.mp3",
+      "hurt": "voice_spore_hurt.mp3",
+      "selection": "voice_spore_selection.mp3",
+      "skill": "voice_spore_skill.mp3",
+      "ultimate": "voice_spore_ultimate.mp3",
+      "victory": "voice_spore_victory.mp3"
+    },
+    "thorin": {
+      "arrested": "voice_thorin_arrested.mp3",
+      "battle_start": "voice_thorin_battle_start.mp3",
+      "hurt": "voice_thorin_hurt.mp3",
+      "idle": "voice_thorin_idle.mp3",
+      "selection": "voice_thorin_selection.mp3",
+      "skill": "voice_thorin_skill.mp3",
+      "ultimate": "voice_thorin_ultimate.mp3",
+      "victory": "voice_thorin_victory.mp3"
+    },
+    "titan": {
+      "arrested": "voice_titan_arrested.mp3",
+      "battle_start": "voice_titan_battle_start.mp3",
+      "hurt": "voice_titan_hurt.mp3",
+      "idle": "voice_titan_idle.mp3",
+      "selection": "voice_titan_selection.mp3",
+      "skill": "voice_titan_skill.mp3",
+      "ultimate": "voice_titan_ultimate.mp3",
+      "victory": "voice_titan_victory.mp3"
+    },
+    "vega": {
+      "arrested": "voice_vega_arrested.mp3",
+      "battle_start": "voice_vega_battle_start.mp3",
+      "hurt": "voice_vega_hurt.mp3",
+      "selection": "voice_vega_selection.mp3",
+      "skill": "voice_vega_skill.mp3",
+      "ultimate": "voice_vega_ultimate.mp3",
+      "victory": "voice_vega_victory.mp3"
+    },
+    "zephyr": {
+      "battle_start": "voice_zephyr_battle_start.mp3",
+      "hurt": "voice_zephyr_hurt.mp3",
+      "selection": "voice_zephyr_selection.mp3",
+      "skill": "voice_zephyr_skill.mp3",
+      "ultimate": "voice_zephyr_ultimate.mp3",
+      "victory": "voice_zephyr_victory.mp3"
+    }
+  },
+  "sound_effects": {
+    "ambient_battle": "ambient_battle.wav",
+    "ambient_city": "ambient_city.wav",
+    "combat_dark_magic": "combat_dark_magic.wav",
+    "combat_energy_blast": "combat_energy_blast.wav",
+    "combat_explosion": "combat_explosion.wav",
+    "combat_fire": "combat_fire.wav",
+    "combat_heavy_hit": "combat_heavy_hit.wav",
+    "combat_hit": "combat_hit.wav",
+    "combat_holy": "combat_holy.wav",
+    "combat_ice": "combat_ice.wav",
+    "combat_lightning": "combat_lightning.wav",
+    "combat_shield_block": "combat_shield_block.wav",
+    "event_day_transition": "event_day_transition.wav",
+    "event_hero_arrested": "event_hero_arrested.wav",
+    "event_hero_injured": "event_hero_injured.wav",
+    "event_hero_selected": "event_hero_selected.wav",
+    "event_mission_fail": "event_mission_fail.wav",
+    "event_mission_start": "event_mission_start.wav",
+    "event_mission_success": "event_mission_success.wav",
+    "event_ultimate_charge": "event_ultimate_charge.wav",
+    "ui_alert": "ui_alert.wav",
+    "ui_click": "ui_click.wav",
+    "ui_hover": "ui_hover.wav",
+    "ui_menu_close": "ui_menu_close.wav",
+    "ui_menu_open": "ui_menu_open.wav",
+    "ui_notification": "ui_notification.wav",
+    "ui_tab_switch": "ui_tab_switch.wav"
+  },
+  "voice_map": {
+    "kael": {
+      "voice": "en-US-GuyNeural",
+      "personality": "Passionate fire mage"
+    },
+    "lyra": {
+      "voice": "en-GB-SoniaNeural",
+      "personality": "Elegant ice musician"
+    },
+    "zephyr": {
+      "voice": "en-US-RogerNeural",
+      "personality": "Lively lightning mage"
+    },
+    "nova": {
+      "voice": "en-US-AndrewNeural",
+      "personality": "Analytical nanotech"
+    },
+    "cipher": {
+      "voice": "en-US-EricNeural",
+      "personality": "Cold rational hacker"
+    },
+    "atlas": {
+      "voice": "en-ZA-LukeNeural",
+      "personality": "Stoic shield tank"
+    },
+    "aurora": {
+      "voice": "en-US-EmmaNeural",
+      "personality": "Warm holy healer"
+    },
+    "thorin": {
+      "voice": "en-GB-RyanNeural",
+      "personality": "Authority thunder god"
+    },
+    "raven": {
+      "voice": "en-US-AvaNeural",
+      "personality": "Dark mysterious"
+    },
+    "lilith": {
+      "voice": "en-US-JennyNeural",
+      "personality": "Seductive blood queen"
+    },
+    "morrigan": {
+      "voice": "en-AU-NatashaNeural",
+      "personality": "Exotic fate weaver"
+    },
+    "hollow": {
+      "voice": "en-US-SteffanNeural",
+      "personality": "Cold undead commander"
+    },
+    "fang": {
+      "voice": "en-US-ChristopherNeural",
+      "personality": "Aggressive beast"
+    },
+    "spore": {
+      "voice": "en-CA-LiamNeural",
+      "personality": "Mad scientist"
+    },
+    "psyche": {
+      "voice": "en-US-MichelleNeural",
+      "personality": "Smooth telepath"
+    },
+    "orion": {
+      "voice": "en-NZ-MitchellNeural",
+      "personality": "Cosmic explorer"
+    },
+    "vega": {
+      "voice": "en-US-AriaNeural",
+      "personality": "Elegant light weaver"
+    },
+    "blaze": {
+      "voice": "en-CA-ClaraNeural",
+      "personality": "Fierce brawler"
+    },
+    "shadow": {
+      "voice": "en-GB-ThomasNeural",
+      "personality": "Quiet assassin"
+    },
+    "titan": {
+      "voice": "en-IE-ConnorNeural",
+      "personality": "Strong defender"
+    }
+  }
+}

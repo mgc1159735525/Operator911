@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Kael_\u7130\u5FC3"
+  m_EditorClassIdentifier: 
+  heroId: kael
+  codename: "\u7130\u5FC3"
+  displayName: "\u51EF\u5C14"
+  archetype: 0
+  emoji: "\U0001F525"
+  color: {r: 0.54509807, g: 0.36078432, b: 0.9647059, a: 1}
+  level: 1
+  salary: 850
+  powerName: "\u708E\u72F1\u9B54\u7130"
+  str: 5
+  spd: 6
+  intl: 10
+  end: 5
+  per: 8
+  quirkName: "\u9B54\u529B\u53CD\u566C"
+  quirkDesc: "\u6BCF\u6B21\u91CA\u653E\u5927\u62DB\u540E\u4F1A\u77ED\u6682\u5931\u53BB\u89C6\u89C9"
+  skills:
+  - name: "\u7130\u5FC3\u4E0D\u706D"
+    type: 0
+    desc: "\u751F\u547D\u4F4E\u4E8E30%\u65F6\uFF0C\u81EA\u52A8\u91CA\u653E\u706B\u7130\u62A4\u76FE\u5438\u6536\u4F24\u5BB3"
+    icon: {fileID: 21300000, guid: 6d2eb6bf3a1e18a49bbd258657b74dd9, type: 3}
+  - name: "\u4E03\u7130\u8FDE\u73E0"
+    type: 1
+    desc: "\u5411\u76EE\u6807\u8FDE\u7EED\u53D1\u5C04\u4E03\u679A\u4E0D\u540C\u5C5E\u6027\u7684\u7130\u5F39\uFF0C\u6BCF\u679A\u9020\u6210\u9012\u589E\u4F24\u5BB3"
+    icon: {fileID: 21300000, guid: d8bc088d44951dc4bac6945f7cbc8f98, type: 3}
+  - name: "\u708E\u72F1\u5929\u964D"
+    type: 2
+    desc: "\u53EC\u5524\u5DE8\u5927\u7684\u706B\u7130\u6CD5\u9635\u8986\u76D6\u5168\u573A\uFF0C\u6301\u7EED\u707C\u70E7\u6240\u6709\u654C\u4EBA5\u79D2"
+    icon: {fileID: 21300000, guid: c3e49790615b2e34887247661912290d, type: 3}
+  portraitNormal: {fileID: 21300000, guid: 3d96ebe776268e646b39764e709e425c, type: 3}
+  portraitInjured: {fileID: 21300000, guid: f59d1850238fa4f4db814cbfe6f0f221, type: 3}
+  backstory: "\u65B0\u4E0A\u6D77\u5E9F\u589F\u4E2D\u957F\u5927\u7684\u5B64\u513F\uFF0C\u5728\u5730\u4E0B\u9057\u8FF9\u4E2D\u53D1\u73B0\u4E86\u4E0A\u53E4\u708E\u9B54\u7684\u6CD5\u5178\uFF0C\u5C06\u53E4\u5178\u9B54\u6CD5\u4E0E\u8D5B\u535A\u795E\u7ECF\u63A5\u53E3\u878D\u5408\uFF0C\u6210\u4E3A\u57CE\u4E2D\u552F\u4E00\u80FD\u540C\u65F6\u64CD\u63A7\u4E03\u7130\u7684\u9B54\u5BFC\u5E08\u3002"

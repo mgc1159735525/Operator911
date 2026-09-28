@@ -1,0 +1,618 @@
+{
+  "sites": [
+    {
+      "id": "tea",
+      "name": "听雨茶楼",
+      "district": 0,
+      "x": 0.13,
+      "y": 0.49,
+      "duty": "Contact",
+      "evidence": "证人口供",
+      "requires": "",
+      "description": "跑堂少年昨夜失踪。老掌柜愿意说话，却怕牵连整条街。"
+    },
+    {
+      "id": "warehouse",
+      "name": "永丰货栈",
+      "district": 0,
+      "x": 0.29,
+      "y": 0.72,
+      "duty": "Recon",
+      "evidence": "私运账本",
+      "requires": "证人口供",
+      "description": "茶客留下的地址指向货栈后门，账房似乎记录了陌生买家的来往。"
+    },
+    {
+      "id": "bookshop",
+      "name": "青灯书坊",
+      "district": 1,
+      "x": 0.14,
+      "y": 0.1,
+      "duty": "Recon",
+      "evidence": "印版印记",
+      "requires": "",
+      "description": "被禁文告出自同一块旧印版。书坊中有人知道是谁借走了它。"
+    },
+    {
+      "id": "academy",
+      "name": "槐序学社",
+      "district": 1,
+      "x": 0.31,
+      "y": 0.37,
+      "duty": "Propaganda",
+      "evidence": "学社名录",
+      "requires": "印版印记",
+      "description": "学生在此争论出路。印版上的暗记能证明你与传抄者的联系。"
+    },
+    {
+      "id": "registry",
+      "name": "北衙案牍房",
+      "district": 2,
+      "x": 0.46,
+      "y": 0.1,
+      "duty": "Recon",
+      "evidence": "转押时刻",
+      "requires": "",
+      "description": "低阶书吏轮流抄写转押簿，片刻疏忽就可能留下新的线索。"
+    },
+    {
+      "id": "prison",
+      "name": "旧狱夹巷",
+      "district": 2,
+      "x": 0.61,
+      "y": 0.39,
+      "duty": "Contact",
+      "evidence": "牢门暗号",
+      "requires": "转押时刻",
+      "description": "夹巷只在转押时短暂开放。狱卒家属需要确信你知道确切时刻。"
+    },
+    {
+      "id": "camp",
+      "name": "东营辕门",
+      "district": 3,
+      "x": 0.79,
+      "y": 0.15,
+      "duty": "Contact",
+      "evidence": "换防口令",
+      "requires": "",
+      "description": "疲惫的守卒不愿为长官的私利送命，但不会轻信陌生人的承诺。"
+    },
+    {
+      "id": "bell",
+      "name": "临河钟楼",
+      "district": 3,
+      "x": 0.87,
+      "y": 0.43,
+      "duty": "Recon",
+      "evidence": "警钟构造",
+      "requires": "换防口令",
+      "description": "知道换防口令后可以接近钟楼。绳索和传令制度都有薄弱之处。"
+    },
+    {
+      "id": "clinic",
+      "name": "济生药铺",
+      "district": 4,
+      "x": 0.43,
+      "y": 0.55,
+      "duty": "Contact",
+      "evidence": "伤患证词",
+      "requires": "",
+      "description": "无钱求医的伤者越来越多。郎中需要帮助，也知道搜捕留下的伤口。"
+    },
+    {
+      "id": "refuge",
+      "name": "古寺后院",
+      "district": 4,
+      "x": 0.6,
+      "y": 0.8,
+      "duty": "Propaganda",
+      "evidence": "避难名册",
+      "requires": "伤患证词",
+      "description": "凭伤者口述找到后院，住持愿意为被波及的人暂留一盏灯。"
+    },
+    {
+      "id": "ferry",
+      "name": "芦苇渡口",
+      "district": 5,
+      "x": 0.77,
+      "y": 0.57,
+      "duty": "Recon",
+      "evidence": "船期残页",
+      "requires": "",
+      "description": "夜船未按约定靠岸。渡夫捡到一页被撕碎的船期，墨迹尚未干。"
+    },
+    {
+      "id": "depot",
+      "name": "东埠盐仓",
+      "district": 5,
+      "x": 0.86,
+      "y": 0.85,
+      "duty": "Recon",
+      "evidence": "盐仓钥记",
+      "requires": "船期残页",
+      "description": "沿船期追到盐仓，一批军需混在食盐中。开仓必须避开巡夜。"
+    }
+  ],
+  "cases": [
+    {
+      "mission": {
+        "task": {
+          "id": "tea_protect",
+          "title": "失踪跑堂 · 护送证人",
+          "body": "掌柜承认证人藏在阁楼。先送他离开，还是留下他引出幕后买家？护送会失去追踪机会。",
+          "duty": "Contact",
+          "district": 0,
+          "start": 1,
+          "deadline": 4,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 3,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "tea",
+      "group": "missing_boy",
+      "requires": "证人口供",
+      "grants": "证人获救",
+      "outcome": "少年平安出城，街坊开始相信组织的承诺。",
+      "heat": -8,
+      "support": 12
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "tea_bait",
+          "title": "失踪跑堂 · 布置诱局",
+          "body": "让证人继续赴约，以此追查买家。组织可能得到账册，但茶楼将暴露在搜捕视线中。",
+          "duty": "Recon",
+          "district": 0,
+          "start": 1,
+          "deadline": 4,
+          "priority": 2,
+          "intelReward": 1,
+          "progressReward": 7,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 8,
+        "retaliationDelay": 2,
+        "retaliationPressure": 4,
+        "flag": ""
+      },
+      "site": "tea",
+      "group": "missing_boy",
+      "requires": "证人口供",
+      "grants": "买家账册",
+      "outcome": "买家留下账册，茶楼掌柜却不再愿意接待陌生人。",
+      "heat": 14,
+      "support": -8
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "ink_publish",
+          "title": "禁书印版 · 公布真相",
+          "body": "印版关联一名受冤的老师。公开文告可以争取学生，但搜查会集中到书坊。",
+          "duty": "Propaganda",
+          "district": 1,
+          "start": 3,
+          "deadline": 7,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 7,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 2,
+        "retaliationPressure": 4,
+        "flag": ""
+      },
+      "site": "bookshop",
+      "group": "printing",
+      "requires": "印版印记",
+      "grants": "",
+      "outcome": "学生开始传抄文告，书坊被列入重点搜查。",
+      "heat": 15,
+      "support": 15
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "ink_hide",
+          "title": "禁书印版 · 转移印版",
+          "body": "先转移印版与刻工，放弃这次公开发声。留下的工具可能在决战时发挥作用。",
+          "duty": "Contact",
+          "district": 1,
+          "start": 3,
+          "deadline": 7,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 3,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "bookshop",
+      "group": "printing",
+      "requires": "印版印记",
+      "grants": "备用印版",
+      "outcome": "刻工与印版藏进学社，留下可以再次使用的联络工具。",
+      "heat": -10,
+      "support": 5
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "prison_list",
+          "title": "转押疑云 · 保存名单",
+          "body": "密探准备焚毁名册。先抄下所有姓名，能让更多家庭知道亲人的去向。",
+          "duty": "Recon",
+          "district": 2,
+          "start": 7,
+          "deadline": 12,
+          "priority": 2,
+          "intelReward": 1,
+          "progressReward": 5,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "registry",
+      "group": "prison_order",
+      "requires": "转押时刻",
+      "grants": "完整名册",
+      "outcome": "名单流入街坊，失踪者不再只是无名的数字。",
+      "heat": 6,
+      "support": 12
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "prison_bribe",
+          "title": "转押疑云 · 打通书吏",
+          "body": "书吏愿意提供内线消息，但要求把自己的名字从抄录名单中抹去。",
+          "duty": "Contact",
+          "district": 2,
+          "start": 7,
+          "deadline": 12,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 7,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 10,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "registry",
+      "group": "prison_order",
+      "requires": "转押时刻",
+      "grants": "书吏内线",
+      "outcome": "内线开始传递消息，部分家属仍得不到答复。",
+      "heat": -8,
+      "support": -4
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "camp_oath",
+          "title": "守卒家书 · 援助家属",
+          "body": "守卒提出先安顿家属，再考虑响应。公开承诺能换取信任，也让组织承担照应的责任。",
+          "duty": "Contact",
+          "district": 3,
+          "start": 11,
+          "deadline": 16,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 5,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "camp",
+      "group": "soldier",
+      "requires": "换防口令",
+      "grants": "守卒信任",
+      "outcome": "守卒家属得到庇护，辕门内有人愿意为组织说话。",
+      "heat": -6,
+      "support": 14
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "camp_threat",
+          "title": "守卒家书 · 施压夺令",
+          "body": "直接夺取调令可以扰乱敌营。短期收益更高，但营中支持者会重新审视组织。",
+          "duty": "Sabotage",
+          "district": 3,
+          "start": 11,
+          "deadline": 16,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 10,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 12,
+        "retaliationDelay": 2,
+        "retaliationPressure": 4,
+        "flag": ""
+      },
+      "site": "camp",
+      "group": "soldier",
+      "requires": "换防口令",
+      "grants": "",
+      "outcome": "调令落入组织手中，东营开始严查内部人员。",
+      "heat": 20,
+      "support": -12
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "clinic_aid",
+          "title": "药铺断供 · 赈济街坊",
+          "body": "仅剩的一车药材无法兼顾所有人。先救治街坊，会放弃一笔可观的筹款收入。",
+          "duty": "Contact",
+          "district": 4,
+          "start": 5,
+          "deadline": 10,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 4,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "clinic",
+      "group": "medicine",
+      "requires": "伤患证词",
+      "grants": "义诊口碑",
+      "outcome": "药铺重新开门，伤者的家人愿意传递消息。",
+      "heat": -5,
+      "support": 18
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "clinic_sell",
+          "title": "药铺断供 · 出售存药",
+          "body": "卖药所得能支持组织周转，但等待药材的街坊将记住这个决定。",
+          "duty": "Contact",
+          "district": 4,
+          "start": 5,
+          "deadline": 10,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 5,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 24,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "clinic",
+      "group": "medicine",
+      "requires": "伤患证词",
+      "grants": "",
+      "outcome": "资金到账，药铺门前却留下空手而归的人。",
+      "heat": 4,
+      "support": -15
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "cargo_return",
+          "title": "失踪夜船 · 归还粮食",
+          "body": "夜船混装了军需和百姓的粮食。把粮食交还渡夫，组织只能带走少量文件。",
+          "duty": "Contact",
+          "district": 5,
+          "start": 9,
+          "deadline": 14,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 5,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "ferry",
+      "group": "night_ship",
+      "requires": "船期残页",
+      "grants": "渡夫盟约",
+      "outcome": "渡夫分发粮食，码头工人自发帮忙掩护。",
+      "heat": -10,
+      "support": 16
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "cargo_take",
+          "title": "失踪夜船 · 扣留货物",
+          "body": "扣下整船货物，能迅速增加组织的行动资源，但也会影响依靠这船粮食的人。",
+          "duty": "Sabotage",
+          "district": 5,
+          "start": 9,
+          "deadline": 14,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 9,
+          "failurePressure": 2,
+          "prerequisite": ""
+        },
+        "pressureDelta": 0,
+        "money": 18,
+        "retaliationDelay": 2,
+        "retaliationPressure": 4,
+        "flag": ""
+      },
+      "site": "ferry",
+      "group": "night_ship",
+      "requires": "船期残页",
+      "grants": "",
+      "outcome": "物资转入组织仓库，码头开始出现不满和搜查。",
+      "heat": 18,
+      "support": -10
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "account_truth",
+          "title": "账册背后 · 商路证言",
+          "body": "货栈账册与获救少年的证词相互印证。最后一页指向城内军需买家。",
+          "duty": "Recon",
+          "district": 0,
+          "start": 5,
+          "deadline": 8,
+          "priority": 2,
+          "intelReward": 1,
+          "progressReward": 6,
+          "failurePressure": 2,
+          "prerequisite": "tea_protect"
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "warehouse",
+      "group": "",
+      "requires": "私运账本",
+      "grants": "军需买家",
+      "outcome": "证词和账册完成交叉印证，线报可信度提高。",
+      "heat": -4,
+      "support": 6
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "secret_print",
+          "title": "藏版重启 · 夜印号外",
+          "body": "先前保下的印版可以再次使用。让学社分批传抄，减少单一地点暴露。",
+          "duty": "Propaganda",
+          "district": 1,
+          "start": 8,
+          "deadline": 12,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 7,
+          "failurePressure": 2,
+          "prerequisite": "ink_hide"
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "academy",
+      "group": "",
+      "requires": "学社名录",
+      "grants": "",
+      "outcome": "文告从多处流入街巷，学社没有成为唯一靶子。",
+      "heat": 4,
+      "support": 10
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "families",
+          "title": "姓名之后 · 寻访家属",
+          "body": "把转押名单与避难名册比对，让失散的人知道彼此仍然活着。",
+          "duty": "Contact",
+          "district": 4,
+          "start": 13,
+          "deadline": 17,
+          "priority": 2,
+          "intelReward": 0,
+          "progressReward": 6,
+          "failurePressure": 2,
+          "prerequisite": "prison_list"
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "refuge",
+      "group": "",
+      "requires": "避难名册",
+      "grants": "家属网络",
+      "outcome": "几户失散家人重新取得联系，古寺成了真正的避风处。",
+      "heat": -8,
+      "support": 14
+    },
+    {
+      "mission": {
+        "task": {
+          "id": "bell_signal",
+          "title": "约定钟声 · 留一条退路",
+          "body": "得到守卒信任后，钟楼可以传出约定的撤离信号。为最后的起义准备退路。",
+          "duty": "Recon",
+          "district": 3,
+          "start": 17,
+          "deadline": 20,
+          "priority": 2,
+          "intelReward": 1,
+          "progressReward": 8,
+          "failurePressure": 2,
+          "prerequisite": "camp_oath"
+        },
+        "pressureDelta": 0,
+        "money": 0,
+        "retaliationDelay": 0,
+        "retaliationPressure": 0,
+        "flag": ""
+      },
+      "site": "bell",
+      "group": "",
+      "requires": "警钟构造",
+      "grants": "",
+      "outcome": "撤离信号约定完成，守卒知道何时该放下兵器。",
+      "heat": -12,
+      "support": 10
+    }
+  ]
+}

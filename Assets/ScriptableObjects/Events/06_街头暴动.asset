@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4058214d26db1b147a24aeb84e4152f2, type: 3}
+  m_Name: "06_\u8857\u5934\u66B4\u52A8"
+  m_EditorClassIdentifier: 
+  eventType: 1
+  eventName: "\u8857\u5934\u66B4\u52A8"
+  icon: "\U0001F4A5"
+  description: "\u5546\u4E1A\u533A\u7206\u53D1\u5927\u89C4\u6A21\u9A9A\u4E71\uFF0C\u5546\u5E97\u906D\u6253\u7838\u3002"
+  fogDescription: "\u5546\u4E1A\u533A\u51FA\u73B0\u7FA4\u4F53\u6027\u4E8B\u4EF6\u3002"
+  needs:
+  - strength
+  - intelligence
+  baseGrade: C
+  baseReward: 500
+  baseReputation: 5
+  baseInjuryRisk: 10
+  baseCollateral: 10

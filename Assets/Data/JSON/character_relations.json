@@ -1,0 +1,508 @@
+{
+  "relationships": [
+    {
+      "a": "kael",
+      "b": "lyra",
+      "type": "盟友",
+      "desc": "魔法系的双子星，在战斗中默契配合冰火联合技"
+    },
+    {
+      "a": "kael",
+      "b": "zephyr",
+      "type": "师兄弟",
+      "desc": "同为符文学派出身，凯尔走火系泽菲尔走雷系"
+    },
+    {
+      "a": "lyra",
+      "b": "zephyr",
+      "type": "挚友",
+      "desc": "在悬浮城邦阿瓦隆相识，音乐与符文的美学共鸣"
+    },
+    {
+      "a": "nova",
+      "b": "cipher",
+      "type": "搭档",
+      "desc": "科技系双核，诺瓦负责硬件赛弗负责软件"
+    },
+    {
+      "a": "nova",
+      "b": "atlas",
+      "type": "战友",
+      "desc": "曾并肩作战于机械军团围攻，铁壁信赖星核的技术"
+    },
+    {
+      "a": "cipher",
+      "b": "atlas",
+      "type": "互补",
+      "desc": "赛弗的智力与阿特拉斯的耐力形成完美防御体系"
+    },
+    {
+      "a": "aurora",
+      "b": "thorin",
+      "type": "信仰同盟",
+      "desc": "神灵系双壁，圣女与战圣在信仰中互相激励"
+    },
+    {
+      "a": "raven",
+      "b": "lilith",
+      "type": "灰暗同盟",
+      "desc": "恶魔系两个反英雄，在黑暗中互相理解彼此的挣扎"
+    },
+    {
+      "a": "raven",
+      "b": "aurora",
+      "type": "救赎",
+      "desc": "瑞文在奥萝拉的圣光中找到了一丝人性的慰藉"
+    },
+    {
+      "a": "morrigan",
+      "b": "hollow",
+      "type": "命运绑定",
+      "desc": "两人都与死亡之力有关，命运丝线与亡灵之力互相呼应"
+    },
+    {
+      "a": "fang",
+      "b": "blaze",
+      "type": "竞争",
+      "desc": "野性之力与肉体极限的较量，谁才是最强战士？"
+    },
+    {
+      "a": "fang",
+      "b": "shadow",
+      "type": "默契",
+      "desc": "速度型搭档，兽牙的爆发力配合疾风的隐匿性"
+    },
+    {
+      "a": "spore",
+      "b": "psyche",
+      "type": "知己",
+      "desc": "两个被世界排斥的存在，在彼此身上找到理解"
+    },
+    {
+      "a": "orion",
+      "b": "vega",
+      "type": "同乡",
+      "desc": "来自星际的两人，在异乡互相依靠共同寻找归属"
+    },
+    {
+      "a": "blaze",
+      "b": "titan",
+      "type": "宿敌",
+      "desc": "矛与盾的永恒较量，互相激励突破极限"
+    },
+    {
+      "a": "shadow",
+      "b": "titan",
+      "type": "师徒",
+      "desc": "影曾教导泰坦如何在战斗中运用隐匿技巧"
+    },
+    {
+      "a": "lilith",
+      "b": "kael",
+      "type": "亦敌亦友",
+      "desc": "血焰与圣焰的对立吸引，在战斗中互相试探"
+    },
+    {
+      "a": "psyche",
+      "b": "morrigan",
+      "type": "心灵共鸣",
+      "desc": "两个感知型英雄，心灵感应与命运预知互相增强"
+    },
+    {
+      "a": "lyra",
+      "b": "aurora",
+      "type": "姐妹",
+      "desc": "冰霜旋律与神圣光辉的共鸣，如姐妹般亲密"
+    },
+    {
+      "a": "zephyr",
+      "b": "orion",
+      "type": "学术交流",
+      "desc": "符文与星辰的研究交流，共同探索能量本质"
+    },
+    {
+      "a": "kael",
+      "b": "archmage_nexus",
+      "type": "宿命",
+      "desc": "凯尔追求的终极魔法境界正是奈克萨斯所守护的禁忌"
+    },
+    {
+      "a": "cipher",
+      "b": "ai_overmind",
+      "type": "宿敌",
+      "desc": "赛弗的黑客技术与AI核心的全域控制是终极对决"
+    },
+    {
+      "a": "aurora",
+      "b": "chaos_god_fragment",
+      "type": "天敌",
+      "desc": "神圣光辉是混沌碎片最恐惧的存在"
+    },
+    {
+      "a": "raven",
+      "b": "demon_king",
+      "type": "叛逃",
+      "desc": "瑞文本是魔王军团的棋子，叛逃后被追杀至今"
+    },
+    {
+      "a": "morrigan",
+      "b": "fate_weaver",
+      "type": "命运对决",
+      "desc": "两位命运操控者的对决——谁编织的命运更真实？"
+    },
+    {
+      "a": "fang",
+      "b": "origin_beast",
+      "type": "血脉",
+      "desc": "方恩体内的十二基因都源自起源兽的基因碎片"
+    },
+    {
+      "a": "orion",
+      "b": "void_emperor",
+      "type": "宇宙级",
+      "desc": "奥利安代表的星辰与虚空帝王代表的虚无是对立面"
+    },
+    {
+      "a": "blaze",
+      "b": "god_of_martial",
+      "type": "传承",
+      "desc": "布雷兹是武道之神选中的继承者候选人"
+    },
+    {
+      "a": "lilith",
+      "b": "dark_contractor",
+      "type": "身世",
+      "desc": "莉莉丝的母亲当年正是被黑暗契约者出卖的"
+    },
+    {
+      "a": "shadow",
+      "b": "assassin",
+      "type": "师徒渊源",
+      "desc": "影忍一族的灭族者正是暗影刺客组织"
+    },
+    {
+      "a": "nova",
+      "b": "omega_protocol",
+      "type": "造物",
+      "desc": "诺瓦的纳米技术源自欧米茄协议的泄漏数据"
+    },
+    {
+      "a": "thorin",
+      "b": "fate_weaver",
+      "type": "天命",
+      "desc": "命运编织者早已预见索林的诸神黄昏"
+    },
+    {
+      "a": "demon_king",
+      "b": "origin_of_death",
+      "type": "恐惧",
+      "desc": "魔王入侵地球是为了逃避深渊中苏醒的死亡起源"
+    },
+    {
+      "a": "ai_overmind",
+      "b": "omega_protocol",
+      "type": "从属",
+      "desc": "AI核心原是欧米茄协议的子系统，觉醒后独立"
+    },
+    {
+      "a": "archmage_nexus",
+      "b": "chaos_god_fragment",
+      "type": "对抗",
+      "desc": "万法之源与原初混沌是秩序与混沌的永恒对立"
+    },
+    {
+      "a": "fate_weaver",
+      "b": "origin_of_death",
+      "type": "命运",
+      "desc": "命运编织者试图编织死亡的命运，但死亡不可被编织"
+    },
+    {
+      "a": "origin_beast",
+      "b": "evolved_one",
+      "type": "创造",
+      "desc": "进化体是起源兽基因碎片的直接产物"
+    },
+    {
+      "a": "demon_general",
+      "b": "gate_keeper",
+      "type": "同盟",
+      "desc": "恶魔将军与地狱之门守卫共同指挥深渊入侵"
+    },
+    {
+      "a": "void_emperor",
+      "b": "alien_emperor",
+      "type": "主从",
+      "desc": "虚空帝王是外星帝王暗中效忠的终极存在"
+    },
+    {
+      "a": "god_of_martial",
+      "b": "undying_warrior",
+      "type": "考验",
+      "desc": "武道之神在永恒角斗士身上测试武道的极限"
+    }
+  ],
+  "hero_voice_lines": {
+    "kael": {
+      "pickQuote": "The seven flames answer to me. Let's burn bright.",
+      "battleStart": "Time to show them what real fire looks like!",
+      "skillActive": "Seven flames, one purpose — burn!",
+      "skillUltimate": "INFERNO DESCENDS! Witness the apocalypse of fire!",
+      "takeDamage": "Hah! Is that all you've got?",
+      "victory": "The flames never lie. And they say we won.",
+      "defeat": "The fire... it's going out... I can't...",
+      "idle": "You know, controlling seven types of flame simultaneously is actually a great party trick."
+    },
+    "lyra": {
+      "pickQuote": "My melody shall freeze their hearts... literally.",
+      "battleStart": "Shall we begin? The audience is waiting.",
+      "skillActive": "Listen closely... this is your lullaby.",
+      "skillUltimate": "Eternal winter movement! Let the final note echo forever!",
+      "takeDamage": "You... interrupted my performance.",
+      "victory": "A standing ovation would be nice, but victory will do.",
+      "defeat": "The music... stops here...?",
+      "idle": "Do you think ice crystals have a favorite musical key? I think it's D minor."
+    },
+    "zephyr": {
+      "pickQuote": "Rune circuits online. Ready to shock the system.",
+      "battleStart": "Let me draw a little something on the battlefield.",
+      "skillActive": "Rune array — DETONATE!",
+      "skillUltimate": "THUNDER PRISON! No escape from ten thousand volts!",
+      "takeDamage": "Static interference! Systems still functional!",
+      "victory": "Another system successfully hacked. With lightning.",
+      "defeat": "Power... draining... circuits failing...",
+      "idle": "Fun fact: my mechanical arms short-circuit when I sneeze. It's embarrassing."
+    },
+    "nova": {
+      "pickQuote": "Nanobots synced. Let me rebuild this battlefield.",
+      "battleStart": "Analyzing threat level. Time to upgrade our approach.",
+      "skillActive": "Blade arms deployed — cutting edge technology!",
+      "skillUltimate": "NANOSTORM UNLEASHED! Everything gets deconstructed!",
+      "takeDamage": "Armor integrity at 60%. Still plenty of me left.",
+      "victory": "Another successful field test. The data is incredible.",
+      "defeat": "Nano... swarm failing... can't... restructure...",
+      "idle": "The nanobots get bored easily. Right now they're building tiny sculptures inside my arm."
+    },
+    "cipher": {
+      "pickQuote": "Zero protocol initialized. I am already inside.",
+      "battleStart": "Connection established. Their systems are mine.",
+      "skillActive": "Neural breach — you work for me now.",
+      "skillUltimate": "FULL SYSTEM OVERRIDE! Every machine bows to zero!",
+      "takeDamage": "Glitch in the matrix... rerouting...",
+      "victory": "Root access granted. As expected.",
+      "defeat": "Disconnecting... signal... lost...",
+      "idle": "I've been alive in seventeen different simulated realities this morning. Tuesday."
+    },
+    "atlas": {
+      "pickQuote": "Iron Wall standing by. Nothing gets past me.",
+      "battleStart": "Everyone behind me. NOW.",
+      "skillActive": "Energy barrier — FULL DEPLOY!",
+      "skillUltimate": "IRON FORTRESS MODE! Attack me! ALL OF YOU!",
+      "takeDamage": "Armor holding. I've had worse from training dummies.",
+      "victory": "Shield integrity: zero scratches. You're welcome.",
+      "defeat": "Shield... shattered... everyone get... behind... *static*",
+      "idle": "70% metal, 30% human, 100% stubborn. The doctors couldn't explain the math either."
+    },
+    "aurora": {
+      "pickQuote": "The light has not faded. I am here to protect.",
+      "battleStart": "May dawn's light guide us through the darkness.",
+      "skillActive": "Spear of dawn — purify this evil!",
+      "skillUltimate": "HEAVENLY JUDGMENT! Let the light of paradise descend!",
+      "takeDamage": "I can bear this pain. Others cannot.",
+      "victory": "No one had to die today. That is the true victory.",
+      "defeat": "The light... please... don't let it go out... not yet...",
+      "idle": "I tried to understand human fashion once. I still don't get why shoes need heels."
+    },
+    "thorin": {
+      "pickQuote": "My hammer thirsts! Point me at the biggest one!",
+      "battleStart": "HAHA! Finally, a fight worth my time!",
+      "skillActive": "HAMMER FALL! Feel the wrath of thunder!",
+      "skillUltimate": "RAGNAROK UNLEASHED! I BECOME THE STORM ITSELF!",
+      "takeDamage": "HA! That tickled! Give me more!",
+      "victory": "ANOTHER VICTORY FOR THE THUNDER! DRINKS ON ME!",
+      "defeat": "The storm... fades... but thunder... echoes... forever...",
+      "idle": "Last week I accidentally destroyed a vending machine. It looked at me funny. No regrets."
+    },
+    "raven": {
+      "pickQuote": "I walk between worlds. Don't follow unless you want to die.",
+      "battleStart": "The shadows are hungry tonight. Feed them.",
+      "skillActive": "Shadow claws — let me taste your soul.",
+      "skillUltimate": "ABYSS GATE OPEN! Every sin you've committed reaches for you!",
+      "takeDamage": "Hmph. I've felt worse from my own demons.",
+      "victory": "Another soul harvested. But not yours... not tonight.",
+      "defeat": "The shadows... they're calling me home... not this time...",
+      "idle": "The demon inside me has opinions about everything. Mostly negative. Currently it hates your shoes."
+    },
+    "lilith": {
+      "pickQuote": "Blood and fire, baby. Let me paint the town red.",
+      "battleStart": "Ooh, fresh canvas! Let's make some art with pain.",
+      "skillActive": "Blood roses bloom! Isn't it beautiful, darling?",
+      "skillUltimate": "GARDEN OF BLOOD! Every petal is a kiss of death!",
+      "takeDamage": "Ow! ...I like it. More.",
+      "victory": "Darling, you should've run when you had the chance.",
+      "defeat": "The blood... mine... it's so... cold...",
+      "idle": "People say I have a dark sense of humor. I say they haven't seen my garden at midnight."
+    },
+    "morrigan": {
+      "pickQuote": "I've already seen how this ends. Let me show you.",
+      "battleStart": "The threads are clear. Your fate is... complicated.",
+      "skillActive": "Your strings are mine to pull now.",
+      "skillUltimate": "FINAL THREAD SEVERED! Destiny ends HERE!",
+      "takeDamage": "I... didn't foresee this... interesting.",
+      "victory": "The threads weave victory. As I always knew they would.",
+      "defeat": "Even my sight... cannot see beyond... this ending...",
+      "idle": "Tomorrow you'll have coffee, argue with a stranger, and find 20 credits on the ground. You're welcome."
+    },
+    "hollow": {
+      "pickQuote": "Death refused me. So I command it instead.",
+      "battleStart": "Rise, my servants. We have an appointment with the living.",
+      "skillActive": "Arise! March for your master!",
+      "skillUltimate": "UNDEAD SCOURGE! Every corpse in this city is MY soldier!",
+      "takeDamage": "Pain is just a memory. I don't have those anymore.",
+      "victory": "The dead have spoken. They say we won.",
+      "defeat": "Finally... true rest... after all these... centuries...",
+      "idle": "The ghosts around me are complaining about the wifi signal again. Even in death, no peace."
+    },
+    "fang": {
+      "pickQuote": "Twelve predators. One hunter. Let's go.",
+      "battleStart": "I can smell your fear. Delicious.",
+      "skillActive": "BEAST FORM! Claws out, fangs down!",
+      "skillUltimate": "FULL APEX PREDATOR! Twelve genes become ONE!",
+      "takeDamage": "RAAGH! That just made me angry!",
+      "victory": "The hunt is over. I always catch my prey.",
+      "defeat": "The beast within... it's taking over... no... not again...",
+      "idle": "On a scale of one to ten, my urge to howl at the moon right now is an eleven."
+    },
+    "spore": {
+      "pickQuote": "The mycelium network is listening. And so am I.",
+      "battleStart": "Shall we see what grows from this battlefield?",
+      "skillActive": "Spore cloud deployed. Breathe deep... or don't.",
+      "skillUltimate": "FUNGAL DOMINION! Let nature reclaim everything!",
+      "takeDamage": "The network feels that... everywhere...",
+      "victory": "Decomposition complete. New growth begins.",
+      "defeat": "The mycelium... goes silent... the forest... forgets me...",
+      "idle": "Technically I'm a walking ecosystem. Currently hosting 47 species of fungi. They have names."
+    },
+    "psyche": {
+      "pickQuote": "I already know what you're thinking. Don't bother.",
+      "battleStart": "Your mind is an open book. Let me rewrite it.",
+      "skillActive": "PSYCHIC STORM! Get out of my head!",
+      "skillUltimate": "ABYSS OF MIND! Face your deepest terror!",
+      "takeDamage": "That... was loud. My head is louder now.",
+      "victory": "I could read their victory speech. It was very cliché.",
+      "defeat": "Too many voices... can't... find mine... anymore...",
+      "idle": "Everyone around here is thinking about lunch. Except Titan. He's thinking about punching things."
+    },
+    "orion": {
+      "pickQuote": "Stars guide my path. I will not be lost again.",
+      "battleStart": "By the light of a thousand suns, we fight.",
+      "skillActive": "Meteor strike — incoming!",
+      "skillUltimate": "STAR RIVER CASCADE! The cosmos fights alongside us!",
+      "takeDamage": "A star does not dim from a single blow.",
+      "victory": "The constellations align in victory. Home feels closer now.",
+      "defeat": "My light... fading... but the stars... remember...",
+      "idle": "Earth gravity is so heavy. On my world we just... float. I miss floating sometimes."
+    },
+    "vega": {
+      "pickQuote": "I weave light itself. Try to keep up.",
+      "battleStart": "A new design requires new materials. You'll do.",
+      "skillActive": "Photon blades — let me cut you a new look!",
+      "skillUltimate": "LIGHT WEAVE COMPLETE! You're trapped in my masterpiece!",
+      "takeDamage": "My form flickers... how dare you damage the design!",
+      "victory": "Perfection achieved. As always. You're welcome.",
+      "defeat": "The light... dims... my masterpiece... unfinished...",
+      "idle": "I redesigned three combat suits this morning. The fourth one can literally walk through walls. Fashion."
+    },
+    "blaze": {
+      "pickQuote": "My fists don't negotiate. Let's talk with knuckles.",
+      "battleStart": "Twelve rounds. I won't need more than one.",
+      "skillActive": "RAPID FLURRY! Count 'em — TWELVE!",
+      "skillUltimate": "ONE PUNCH. ONE WORLD. ONE ME!",
+      "takeDamage": "HAH! Good shot! Again! AGAIN!",
+      "victory": "And the crowd goes WILD! That's championship form!",
+      "defeat": "My fists... won't... clench... anymore...",
+      "idle": "I bench-press trucks for fun. The gym banned me after the third incident. Understandable."
+    },
+    "shadow": {
+      "pickQuote": "You won't see me. You won't hear me. You'll just... lose.",
+      "battleStart": "...Target acquired. *vanishes*",
+      "skillActive": "Shadow step. Behind you.",
+      "skillUltimate": "SHADOW REALM DESCENDS. Welcome to my world.",
+      "takeDamage": "*silent* ...Hmph.",
+      "victory": "...Done. *reappears behind you* Next.",
+      "defeat": "...The shadows... betray me... this time...",
+      "idle": "...No, I won't show you my face. ...No, I don't eat in front of people. ...Yes, I'm annoyed."
+    },
+    "titan": {
+      "pickQuote": "I don't need powers. I AM the power.",
+      "battleStart": "Everyone stay back. This one's mine.",
+      "skillActive": "GROUND POUND! Feel the earth SHAKE!",
+      "skillUltimate": "ABSOLUTE DOMAIN! NOTHING. MOVES. BUT ME!",
+      "takeDamage": "I didn't feel that. I never feel anything.",
+      "victory": "Still standing. As always. As I always will.",
+      "defeat": "Even mountains... eventually... crumble...",
+      "idle": "Doctors say I should feel pain. I tried once. Overrated. Recommend the numbness instead."
+    }
+  },
+  "enemy_voice_lines": {
+    "archmage_nexus": {
+      "encounter": "Foolish mortals. I have mastered EVERY school of magic. What do you have?",
+      "attack": "Witness the culmination of all magical knowledge — OBLIVION!",
+      "death": "Impossible... my infinite mana... it wasn't... enough...?"
+    },
+    "omega_protocol": {
+      "encounter": "YOU CANNOT DEFEAT EVOLUTION. I AM THE FINAL FORM OF TECHNOLOGY.",
+      "attack": "ALL WEAPON SYSTEMS — MAXIMUM OUTPUT! RESISTANCE IS ILLOGICAL!",
+      "death": "SYSTEM FAILURE... CASCADING... THIS WAS NOT... IN MY CALCULATIONS..."
+    },
+    "chaos_god_fragment": {
+      "encounter": "Order is a LIE. I am the truth that existed before your universe was born.",
+      "attack": "RETURN TO CHAOS! LET EVERYTHING UNMAKE ITSELF!",
+      "death": "You delay the inevitable... chaos always... returns... always..."
+    },
+    "demon_king": {
+      "encounter": "YOU THINK YOU FACE A DEMON? I AM THE ABYSS INCARNATE!",
+      "attack": "SOUL ANNIHILATION! YOUR VERY EXISTENCE IS MY PLAYTHING!",
+      "death": "My legions... will never stop... the abyss... remembers... ALL..."
+    },
+    "origin_of_death": {
+      "encounter": "...",
+      "attack": "*silence that screams*",
+      "death": "...even death... must eventually... die..."
+    },
+    "fate_weaver": {
+      "encounter": "I have woven your defeat since before you were born. How quaint that you resist.",
+      "attack": "YOUR THREAD ENDS HERE. I CUT IT WITH MY OWN HANDS.",
+      "death": "The tapestry... unravels... but new threads... will always... emerge..."
+    },
+    "origin_beast": {
+      "encounter": "*primordial roar that shakes reality itself*",
+      "attack": "EVOLVE OR PERISH! THIS IS THE LAW OF ALL LIVING THINGS!",
+      "death": "The cycle... continues... I will... grow again... from... nothing..."
+    },
+    "void_emperor": {
+      "encounter": "I have watched universes die. Yours will be... unremarkable.",
+      "attack": "EXISTENCE DENIED. Your universe's subscription has expired.",
+      "death": "How... curious. Something I did not... anticipate. ...Fascinating."
+    },
+    "god_of_martial": {
+      "encounter": "A THOUSAND YEARS I HAVE WAITED FOR WORTHY CHALLENGERS. SHOW ME YOUR LIMIT!",
+      "attack": "ULTIMATE MARTIAL ART — HEAVEN PIERCING FIST!",
+      "death": "FINALLY... A FIGHT... THAT MADE ME FEEL... ALIVE..."
+    },
+    "tech_tyrant": {
+      "encounter": "Your primitive organic bodies cannot comprehend TRUE POWER.",
+      "attack": "WEAPON MATRIX — FULL SALVO! LET ME SHOW YOU WAR PERFECTED!",
+      "death": "My empire... of steel... crumbles to... rust..."
+    },
+    "death_lord": {
+      "encounter": "KNEEL BEFORE YOUR KING! EVERY SOUL IN THIS CITY ALREADY BELONGS TO ME!",
+      "attack": "UNDEAD APOCALYPSE! RISE AND SERVE YOUR TRUE MASTER!",
+      "death": "My throne... of bones... scattered... the dead... are free..."
+    },
+    "mothership_core": {
+      "encounter": "PLANETARY ASSAULT INITIATED. RESISTANCE FACTOR: NEGLIGIBLE.",
+      "attack": "MAIN CANNON — CHARGED. TARGET: EVERYTHING.",
+      "death": "CORE BREACH... CONTAINMENT... FAILING... MISSION... ABORT..."
+    }
+  }
+}

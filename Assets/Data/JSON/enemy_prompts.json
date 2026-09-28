@@ -1,0 +1,150 @@
+{
+  "alien": [
+    {
+      "seq": 1,
+      "name": "外星侦察兵",
+      "normal": "cyberpunk creature: alien scout, grey skin, large eyes, scout armor, holographic map, night city, teal",
+      "injured": "cyberpunk creature: scout armor failed, map broken, signal lost, exposed and afraid, muted teal"
+    },
+    {
+      "seq": 2,
+      "name": "外星战士",
+      "normal": "cyberpunk creature: alien warrior, blue skin, four eyes, ornate armor, energy spear, warship, teal-blue",
+      "injured": "cyberpunk creature: warrior armor breached, spear cracked, blue blood flowing, conqueror wounded, muted teal"
+    },
+    {
+      "seq": 3,
+      "name": "寄生外星体",
+      "normal": "cyberpunk creature: alien parasite, neural tendrils, under skin, bioluminescent, medical facility, purple-flesh",
+      "injured": "cyberpunk creature: parasite expelled, tendrils severed, writhing on ground exposed, dying without host, muted purple"
+    },
+    {
+      "seq": 4,
+      "name": "外星机甲",
+      "normal": "cyberpunk creature: alien mech, bio-robot, plasma cannons, teal core, glyphs, plaza, teal-metal",
+      "injured": "cyberpunk creature: mech sparking, core exposed, armor cracked, alien systems failing, muted teal"
+    },
+    {
+      "seq": 5,
+      "name": "星际海盗",
+      "normal": "cyberpunk creature: space pirate, cyber eye patch, energy cutlass, trophies, cargo bay, amber-dark",
+      "injured": "cyberpunk creature: pirate cornered, cutlass broken, loot scattered, escape routes blocked, muted amber"
+    },
+    {
+      "seq": 6,
+      "name": "外星法师",
+      "normal": "cyberpunk creature: alien mage, crystalline skin, geometric foci, cosmic energy, star chart, indigo-cosmic",
+      "injured": "cyberpunk creature: mage crystals cracked, cosmic energy leaking, foci shattered, cut off from stars, muted indigo"
+    },
+    {
+      "seq": 7,
+      "name": "虫族母体",
+      "normal": "cyberpunk creature: hive queen, massive organism, tendrils to drones, psychic aura, alien hive, purple-organic",
+      "injured": "cyberpunk creature: queen pulsating weakly, tendrils severing, drones going berserk without control, muted purple"
+    },
+    {
+      "seq": 8,
+      "name": "星舰指挥官",
+      "normal": "cyberpunk creature: starship commander, alien officer, holographic fleet, warship bridge, teal-command",
+      "injured": "cyberpunk creature: commander bridge breached, displays shattering, fleet losing coordination, alarms, muted teal"
+    },
+    {
+      "seq": 9,
+      "name": "维度行者",
+      "normal": "cyberpunk creature: dimension walker, multi-dimensional, overlapping phases, reality folding, dimensional void, indigo-shift",
+      "injured": "cyberpunk creature: walker phases destabilizing, caught between dimensions, reality rejecting form, muted indigo"
+    },
+    {
+      "seq": 10,
+      "name": "宇宙巨兽",
+      "normal": "cyberpunk creature: cosmic beast, space dragon, starfield body, consuming moon, nebula scales, space-blue",
+      "injured": "cyberpunk creature: cosmic beast wounded, stars dimming on body, nebula scales cracked, roaring in pain, muted space-blue"
+    },
+    {
+      "seq": 11,
+      "name": "外星帝王",
+      "normal": "cyberpunk creature: alien emperor, regal, cosmic armor galaxy, crown of stars, galactic throne, emerald-gold",
+      "injured": "cyberpunk creature: emperor dethroned, crown fallen, armor cracking, empire crumbling around him, muted emerald"
+    },
+    {
+      "seq": 12,
+      "name": "虚空帝王",
+      "normal": "cyberpunk creature: void emperor, beyond-universe, galaxies as decoration, cosmos small, universe edge, void-cosmic",
+      "injured": "cyberpunk creature: void emperor contained, void cracking, light entering for first time, universe pushing back, muted void"
+    }
+  ],
+  "martial": [
+    {
+      "seq": 1,
+      "name": "街头混混",
+      "normal": "cyberpunk creature: street thug, cyber arm, face tattoos, metal jacket, dark alley, grey-urban",
+      "injured": "cyberpunk creature: thug down, cyber arm sparking, tattoos smudged, pride broken, grey-dark"
+    },
+    {
+      "seq": 2,
+      "name": "地下格斗者",
+      "normal": "cyberpunk creature: underground fighter, scarred, wrapped fists, blood, cage arena, amber-blood",
+      "injured": "cyberpunk creature: fighter down in cage, fists unwrapped, bloodied, crowd jeering, amber-dark"
+    },
+    {
+      "seq": 3,
+      "name": "暗杀者",
+      "normal": "cyberpunk creature: assassin, dark suit, dual blades, masked, shadows, dark urban, grey-steel",
+      "injured": "cyberpunk creature: assassin exposed, mask torn, blades broken, cornered in light, grey-harsh"
+    },
+    {
+      "seq": 4,
+      "name": "武术弟子",
+      "normal": "cyberpunk creature: martial disciple, traditional gi cyberpunk, qi energy, neon dojo, blue-white",
+      "injured": "cyberpunk creature: disciple exhausted, gi torn, qi flickering, first real defeat, blue-muted"
+    },
+    {
+      "seq": 5,
+      "name": "气功大师",
+      "normal": "cyberpunk creature: qi master, elderly, glowing meridians, energy palm, mountain temple neon, green-dark",
+      "injured": "cyberpunk creature: master meditating wounded, meridians blocked, qi leaking, ancient body failing, green-muted"
+    },
+    {
+      "seq": 6,
+      "name": "肉体改造人",
+      "normal": "cyberpunk creature: body mod warrior, bio-enhancements, injection ports, overdeveloped, clinic, red-steel",
+      "injured": "cyberpunk creature: mod rejecting, ports leaking, enhancements malfunctioning, body turning against self, red-muted"
+    },
+    {
+      "seq": 7,
+      "name": "武道宗师",
+      "normal": "cyberpunk creature: martial grandmaster, elderly imposing, golden qi, defeated opponents, arena, gold-martial",
+      "injured": "cyberpunk creature: grandmaster finally defeated, golden qi fading, student surpassed master, dignified fall, gold-muted"
+    },
+    {
+      "seq": 8,
+      "name": "影子武士",
+      "normal": "cyberpunk creature: shadow warrior, dissolved in shadow, blade and eyes, shadow clones, moonlit rooftop, shadow-steel",
+      "injured": "cyberpunk creature: warrior forced into light, shadow form burning, blades falling, identity exposed, shadow-harsh"
+    },
+    {
+      "seq": 9,
+      "name": "体术冠军",
+      "normal": "cyberpunk creature: martial champion, peak physique, belt, afterimages, massive arena, orange-gold",
+      "injured": "cyberpunk creature: champion's belt tarnished, first loss, body finally broken, crowd silent, orange-muted"
+    },
+    {
+      "seq": 10,
+      "name": "战争机器",
+      "normal": "cyberpunk creature: war machine, cybernetic super-soldier, augmentations, tactical visor, military base, grey-green",
+      "injured": "cyberpunk creature: machine malfunctioning, systems conflicting, human mind resurfacing, visor cracking, grey-glitch"
+    },
+    {
+      "seq": 11,
+      "name": "不死战士",
+      "normal": "cyberpunk creature: undying warrior, ancient scarred, immortality energy, arena of eras, crimson-bronze",
+      "injured": "cyberpunk creature: warrior finally mortal, immortality fading, thousand years of pain hitting at once, crimson-fading"
+    },
+    {
+      "seq": 12,
+      "name": "武道之神",
+      "normal": "cyberpunk creature: god of martial arts, divine warrior, golden martial energy, all martial poses, cosmic dojo, golden-divine",
+      "injured": "cyberpunk creature: martial god challenged, golden form cracking, a mortal surpassing the divine, concept shaken, golden-fading"
+    }
+  ]
+}

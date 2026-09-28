@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acfa1a61dc435642b99d9492077515c, type: 3}
+  m_Name: "Nova_\u661F\u6838"
+  m_EditorClassIdentifier: 
+  heroId: nova
+  codename: "\u661F\u6838"
+  displayName: "\u8BFA\u74E6"
+  archetype: 3
+  emoji: "\U0001F527"
+  color: {r: 0.12941177, g: 0.9019608, b: 0.75686276, a: 1}
+  level: 1
+  salary: 880
+  powerName: "\u7EB3\u7C73\u91CD\u7EC4"
+  str: 7
+  spd: 7
+  intl: 8
+  end: 7
+  per: 6
+  quirkName: "\u673A\u68B0\u5171\u60C5"
+  quirkDesc: "\u80FD\u4E0E\u673A\u5668\u5BF9\u8BDD\uFF0C\u4F46\u4F1A\u88AB\u566A\u97F3\u4FE1\u606F\u6DF9\u6CA1"
+  skills:
+  - name: "\u7EB3\u7C73\u4FEE\u590D"
+    type: 0
+    desc: "\u6BCF\u79D2\u6062\u590D2%\u6700\u5927\u751F\u547D\u503C"
+    icon: {fileID: 21300000, guid: 4cd16eb0f1ae4bb4eaf235efe6cd24ba, type: 3}
+  - name: "\u7EB3\u7C73\u5203\u81C2"
+    type: 1
+    desc: "\u53CC\u81C2\u53D8\u5F62\u4E3A\u9AD8\u9891\u7EB3\u7C73\u5200\u5203\uFF0C\u8FDE\u7EED\u65A9\u51FB\u524D\u65B9\u654C\u4EBA"
+    icon: {fileID: 21300000, guid: 87565a0a360eb10458604b6046e29bfd, type: 3}
+  - name: "\u7EB3\u7C73\u98CE\u66B4"
+    type: 2
+    desc: "\u91CA\u653E\u4F53\u5185\u5168\u90E8\u7EB3\u7C73\u866B\u7FA4\uFF0C\u5F62\u6210\u8986\u76D6\u5168\u573A\u7684\u91D1\u5C5E\u98CE\u66B4"
+    icon: {fileID: 21300000, guid: 4b4772c3fab4d4e4ba3c3c8b12b754d2, type: 3}
+  portraitNormal: {fileID: 21300000, guid: e7d7473d2d0d10744ace540202e99b73, type: 3}
+  portraitInjured: {fileID: 21300000, guid: 3ed0bd4a0747c534f86f6e1658fb57e9, type: 3}
+  backstory: "\u524D\u91CF\u5B50\u52A8\u529B\u5B9E\u9A8C\u5BA4\u9996\u5E2D\u5DE5\u7A0B\u5E08\uFF0C\u7EB3\u7C73\u5B9E\u9A8C\u4E8B\u6545\u540E\u6570\u5341\u4EBF\u7EB3\u7C73\u673A\u5668\u4EBA\u878D\u5165\u8840\u6DB2\uFF0C\u53EF\u968F\u65F6\u91CD\u7EC4\u81EA\u8EAB\u673A\u68B0\u90E8\u5206\u53D8\u6210\u4EFB\u4F55\u6B66\u5668\u6216\u5DE5\u5177\u3002"

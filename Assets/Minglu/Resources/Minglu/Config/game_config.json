@@ -1,0 +1,436 @@
+{
+    "revision": "minglu-0.2",
+    "settings": [
+        {
+            "id": "turns",
+            "value": 8,
+            "description": "单局回合上限；2—40"
+        },
+        {
+            "id": "goal",
+            "value": 24,
+            "description": "胜利所需行动成果"
+        },
+        {
+            "id": "ap",
+            "value": 3,
+            "description": "全组织每回合行动点；1—8"
+        },
+        {
+            "id": "startingIntel",
+            "value": 1,
+            "description": "开局情报份数"
+        },
+        {
+            "id": "startingPressure",
+            "value": 15,
+            "description": "开局敌方压力"
+        },
+        {
+            "id": "pressurePerTurn",
+            "value": 4,
+            "description": "敌方每回合压力增长"
+        },
+        {
+            "id": "patrolThreshold",
+            "value": 50,
+            "description": "达到此压力后全员增加暴露"
+        },
+        {
+            "id": "patrolExposure",
+            "value": 5,
+            "description": "高压巡查暴露增加量"
+        },
+        {
+            "id": "captureThreshold",
+            "value": 70,
+            "description": "敌方结算时被捕的暴露阈值"
+        },
+        {
+            "id": "leakTurn",
+            "value": 2,
+            "description": "被捕后第几次审讯泄密"
+        },
+        {
+            "id": "lostTurn",
+            "value": 4,
+            "description": "第几次审讯后永久失联；必须大于泄密时间"
+        },
+        {
+            "id": "leakExposure",
+            "value": 40,
+            "description": "直接下线被供出后增加的暴露"
+        },
+        {
+            "id": "restStamina",
+            "value": 25,
+            "description": "休整体力恢复"
+        },
+        {
+            "id": "restExposure",
+            "value": 15,
+            "description": "休整降低暴露"
+        },
+        {
+            "id": "cutExposure",
+            "value": 25,
+            "description": "断线降低暴露"
+        },
+        {
+            "id": "rescuedStamina",
+            "value": 50,
+            "description": "获救成员体力"
+        },
+        {
+            "id": "rescuedExposure",
+            "value": 25,
+            "description": "获救成员暴露"
+        }
+    ],
+    "agents": [
+        {
+            "id": 0,
+            "name": "沈默",
+            "role": "联络员",
+            "bio": "昔日衙门书吏，熟悉城中暗巷。他将每封密信背熟，再焚于灯下。顾青是他唯一的下线。",
+            "intel": 3,
+            "stealth": 4,
+            "handler": -1,
+            "portrait": 0
+        },
+        {
+            "id": 1,
+            "name": "顾青",
+            "role": "书坊伙计",
+            "bio": "替人抄书谋生，记得每一位客人的口音。她相信文字可以改变这座城，也正在学会保守秘密。",
+            "intel": 4,
+            "stealth": 3,
+            "handler": 0,
+            "portrait": 1
+        },
+        {
+            "id": 2,
+            "name": "陈砚",
+            "role": "行商",
+            "bio": "凭一杆秤走遍南北，惯于把真话藏在闲谈里。曾受林叔救命之恩，愿替他挡一阵风。",
+            "intel": 3,
+            "stealth": 3,
+            "handler": -1,
+            "portrait": 2
+        },
+        {
+            "id": 3,
+            "name": "林叔",
+            "role": "郎中",
+            "bio": "行医三十年，门前从不问来者姓名。袖中藏着药方，也藏着尚未送出的家书。",
+            "intel": 2,
+            "stealth": 4,
+            "handler": 2,
+            "portrait": 3
+        }
+    ],
+    "districts": [
+        {
+            "id": 0,
+            "name": "西市",
+            "subtitle": "商贾 / 人流",
+            "description": "商铺与茶摊连成一片，人群能掩护行踪。这里适合稳妥地建立第一条情报线。",
+            "x": 0.20000000298023225,
+            "y": 0.5600000023841858,
+            "risk": 0,
+            "reconBonus": 0,
+            "sabotageBonus": 0,
+            "difficulty": 0
+        },
+        {
+            "id": 1,
+            "name": "文津书院",
+            "subtitle": "士林 / 消息",
+            "description": "讲席后的闲谈往往比公文更早。侦察额外取得1份情报，代价是更容易留下踪迹。",
+            "x": 0.2199999988079071,
+            "y": 0.20000000298023225,
+            "risk": 5,
+            "reconBonus": 1,
+            "sabotageBonus": 0,
+            "difficulty": 0
+        },
+        {
+            "id": 2,
+            "name": "北衙",
+            "subtitle": "政令 / 牢狱",
+            "description": "高墙内保存着要紧名册。戒备森严，任务额外需要1个成功；破坏成果额外增加4。",
+            "x": 0.5099999904632568,
+            "y": 0.1899999976158142,
+            "risk": 12,
+            "reconBonus": 0,
+            "sabotageBonus": 4,
+            "difficulty": 1
+        },
+        {
+            "id": 3,
+            "name": "东营",
+            "subtitle": "驻军 / 巡防",
+            "description": "巡哨轮换有固定间隙。深入此地格外危险，但破坏军需能获得额外3点成果。",
+            "x": 0.800000011920929,
+            "y": 0.23999999463558198,
+            "risk": 10,
+            "reconBonus": 0,
+            "sabotageBonus": 3,
+            "difficulty": 1
+        },
+        {
+            "id": 4,
+            "name": "城南古寺",
+            "subtitle": "香客 / 隐蔽",
+            "description": "钟声掩住低语，廊下适合接头。没有额外风险，适合疲惫成员执行普通行动。",
+            "x": 0.5,
+            "y": 0.6600000262260437,
+            "risk": 0,
+            "reconBonus": 0,
+            "sabotageBonus": 0,
+            "difficulty": 0
+        },
+        {
+            "id": 5,
+            "name": "东埠码头",
+            "subtitle": "漕运 / 仓储",
+            "description": "粮船与货栈昼夜不息。破坏额外获得2点成果，暴露增加8。",
+            "x": 0.8100000023841858,
+            "y": 0.6600000262260437,
+            "risk": 8,
+            "reconBonus": 0,
+            "sabotageBonus": 2,
+            "difficulty": 0
+        }
+    ],
+    "actions": [
+        {
+            "id": "Rest",
+            "name": "隐匿休整",
+            "description": "不外出行动，恢复体力并淡去行踪。恢复量由Settings控制。",
+            "ap": 0,
+            "intelCost": 0,
+            "required": 0,
+            "staminaCost": 0,
+            "exposure": 0,
+            "failExposure": 0,
+            "intelReward": 0,
+            "progressReward": 0,
+            "pressure": 0
+        },
+        {
+            "id": "Recon",
+            "name": "探听消息",
+            "description": "从街巷与往来书信中寻找线索。取得的情报下回合才能用于行动。",
+            "ap": 1,
+            "intelCost": 0,
+            "required": 1,
+            "staminaCost": 20,
+            "exposure": 10,
+            "failExposure": 15,
+            "intelReward": 2,
+            "progressReward": 2,
+            "pressure": 0
+        },
+        {
+            "id": "Sabotage",
+            "name": "破坏部署",
+            "description": "利用已有情报破坏敌方部署。成功推进目标，同时引来敌方反应。",
+            "ap": 1,
+            "intelCost": 1,
+            "required": 2,
+            "staminaCost": 20,
+            "exposure": 20,
+            "failExposure": 15,
+            "intelReward": 0,
+            "progressReward": 8,
+            "pressure": 8
+        },
+        {
+            "id": "Rescue",
+            "name": "秘密营救",
+            "description": "营救所选被捕成员。本回合行动先于审讯；失败也消耗情报。",
+            "ap": 1,
+            "intelCost": 1,
+            "required": 2,
+            "staminaCost": 20,
+            "exposure": 20,
+            "failExposure": 15,
+            "intelReward": 0,
+            "progressReward": 0,
+            "pressure": 0
+        },
+        {
+            "id": "CutContact",
+            "name": "断线转移",
+            "description": "更换联络地址，脱离旧上线，改由领导者直接联系；旧上线不能沿旧地址追踪此人。",
+            "ap": 1,
+            "intelCost": 0,
+            "required": 0,
+            "staminaCost": 0,
+            "exposure": 0,
+            "failExposure": 0,
+            "intelReward": 0,
+            "progressReward": 0,
+            "pressure": 0
+        }
+    ],
+    "events": [
+        {
+            "id": "curfew",
+            "title": "暮鼓之后",
+            "body": "城门提前落锁，北衙正在核对路引。茶馆掌柜愿用一份情报替你们疏通今夜的巡查。",
+            "optionA": "交出线索，疏通巡查",
+            "optionB": "保留情报，静候风声",
+            "turn": 2,
+            "intelA": -1,
+            "pressureA": -8,
+            "progressA": 0,
+            "intelB": 0,
+            "pressureB": 4,
+            "progressB": 0
+        },
+        {
+            "id": "courier",
+            "title": "无名来信",
+            "body": "一封未署名的信指出军需账目的破绽。冒险接头可以获得更多线索，也可能落入敌人的视线。",
+            "optionA": "赴约接头",
+            "optionB": "只收下信件",
+            "turn": 4,
+            "intelA": 2,
+            "pressureA": 10,
+            "progressA": 0,
+            "intelB": 1,
+            "pressureB": 0,
+            "progressB": 0
+        },
+        {
+            "id": "lantern",
+            "title": "长夜中的灯",
+            "body": "城南百姓愿为你们掩护一次行动。公开响应可以推进组织影响，低调接纳则能让搜捕暂缓。",
+            "optionA": "回应呼声",
+            "optionB": "隐藏火种",
+            "turn": 6,
+            "intelA": 0,
+            "pressureA": 10,
+            "progressA": 4,
+            "intelB": 0,
+            "pressureB": -10,
+            "progressB": 0
+        }
+    ],
+    "assets": [
+        {
+            "id": "city",
+            "resource": "Minglu/Art/city-v02",
+            "kind": "Texture2D",
+            "description": "六区域工笔城市底图；节点由Districts坐标定位"
+        },
+        {
+            "id": "portraits",
+            "resource": "Minglu/Art/portraits-v02",
+            "kind": "Texture2D",
+            "description": "四列人物胸像图集；Agents.portrait指定列"
+        }
+    ],
+    "missions": [
+        {
+            "id": "ledger",
+            "title": "书坊暗账",
+            "body": "书坊伙计发现异常购纸记录，两夜内可查明去向。",
+            "duty": "Recon",
+            "prerequisite": "",
+            "district": 1,
+            "start": 1,
+            "deadline": 2,
+            "priority": 2,
+            "intelReward": 1,
+            "progressReward": 1,
+            "failurePressure": 5
+        },
+        {
+            "id": "cargo",
+            "title": "码头换防",
+            "body": "货栈换防尚未结束，今夜可扰乱一批军需。",
+            "duty": "Sabotage",
+            "prerequisite": "",
+            "district": 5,
+            "start": 1,
+            "deadline": 1,
+            "priority": 3,
+            "intelReward": 0,
+            "progressReward": 2,
+            "failurePressure": 4
+        },
+        {
+            "id": "trail",
+            "title": "顺藤摸瓜",
+            "body": "循暗账寻找城南接头人，建立后续线索。",
+            "duty": "Recon",
+            "prerequisite": "ledger",
+            "district": 4,
+            "start": 3,
+            "deadline": 4,
+            "priority": 2,
+            "intelReward": 2,
+            "progressReward": 1,
+            "failurePressure": 4
+        },
+        {
+            "id": "patrol",
+            "title": "巡哨名册",
+            "body": "西市出现陌生巡哨，查清路线以免连累住户。",
+            "duty": "Recon",
+            "prerequisite": "",
+            "district": 0,
+            "start": 3,
+            "deadline": 4,
+            "priority": 3,
+            "intelReward": 1,
+            "progressReward": 1,
+            "failurePressure": 6
+        },
+        {
+            "id": "supply",
+            "title": "断其粮道",
+            "body": "从接头人处得知军需缺口，东营行动窗口已打开。",
+            "duty": "Sabotage",
+            "prerequisite": "trail",
+            "district": 3,
+            "start": 5,
+            "deadline": 6,
+            "priority": 3,
+            "intelReward": 0,
+            "progressReward": 3,
+            "failurePressure": 6
+        },
+        {
+            "id": "archive",
+            "title": "名册将焚",
+            "body": "北衙将销毁一批秘密文书，须抢在火起前搜集线索。",
+            "duty": "Recon",
+            "prerequisite": "",
+            "district": 2,
+            "start": 5,
+            "deadline": 6,
+            "priority": 2,
+            "intelReward": 2,
+            "progressReward": 1,
+            "failurePressure": 5
+        },
+        {
+            "id": "signal",
+            "title": "最后的信号",
+            "body": "行动窗口将闭，西市仍有一处可扰乱的部署。",
+            "duty": "Sabotage",
+            "prerequisite": "",
+            "district": 0,
+            "start": 7,
+            "deadline": 8,
+            "priority": 3,
+            "intelReward": 0,
+            "progressReward": 3,
+            "failurePressure": 7
+        }
+    ]
+}
