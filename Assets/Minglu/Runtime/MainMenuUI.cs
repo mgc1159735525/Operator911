@@ -78,16 +78,16 @@ namespace Minglu
         {
             LoadArt();selectedAgent=State.agents.First(x=>x.condition==Condition.Active).id;
             selectedSite="";selectedDistrict=0;rescueTarget=-1;selectedMission="";selectedDuty=Duty.Recon;modal="";tab=State.command!=null?0:State.courierEnabled?6:3;reviewingEnding=false;scrollPositions.Clear();
-            commandTab=0;commandTask=-1;taskFilter=0;
+            commandTab=3;commandTask=-1;taskFilter=0;
             toast="本局种子 "+State.initialSeed+(State.command!=null?"。先设计链条，授权任务，再推进一夜。":State.courierEnabled?"。先选成员接回首份密件，再安排外送。":"。先查看限时任务，再选择成员。");
         }
         void DrawHome()
         {
             if(homePage=="appearance"){var studio=Box("HomeAppearance",root,350,145,900,620,Panel);DrawAppearance(studio);return;}
-            var art=Rect("HomeArt",root,0,0,1600,900).gameObject.AddComponent<RawImage>();art.texture=map;art.color=new Color(.28f,.32f,.32f,1);art.raycastTarget=false;
-            Box("HomeVeil",root,0,0,1600,900,new Color(.03f,.07f,.08f,.5f));
-            Label(root,"明路 · 地下",100,76,800,96,64,Gold);Label(root,"新京二十夜 / 单人回合制策略",106,184,900,34,23,TextColor);
-            var p=Box("HomePanel",root,860,70,640,750,new Color(.05f,.10f,.12f,.96f));Border(p,0,0,640,750,Line);
+            var art=Rect("HomeArt",root,0,0,1600,900).gameObject.AddComponent<RawImage>();art.texture=Resources.Load<Texture2D>("Minglu/UI/Noir/title_city")??map;art.color=Color.white;art.raycastTarget=false;
+            Box("HomeVeil",root,0,0,1600,900,new Color(.03f,.03f,.03f,.13f));
+            Label(root,"明路 · 地下",100,76,720,96,64,Gold);Box("TitleRule",root,106,166,88,5,Hex("AB493C"));Label(root,"新京二十夜 / 单人回合制策略",106,184,900,34,23,TextColor);
+            var p=Box("HomePanel",root,860,70,640,750,new Color(.09f,.10f,.10f,.96f));Border(p,0,0,640,750,Line);
             Label(root,"城中每一盏灯，都可能是新的起点。",106,680,720,45,27,Gold);
             Label(root,"本局资源与人员状态不跨局继承。\n设置与战绩独立保存；同种子、同配置、同选择可复现。",106,746,710,88,20,TextColor);
             if(homePage=="main")

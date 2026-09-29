@@ -8,7 +8,7 @@ namespace Minglu
     {
         IEnumerator StrategySmoke(string path)
         {
-            yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");State.command.config.eventChance=0;
+            yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");Capture(Path.ChangeExtension(path,"dispatch.png"));yield return Click("CommandTab_0");State.command.config.eventChance=0;
             yield return Click("CommandMenu");Capture(Path.ChangeExtension(path,"menu.png"));yield return Click("CommandGuide");Capture(Path.ChangeExtension(path,"guide.png"));yield return Click("CommandGuideBack");
             yield return Click("TaskFilter_2");if(root.Find("CommandCenter").GetComponentsInChildren<UnityEngine.UI.Button>().Any(b=>b.name.StartsWith("CommandTask_")))throw new Exception("Authorized filter shows unassigned tasks");yield return Click("TaskFilter_0");Capture(Path.ChangeExtension(path,"tasks.png"));
             var taskScroll=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CommandTasks");taskScroll.verticalNormalizedPosition=0;

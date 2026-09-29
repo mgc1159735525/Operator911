@@ -26,7 +26,7 @@ namespace Minglu
         uint nextSeed = 911;
         string smokeSave;
         string SavePath { get { return smokeSave ?? Path.Combine(Application.persistentDataPath,"minglu-run-v14.json"); } }
-        static readonly Color Ink = Hex("101C21"), Panel = Hex("17262B"), Line = Hex("344248"), Gold = Hex("D5B778"), TextColor = Hex("DFE3D8"), Muted = Hex("91A6A6"), Red = Hex("D47768"), Teal = Hex("74B6A6");
+        static readonly Color Ink = Hex("191B1D"), Panel = Hex("282A2B"), Line = Hex("53514A"), Gold = Hex("E7D9BB"), TextColor = Hex("EAE5D9"), Muted = Hex("B5B0A4"), Red = Hex("EC816B"), Teal = Hex("BDCAAF");
 
         void Start()
         {
@@ -75,21 +75,23 @@ namespace Minglu
         }
         RectTransform Box(string name, Transform parent, float x, float y, float w, float h, Color color)
         {
-            var r = Rect(name, parent, x, y, w, h); var im = r.gameObject.AddComponent<Image>(); im.color = color; return r;
+            var r = Rect(name, parent, x, y, w, h); var im = r.gameObject.AddComponent<Image>(); im.color = color; SkinSurface(im,name,w,h,color); return r;
         }
         Text Label(Transform parent, string text, float x, float y, float w, float h, int size = 18, Color? color = null, TextAnchor align = TextAnchor.UpperLeft)
         {
             var r = Rect("Text", parent, x, y, w, h); var t = r.gameObject.AddComponent<Text>(); t.font = font; t.text = text; t.fontSize = size; t.color = color ?? TextColor; t.alignment = align;
-            t.horizontalOverflow = HorizontalWrapMode.Wrap; t.verticalOverflow = VerticalWrapMode.Truncate; t.raycastTarget = false; t.supportRichText = false; t.lineSpacing = 1.12f; return t;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap; t.verticalOverflow = VerticalWrapMode.Truncate; t.raycastTarget = false; t.supportRichText = false; t.lineSpacing = 1.12f;if(size>=23)t.fontStyle=FontStyle.Bold; return t;
         }
         Button Button(string name, Transform parent, string text, float x, float y, float w, float h, Action action, bool enabled = true, bool primary = false)
         {
-            var r = Box(name, parent, x, y, w, h, primary ? Gold : Hex("24383C"));
-            var b = r.gameObject.AddComponent<Button>(); var colors = b.colors; colors.normalColor = Color.white; colors.highlightedColor = Hex("DFD4BA"); colors.pressedColor = Hex("9FAEAA"); colors.disabledColor = new Color(.43f,.43f,.43f,.7f); b.colors = colors; b.interactable = enabled;
-            Label(r, text, 7, 0, w - 14, h, 17, primary ? Ink : TextColor, TextAnchor.MiddleCenter);
+            var r = Box(name, parent, x, y, w, h, RedAction(name)?Hex("AB493C"):primary?Gold:Hex("3A3C3D"));
+            var buttonImage=r.GetComponent<Image>();buttonImage.sprite=NoirSprite("button_idle");buttonImage.type=Image.Type.Sliced;
+            var b = r.gameObject.AddComponent<Button>(); var colors = b.colors; colors.normalColor = Color.white; colors.highlightedColor = Hex("DFD4BA"); colors.pressedColor = Hex("9FAEAA"); colors.disabledColor = new Color(.55f,.55f,.55f,1); b.colors = colors; b.interactable = enabled;
+            Label(r, text, 7, 0, w - 14, h, w<60?14:17, primary&&!RedAction(name) ? Ink : TextColor, TextAnchor.MiddleCenter);
             colors.selectedColor=Hex("DFD4BA");b.colors=colors;
             var focus=r.gameObject.AddComponent<Outline>();focus.effectColor=Gold;focus.effectDistance=new Vector2(2,-2);focus.enabled=false;
             r.gameObject.AddComponent<UIFocusOutline>();
+            var states=b.spriteState;states.highlightedSprite=NoirSprite("button_hover");states.pressedSprite=NoirSprite("button_pressed");states.disabledSprite=NoirSprite("button_disabled");b.spriteState=states;b.transition=Selectable.Transition.SpriteSwap;if(!enabled)buttonImage.color*=new Color(.65f,.65f,.65f,1);DecorateButton(b,name,w,h,primary);
             b.onClick.AddListener(() => { Sound(); action(); }); return b;
         }
         void Border(Transform parent, float x, float y, float w, float h, Color color)

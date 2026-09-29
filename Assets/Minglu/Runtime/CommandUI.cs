@@ -27,37 +27,24 @@ namespace Minglu
         {
             CommandRules.EnsureStrategy(State);
             Label(root,"明路 · 地下",24,20,250,44,30,Gold);
-            Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"  ·  民心 "+State.command.strategy.hearts,24,73,265,24,16,Muted);
+            Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"  ·  民心 "+State.command.strategy.hearts,24,83,265,24,16,Muted);
             Label(root,"第 "+State.turn+" / "+State.config.Value("turns")+" 夜",310,24,220,35,27,Gold);
             Label(root,"成果 "+State.progress+"  ·  送达 "+State.command.delivered+"  ·  可用情报 "+(State.intelligence-CommandRules.ReservedIntel(State))+"  ·  可用银两 "+(State.money-CommandRules.ReservedMoney(State))+"  ·  压力 "+State.pressure,545,28,640,34,19,Teal);
-            Label(root,"上级要求："+CommandRules.GateText(State),310,75,855,30,18);
+
             Button("Save",root,"保存",1192,28,88,38,Save);Button("Load",root,"读取",1290,28,88,38,Load,System.IO.File.Exists(SavePath));
-            Button("CommandHome",root,"保存返回",1390,28,184,38,ReturnHome);
-            Button("CommandHelp",root,"指南",1192,75,88,30,()=>{modal="commandHelp";Draw();});Button("CommandMenu",root,"菜单 / Esc",1290,75,284,30,()=>{modal="menu";Draw();});
+            Button("CommandHome",root,"返回",1390,28,82,38,ReturnHome);
+            Button("CommandHelp",root,"?",1482,28,42,38,()=>{modal="commandHelp";Draw();});Button("CommandMenu",root,"菜单",1530,28,46,38,()=>{modal="menu";Draw();});
             Box("TopRule",root,24,113,1552,1,Line);
-            Label(root,"组织成员 · "+State.agents.Count,24,135,250,30,23,Gold);
-            var roster=Scroll(root,"CommandRoster",24,179,264,550,State.agents.Count*123);
-            int index=0;
-            foreach(var a in State.agents)
-            {
-                var person=CommandRules.Person(State,a.id);int y=index++*123;
-                var b=Button("CommandAgent_"+a.id,roster,"",0,y,248,114,()=>{selectedAgent=a.id;Draw();},true,a.id==selectedAgent);b.image.color=a.id==selectedAgent?Hex("304244"):Panel;
-                Portrait(b.transform,a,6,8,66,94);
-                Label(b.transform,a.name,81,10,160,28,21,Gold);
-                Label(b.transform,person.profession+" Lv."+person.level,81,42,160,24,15);
-                Label(b.transform,a.condition==Condition.Active?CommandRole(a.id):a.condition==Condition.Captured?"被捕 · 等待营救":"已脱离组织",81,70,160,25,15,a.condition==Condition.Active?Teal:Red);
-                Bar(b.transform,81,100,150,a.stamina,100,Teal);
-            }
-            Button("CommandPortrait",root,"编辑选中成员外观",24,740,264,35,()=>OpenAppearance(selectedAgent));
+            DrawNoirBrief();DrawNoirRoster();
             string[] tabs={"任务指挥","传递链条","人事生活","城区态势","执行报告","地区经营"};
-            for(int i=0;i<tabs.Length;i++){int n=i;Button("CommandTab_"+i,root,tabs[i],310+i*140,134,132,38,()=>{commandTab=n;Draw();},true,commandTab==i);}
-            var panel=Box("CommandCenter",root,310,186,838,588,Panel);
+            for(int i=0;i<tabs.Length;i++){int n=i;Button("CommandTab_"+i,root,tabs[i],310+i*140,79,132,36,()=>{commandTab=n;Draw();},true,commandTab==i);}
+            var panel=Box("CommandCenter",root,310,126,838,578,Panel);
             if(commandTab==0)DrawCommandTasks(panel);else if(commandTab==1)DrawCommandRoutes(panel);else if(commandTab==2)DrawCommandPeople(panel);else if(commandTab==3)DrawCommandMap(panel);else if(commandTab==4)DrawCommandReport(panel);else DrawStrategy(panel);
             DrawCommandAdvice();
-            Box("CommandFooter",root,24,790,1552,90,Panel);
-            Label(root,CommandNext(),42,801,970,33,19,Gold);Label(root,toast,42,841,1190,28,15,Muted);
-            Button("CommandNextAction",root,"前往处理",1040,802,214,34,GoNextCommand);
-            Button("CommandEnd",root,"推进一夜 · 执行授权",1285,811,268,47,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,true);
+            Box("CommandFooter",root,24,850,1552,42,Panel);
+            Label(root,toast,38,860,985,26,16,Muted);
+            Button("CommandNextAction",root,"前往处理",1040,854,214,34,GoNextCommand);
+            Button("CommandEnd",root,"推进一夜 · 执行授权",1285,854,268,34,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,true);
             if(State.command.eventKind!=0)DrawCommandEvent();
             else if(State.ended)DrawCommandEnding();
             else if(State.command.notices!=null&&State.command.notices.Count>0)DrawCommandNotice();
@@ -93,7 +80,7 @@ namespace Minglu
         }
         void DrawCommandAdvice()
         {
-            var p=Box("CommandAdvice",root,1164,134,412,640,Panel);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
+            var p=Box("CommandAdvice",root,1164,79,412,625,Panel);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
             Label(p,"指挥席 / "+a.name,18,16,375,33,25,Gold);
             Label(p,member.profession+" Lv."+member.level+" / "+CommandRole(a.id),18,62,375,28,18,Teal);
             Label(p,"情报 "+a.intel+" · 潜行 "+a.stealth+" · 说服 "+a.persuade+" · 组织 "+a.organize,18,103,375,52,18);
@@ -106,20 +93,20 @@ namespace Minglu
                 Label(p,CommandRules.Plans[t.plan]+(t.intelSupport?" + 情报支援":"")+" / "+State.config.District(t.district).name+"\n"+dice+"骰 / 需"+t.required+"成功 / "+(chance*100).ToString("0.#")+"%\n执行：14体力、6精神、暴露+"+CommandRules.TaskExposure(State,a,t),18,356,375,88,18,Teal);
                 Button("CommandPlan",p,"方案 / 投入 / 完整后果",18,452,375,40,()=>{modal="missionPlan";Draw();});
                 Label(p,error!=""?error:CommandRole(a.id)!="机动成员"?"此人优先执行任务，对应链条岗位本夜等待。":"条件满足，授权时预留资源，执行时扣除。",18,501,375,68,17,error==""?Muted:Red);
-                Button("CommandAuthorize",p,"授权 "+a.name,18,585,375,40,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已授权并预留资源；推进一夜后执行。";Save(false);}Draw();},error=="",true);
+                Button("CommandAuthorize",p,"授权 "+a.name,18,578,375,32,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已授权并预留资源；推进一夜后执行。";Save(false);}Draw();},error=="",true);
             }
             else
             {
                 Label(p,"当前关卡门槛",18,250,375,32,23,Gold);
                 Label(p,CommandRules.GateText(State)+"\n\n已完成任务 "+State.command.completed+"\n已送达情报 "+State.command.delivered+"\n身份2级以上 "+State.command.people.Count(x=>x.level>=2&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人 / 3级以上 "+State.command.people.Count(x=>x.level>=3&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人",18,298,375,180,19);
                 Label(p,"预算已预留："+CommandRules.ReservedMoney(State)+"银两 / "+CommandRules.ReservedIntel(State)+"情报。\n每夜：任务 → 链条 → 日常；一人只做一项地下工作。",18,490,375,90,17,Muted);
-                Button("CommandHelpRoute",p,"查看 / 设计传递链条",18,589,375,33,()=>{commandTab=1;Draw();});
+                Button("CommandHelpRoute",p,"查看 / 设计传递链条",18,576,375,33,()=>{commandTab=1;Draw();});
             }
         }
         void DrawCommandRoutes(Transform panel)
         {
             Label(panel,"设计链条，接头由成员自动完成",20,14,798,33,24,Gold);
-            Label(panel,"先在左侧选人，再点岗位填入。启用后持续运行；同夜不能越过两环。",20,55,798,45,17,Muted);
+            Label(panel,"先在底部选人，再点岗位填入。启用后持续运行；同夜不能越过两环。",20,55,798,45,17,Muted);
             int i=0;
             foreach(var r in State.command.routes)
             {
@@ -133,7 +120,7 @@ namespace Minglu
                 Label(panel,"待接 "+r.waiting+" → 中继 "+r.atRelay+" → 上级累计收到 "+r.delivered+"\n"+(error!=""?error:r.last),20,y+105,555,66,16,error==""?Teal:Red);
                 Button("RouteEnable_"+r.id,panel,r.enabled?"暂停此线":"确认启用此线",588,y+112,210,42,()=>{r.enabled=!r.enabled;r.last=r.enabled?"已启用：内线隔夜尝试产出，接头与外送自动推进。":"已暂停，成员按其他任务或生活安排工作。";Save(false);toast=r.enabled?"链条已启用：后续夜晚自动判定，任务优先占用人手。":"链条已暂停，成员可以生活与休养。";Draw();},r.enabled||error=="",true);
             }
-            Label(panel,"修改岗位会清空该线积压；暂停保留积压，但消息仍会逐夜失效。先做好人事再启用。",20,560,798,24,14,Muted);
+            Label(panel,"修改岗位会清空该线积压；暂停保留积压，但消息仍会逐夜失效。先做好人事再启用。",20,546,798,28,14,Muted);
         }
         void DrawCommandPeople(Transform panel)
         {
@@ -166,7 +153,7 @@ namespace Minglu
         }
         Transform CommandModal(string title,float height=600)
         {
-            var shade=Box("CommandShade",root,0,0,1600,900,new Color(0,0,0,.8f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);Border(p,0,0,900,height,Gold);Label(p,title,28,24,840,45,30,Gold);return p;
+            var shade=Box("CommandShade",root,0,0,1600,900,new Color(0,0,0,.8f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);Border(p,0,0,900,height,Line);Box("CaseRibbon",p,0,0,8,height,Hex("AB493C"));Label(p,title,28,24,840,45,30,Gold);return p;
         }
         void DrawCommandConfirm()
         {
