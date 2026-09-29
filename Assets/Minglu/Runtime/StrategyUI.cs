@@ -30,11 +30,11 @@ namespace Minglu
         void GoNextCommand()
         {
             var urgent=State.command.tasks.Where(t=>t.status==0&&t.actor<0).OrderBy(t=>t.operation==2?0:1).ThenBy(t=>t.deadline).FirstOrDefault();
-            var watched=State.agents.FirstOrDefault(a=>a.condition==Condition.Active&&a.exposure>=State.command.strategy.config.warning);
+            var watched=State.agents.FirstOrDefault(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning);
             if(watched!=null){commandTab=2;selectedAgent=watched.id;}
             else if(urgent!=null&&urgent.operation==2){FocusCommandTask(urgent.id);}
             else if(!State.command.routes.Any(r=>r.enabled)||State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))commandTab=1;
-            else if(State.command.people.Any(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active)){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active).id;}
+            else if(State.command.people.Any(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id)))){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id))).id;}
             else if(urgent!=null){FocusCommandTask(urgent.id);}
             else modal="commandConfirm";
             Draw();

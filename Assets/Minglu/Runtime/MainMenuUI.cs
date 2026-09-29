@@ -78,7 +78,7 @@ namespace Minglu
         {
             LoadArt();selectedAgent=State.agents.First(x=>x.condition==Condition.Active).id;
             selectedSite="";selectedDistrict=0;rescueTarget=-1;selectedMission="";selectedDuty=Duty.Recon;modal="";tab=State.command!=null?0:State.courierEnabled?6:3;reviewingEnding=false;scrollPositions.Clear();
-            commandTab=3;commandTask=-1;taskFilter=0;
+            commandTab=State.turn==1?1:3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;
             toast="本局种子 "+State.initialSeed+(State.command!=null?"。先设计链条，授权任务，再推进一夜。":State.courierEnabled?"。先选成员接回首份密件，再安排外送。":"。先查看限时任务，再选择成员。");
         }
         void DrawHome()

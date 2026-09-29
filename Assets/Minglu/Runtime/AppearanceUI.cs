@@ -20,7 +20,7 @@ namespace Minglu
             lookOriginal=AppearanceRules.Copy(lookDraft);
             if(atTitle)homePage="appearance";else modal="appearance";Draw();
         }
-        void CloseAppearance(){if(atTitle)homePage="main";else modal=State.command!=null?(lookReturnModal=="memberDetails"?"memberDetails":""):lookTarget<0?"":"agent";Draw();}
+        void CloseAppearance(){if(atTitle)homePage="main";else modal=State.command!=null?(lookReturnModal=="memberDetails"||lookReturnModal=="commandOverview"?lookReturnModal:""):lookTarget<0?"":"agent";Draw();}
         void CommitAppearance()
         {
             try

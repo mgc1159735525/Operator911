@@ -1,0 +1,113 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using UnityEngine;
+namespace Minglu
+{
+    public partial class CityGameUI
+    {
+        int reportNight=-1,routePickerId,routePickerSlot;
+        bool reportAll;
+        bool NeedsAttention(Agent a){return a.condition==Condition.Active&&CommandRules.Person(State,a.id).policy!=1&&CommandRules.Person(State,a.id).leaveUntil<State.turn;}
+        string MemberStatus(Agent a)
+        {
+            var p=CommandRules.Person(State,a.id);
+            if(a.condition==Condition.Captured)return "被捕待救";
+            if(a.condition!=Condition.Active)return "已离队";
+            if(p.leaveUntil>=State.turn)return "休假至第"+p.leaveUntil+"夜";
+            if(p.policy==1)return "生活优先 / 休养";
+            if(a.stamina<20||a.spirit<20)return "状态不足 / 需休养";
+            if(p.neglect>=3)return "家事积压 / 待轮休";
+            if(State.command.tasks.Any(t=>t.status==0&&t.actor==a.id))return "执行授权任务";
+            return CommandRole(a.id);
+        }
+        string GateProgress()
+        {
+            var c=State.command;int level2=c.people.Count(p=>p.level>=2&&CommandRules.Agent(State,p.id).condition==Condition.Active);
+            int level=CommandRules.FinalLevel(State);
+            if(c.gate==0)return "立足 / 本阶段\n送达 "+c.delivered+"/2 · 任务 "+c.completed+"/2";
+            if(c.gate==1)return "扎根 / 本阶段\n送达 "+c.delivered+"/"+(State.config.Value("turns")<=8?2:4+c.variant)+"\n2级成员 "+level2+"/2";
+            return "决胜 / 成果 "+State.progress+"/"+CommandRules.FinalScore(State)+"\n送达 "+c.delivered+"/"+CommandRules.FinalDeliveries(State)+" · "+level+"级成员 "+c.people.Count(p=>p.level>=level&&CommandRules.Agent(State,p.id).condition==Condition.Active)+"/1";
+        }
+        string OpeningChecklist()
+        {
+            bool chain=State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)=="");
+            bool task=State.command.completed>0||State.command.tasks.Any(t=>t.actor>=0&&t.status==0);
+            return (chain?"✓":"①")+" 建立并启用传递链\n"+(task?"✓":"②")+" 比较人选，授权一项任务\n"+(State.turn>1?"✓":"③")+" 推进一夜，查看执行报告";
+        }
+        string RouteForecast(CommandRoute r)
+        {
+            string error=CommandRules.RouteError(State,r);if(error!="")return error;
+            if(!r.enabled)return "本夜暂停；积压仍计时。";
+            if(State.command.pauseUntil>=State.turn)return "撤离/隐蔽休整：本夜整线暂停。";
+            int[] ids={r.source,r.liaison,r.courier},skills={0,2,1};string[] roles={"内线","接头","外送"};
+            string[] rows=new string[3];
+            for(int i=0;i<3;i++)
+            {
+                string availability=CommandRules.Availability(State,ids[i]);
+                bool task=State.command.tasks.Any(t=>t.status==0&&t.actor==ids[i]);
+                bool work=i==0?State.turn%2==r.id%2:i==1?r.waiting>0:r.atRelay>0;
+                string status=availability!=""?"休养/离岗":task?"任务占用":!work?(i==0?"次夜观察":"等待情报"):(CommandRules.Dice(State,CommandRules.Agent(State,ids[i]),skills[i])+"骰执行");
+                rows[i]=roles[i]+"："+status;
+            }
+            return string.Join(" / ",rows);
+        }
+        string RouteCandidateError(CommandRoute route,int slot,int id)
+        {
+            string error=CommandRules.Availability(State,id);if(error!="")return error;
+            int[] ids={route.source,route.liaison,route.courier};
+            if(ids.Where((n,i)=>i!=slot).Contains(id))return "已在此链其他岗位；需要三名不同成员";
+            if(State.command.routes.Any(r=>r.id!=route.id&&r.enabled&&new[]{r.source,r.liaison,r.courier}.Contains(id)))return "已在另一条运行中的链上";
+            return "";
+        }
+        void OpenRoutePicker(CommandRoute route,int slot){routePickerId=route.id;routePickerSlot=slot;modal="routePicker";Draw();}
+        void DrawRoutePicker()
+        {
+            var route=State.command.routes.First(r=>r.id==routePickerId);int skill=new[]{0,2,1}[routePickerSlot];
+            var p=CommandModal("选择"+new[]{"内线","接头人","交通员"}[routePickerSlot]+" / 联络链 "+(route.id+1),730);
+            Label(p,"按当前"+CommandRules.Skills[skill]+"骰数比较；一骰4—6算成功，每环需1次成功。任务优先于长期岗位。",28,83,844,53,18,Muted);
+            var list=Scroll(p,"RouteCandidates",28,150,844,465,State.agents.Count*74);
+            var people=State.agents.OrderBy(a=>RouteCandidateError(route,routePickerSlot,a.id)==""?0:1).ThenByDescending(a=>CommandRules.Dice(State,a,skill)).ToList();
+            for(int i=0;i<people.Count;i++)
+            {
+                var a=people[i];string error=RouteCandidateError(route,routePickerSlot,a.id);int dice=CommandRules.Dice(State,a,skill);
+                Label(list,a.name+" / "+dice+"骰 / 当前成功率 "+(DispatchRules.Probability(dice,1)*100).ToString("0.#")+"%",8,i*74,594,31,21,Gold);
+                Label(list,error!=""?error:State.command.tasks.Any(t=>t.status==0&&t.actor==a.id)?"已有任务：本夜优先做任务，链条岗位将等待":"可用 · 体力"+a.stamina+" / 暴露"+a.exposure,8,i*74+34,594,38,17,error!=""?Red:Muted);
+                Button("RouteCandidate_"+a.id,list,"安排此人",625,i*74+12,180,43,()=>{selectedAgent=a.id;modal="";RequestRouteReplacement(route,routePickerSlot);if(modal=="")Draw();},error=="");
+            }
+            Button("RoutePickerCancel",p,"取消 · 不更换岗位",28,650,844,48,()=>{modal="";Draw();});
+        }
+        int JournalNight(string row){int end=row.IndexOf(']');int night;return end>1&&int.TryParse(row.Substring(1,end-1),out night)?night:0;}
+        List<string> ReportRows(int night,bool all)
+        {
+            var rows=State.journal.Where(r=>JournalNight(r)==night).ToList();
+            if(all)return rows;
+            return rows.Where(r=>!r.Contains("组织执行报告")&&!r.Contains("采用")&&(!r.Contains("骰 [")||r.Contains("；未成")||r.Contains("；阶段完成")))
+                .Select(r=>Regex.Replace(r,@"(\d+骰) \[[^\]]*\]","$1")).ToList();
+        }
+        void DrawNightReport(Transform panel)
+        {
+            int latest=State.journal.Where(r=>r.Contains("组织执行报告")).Select(JournalNight).DefaultIfEmpty(0).Max();
+            int night=reportNight<0?latest:Mathf.Clamp(reportNight,1,Mathf.Max(1,latest));
+            Label(panel,latest==0?"执行报告 / 尚未推进第一夜":"执行报告 / 第 "+night+" 夜",20,15,560,34,25,Gold);
+            Button("ReportPrevious",panel,"上一夜",592,16,99,34,()=>{reportNight=Mathf.Max(1,night-1);scrollPositions.Remove("CommandReport");Draw();},night>1);
+            Button("ReportNext",panel,"下一夜",703,16,99,34,()=>{reportNight=Mathf.Min(latest,night+1);Draw();},night<latest);
+            var rows=ReportRows(night,true);
+            int finished=rows.Count(r=>r.Contains("完成「")),expired=rows.Count(r=>r.Contains("任务到期：")),delivered=rows.Count(r=>r.Contains("情报链")&&r.Contains("送达1份"));
+            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,20,66,782,28,19,Teal);
+            Button("ReportSummary",panel,"结果与原因",20,105,376,34,()=>{reportAll=false;Draw();},true,!reportAll);
+            Button("ReportAll",panel,"展开全部判定",409,105,393,34,()=>{reportAll=true;Draw();},true,reportAll);
+            if(!reportAll)rows=ReportRows(night,false);
+            if(rows.Count==0)rows.Add("本夜暂无结算结果。先建立传递链、授权任务，再推进一夜。链条从产出到送达至少跨三次结算。");
+            var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,20,157,797,408,Mathf.Max(410,rows.Count*65));float y=0;
+            foreach(var row in rows){var text=Label(content,row,0,y,770,50,18,row.Contains("未成")||row.Contains("暂停")||row.Contains("到期")?Red:TextColor);float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(770,h);y+=h+8;}
+            content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(408,y));
+        }
+        void DrawEndingReview()
+        {
+            var p=CommandModal("行动复盘 / 回看每夜的决定",780);var content=Box("EndingReviewBody",p,30,83,838,580,Panel);DrawNightReport(content);
+            Button("EndingReviewBack",p,"返回结局",28,709,844,45,()=>{modal="";Draw();});
+        }
+    }
+}

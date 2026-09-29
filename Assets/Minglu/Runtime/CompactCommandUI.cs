@@ -11,11 +11,14 @@ namespace Minglu
         }
         void DrawCommandOverview()
         {
-            var p=CommandModal("组织概况 / 关卡与预算",610);var a=CommandRules.Agent(State,selectedAgent);
-            Label(p,CommandRules.GateText(State),28,100,844,65,25,Gold);
-            Label(p,"完成任务 "+State.command.completed+" / 送达情报 "+State.command.delivered+"\n在岗身份2级以上 "+State.command.people.Count(x=>x.level>=2&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人 / 3级以上 "+State.command.people.Count(x=>x.level>=3&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人\n\n银两：总额 "+State.money+" / 预留 "+CommandRules.ReservedMoney(State)+"\n情报：总额 "+State.intelligence+" / 预留 "+CommandRules.ReservedIntel(State)+"\n压力 "+State.pressure+" / 追查 "+State.command.strategy.trace+" / 民心 "+State.command.strategy.hearts,28,189,844,256,22);
-            Label(p,"当前成员能力：情报 "+a.intel+" / 潜行 "+a.stealth+" / 说服 "+a.persuade+" / 组织 "+a.organize,28,455,844,35,18,Muted);
-            Button("OverviewClose",p,"返回指挥",28,532,844,46,()=>{modal="";Draw();});
+            var p=CommandModal("组织概况 / 负责人、目标与预算",690);
+            DrawLook(p,State.chiefLook,28,96,176,250);
+            Label(p,"地区负责人",28,357,176,30,21,Gold,UnityEngine.TextAnchor.MiddleCenter);
+            Button("CommandChiefAppearance",p,"编辑负责人外观",28,401,176,42,()=>OpenAppearance(-1));
+            Label(p,GateProgress(),236,99,630,90,24,Gold);
+            Label(p,"完成任务 "+State.command.completed+" / 送达情报 "+State.command.delivered+"\n在岗身份2级以上 "+State.command.people.Count(x=>x.level>=2&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人 / 3级以上 "+State.command.people.Count(x=>x.level>=3&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人\n\n银两：可用 "+(State.money-CommandRules.ReservedMoney(State))+" / 已预留 "+CommandRules.ReservedMoney(State)+"\n情报：可用 "+(State.intelligence-CommandRules.ReservedIntel(State))+" / 已预留 "+CommandRules.ReservedIntel(State)+"\n压力 "+State.pressure+" / 追查 "+State.command.strategy.trace+" / 民心 "+State.command.strategy.hearts,236,205,630,253,22);
+            Label(p,"你负责人员、任务和联络链。空闲成员会恢复状态并积累表身份经验；及时轮休，才能兼顾潜伏安全与长期成长。",28,493,844,78,21,Muted);
+            Button("OverviewClose",p,"返回指挥",28,610,844,46,()=>{modal="";Draw();});
         }
     }
 }

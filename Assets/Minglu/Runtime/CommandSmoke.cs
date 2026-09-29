@@ -28,7 +28,7 @@ namespace Minglu
             if(State.command==null||State.agents.Count!=6||State.agents.Any(a=>a.appearance==null||!a.appearance.enabled))throw new Exception("Random team not initialized");
             Capture(Path.ChangeExtension(path,"team.png"));
             yield return Click("CommandTab_1");
-            for(int i=0;i<3;i++){yield return Click("CommandAgent_"+i);yield return Click("RouteSlot_0_"+i);}
+            for(int i=0;i<3;i++){yield return Click("CommandAgent_"+i);yield return Click("RouteSlot_0_"+i);yield return Click("RouteCandidate_"+i);}
             yield return Click("RouteEnable_0");Capture(Path.ChangeExtension(path,"chain.png"));
             yield return Click("CommandTab_0");var task=State.command.tasks.First(t=>t.status==0&&t.level==1);
             yield return Click("CommandRecommend_"+task.id);Capture(Path.ChangeExtension(path,"task.png"));

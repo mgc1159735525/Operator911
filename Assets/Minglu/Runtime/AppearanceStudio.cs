@@ -22,7 +22,7 @@ namespace Minglu
         void UndoLook(bool redo)
         {
             var from=redo?lookRedo:lookUndo;var to=redo?lookUndo:lookRedo;if(from.Count==0)return;
-            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();lookCategory=0;lookGroup=0;lookCompare=false;Draw();
+            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookCompare=false;Draw();
         }
         void RandomizeLook()
         {

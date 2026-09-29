@@ -20,6 +20,9 @@ namespace Minglu.EditorTools
             Prepare(s,3);CommandRules.Assign(s,3,t.id);CommandRules.Resolve(s);Check(t.stepsDone==1&&t.status==0&&t.actor==-1&&s.command.strategy.alliances[0]==0,"First step only and reauthorize");
             for(int n=0;n<4&&t.status==0;n++){Prepare(s,3);CommandRules.Assign(s,3,t.id);CommandRules.Resolve(s);}
             Check(t.status==1&&s.command.strategy.alliances[0]==25,"Final step grants relationship once");
+            s=Fresh();s.turn=s.config.Value("turns");int count=s.command.tasks.Count;
+            Check(CommandRules.StartCivicTask(s,0).Contains("至少两夜")&&s.command.tasks.Count==count,"Final-night alliance cannot create an impossible two-stage commitment");
+            Check(CommandRules.StartCivicTask(s,-1)==""&&s.command.tasks.Last().stepsRequired==1,"Single-night community action remains available in finale");
             s=Fresh();s.command.strategy.alliances[2]=50;t=s.command.tasks[0];t.skill=0;Check(CommandRules.AllianceDice(s,t)==1,"Alliance affects displayed dice");
             s=Fresh();s.command.strategy.alliances[0]=50;money=s.money;CommandRules.Resolve(s);Check(s.money==money+4,"Recurring alliance income");
             s=Fresh();s.turn=4;s.agents[0].exposure=100;CommandRules.Resolve(s);Check(s.agents[0].condition==Condition.Active&&s.command.people[0].warningTurn==4,"No instant arrest before warning");
@@ -29,6 +32,10 @@ namespace Minglu.EditorTools
             var rescue=s.command.tasks.Last();Check(rescue.operation==2&&rescue.stepsRequired==2,"Rescue task exists");Check(CommandRules.Availability(s,0)!="","Prisoner cannot act");
             for(int n=0;n<4&&rescue.status==0;n++){Prepare(s,3);CommandRules.Assign(s,3,rescue.id);CommandRules.Resolve(s);}
             Check(rescue.status==1&&s.agents[0].condition==Condition.Active&&!r.enabled,"Rescue restores person without auto-enabling route");
+            s=Fresh();s.turn=s.config.Value("turns")-1;CommandRules.CaptureForCommand(s,0);rescue=s.command.tasks.Last();s.turn++;Prepare(s,3);
+            Check(rescue.operation==2&&rescue.stepsRequired==1&&CommandRules.Assign(s,3,rescue.id)=="","Penultimate-night capture offers a reachable final-night emergency rescue");
+            s=Fresh();s.turn=s.config.Value("turns");count=s.command.tasks.Count;CommandRules.CaptureForCommand(s,0);
+            Check(s.command.tasks.Count==count&&s.command.notices.Count==0,"Capture after the final action does not promise an unavailable future rescue");
             s=Fresh();s.turn=4;CommandRules.CaptureForCommand(s,0);s.command.people[0].loyalty=100;for(int n=0;n<5&&!s.ended;n++)CommandRules.Resolve(s);Check(s.agents[0].condition==Condition.Lost,"Missed rescue window is permanent");
             s=Fresh();s.turn=4;s.command.strategy.trace=75;CommandRules.Resolve(s);Check(s.command.eventKind==4,"Trace threshold triggers raid decision");
             s.command.routes[0].atRelay=3;money=s.money;CommandRules.ResolveRaid(s,true);Check(s.money==money-10&&s.command.routes[0].atRelay==3&&s.command.pauseUntil==s.turn,"Paid relocation preserves intel");
@@ -40,7 +47,7 @@ namespace Minglu.EditorTools
             Check(JsonUtility.ToJson(s.command.strategy)==JsonUtility.ToJson(loaded.command.strategy),"Strategy save preserved");CommandRules.Resolve(s);CommandRules.Resolve(loaded);Check(JsonUtility.ToJson(s.command)==JsonUtility.ToJson(loaded.command),"Reload preserves future");
             var legacy=Fresh();legacy.command.strategy=null;string oldJson=JsonUtility.ToJson(legacy).Replace("\"stepsRequired\":1,","");File.WriteAllText(file,oldJson);loaded=PrototypeSave.Read(file);Check(loaded.command.strategy!=null&&loaded.command.tasks.All(task=>task.stepsRequired==1),"Legacy JSON missing new fields migrates");
             File.Delete(file);if(File.Exists(file+".bak"))File.Delete(file+".bak");
-            Debug.Log("MINGLU_STRATEGY_VERIFY_SUCCESS: "+checks+" checks");
+            var risk=Fresh();risk.agents[0].exposure=95;CommandRules.SetPolicy(risk,0,1);Check(CommandRules.NightWarnings(risk).Contains("休养后仍达到捕获阈值"),"Rest warning preserves unresolved capture danger");Debug.Log("MINGLU_STRATEGY_VERIFY_SUCCESS: "+checks+" checks");
         }
         public static void BatchDeliver(){try{Verify();MissionVerification.Verify();CommandVerification.Verify();PrototypeTools.BatchBuild();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
     }

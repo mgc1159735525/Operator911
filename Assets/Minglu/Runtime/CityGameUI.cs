@@ -62,6 +62,7 @@ namespace Minglu
             if (State == null) return;
             if((atTitle&&homePage=="appearance"||modal=="appearance")&&Input.GetKeyDown(KeyCode.Escape)){RequestCloseAppearance();return;}
             if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
+            if(State.command!=null&&State.ended&&modal=="endingReview"&&Input.GetKeyDown(KeyCode.Escape)){modal="";Draw();return;}
             if(atTitle){if(Input.GetKeyDown(KeyCode.Escape)&&homePage!="main")BackHome();return;}
             if (Input.GetKeyDown(KeyCode.Escape)) { if(State.command!=null&&(State.command.eventKind!=0||State.ended||State.command.notices.Count>0))return; if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
             if (Input.GetKeyDown(KeyCode.F5)) Save();
@@ -337,16 +338,17 @@ namespace Minglu
             newCrisis=crisis;seedText="";OpenHome("new");
         }
         void Save() { Save(true); }
-        void Save(bool redraw) {try{PrototypeSave.Write(State,SavePath);toast="已保存当前进度和指令。";}catch(Exception e){toast="保存失败："+e.Message;}if(redraw)Draw();}
+        void Save(bool redraw) {try{PrototypeSave.Write(State,SavePath);if(redraw)toast="已保存当前进度和指令。";}catch(Exception e){toast="保存失败："+e.Message;}if(redraw)Draw();}
         void Load()
         {
-            try{State=PrototypeSave.Read(SavePath);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTask=-1;taskFilter=0;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast="已恢复存档及当局规则。";}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
+            try{State=PrototypeSave.Read(SavePath);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast="已恢复存档及当局规则。";}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
         }
         IEnumerator CaptureIfRequested()
         {
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--producer-only")>=0){yield return ProducerSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--studio-only")>=0){yield return AppearanceStudioSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--strategy-only")>=0){yield return StrategySmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--portrait-repair")>=0){yield return PortraitRepairSmoke(path);Application.Quit();yield break;}

@@ -19,6 +19,22 @@ namespace Minglu.EditorTools
             var other=s.command.tasks.First(x=>x.id!=t.id);other.plan=1;other.intelSupport=true;
             Check(CommandRules.TaskResourceError(s,other)!="","No resource double booking");
             t.actor=-1;Check(CommandRules.TaskResourceError(s,other)=="","Cancel releases resources");
+            s=Fresh();t=s.command.tasks[0];t.plan=1;t.intelSupport=true;s.intelligence=2;CommandRules.Assign(s,0,t.id);CommandRules.SetPolicy(s,0,1);
+            Check(t.actor==-1&&CommandRules.ReservedMoney(s)==0&&CommandRules.ReservedIntel(s)==0,"Life-priority policy releases orders and both budgets immediately");
+            s=Fresh();t=s.command.tasks[0];t.plan=1;t.intelSupport=true;s.intelligence=2;CommandRules.Assign(s,0,t.id);s.command.eventKind=1;s.command.eventActor=0;CommandRules.Choose(s,true);
+            Check(t.actor==-1&&CommandRules.ReservedMoney(s)==0&&CommandRules.ReservedIntel(s)==0,"Family leave event releases reservations before returning to planning");
+            s=Fresh();t=s.command.tasks[0];t.plan=1;t.intelSupport=true;s.intelligence=2;CommandRules.Assign(s,0,t.id);s.command.people[0].loyalty=0;s.command.eventActor=0;
+            for(int i=0;i<30&&s.agents[0].condition==Condition.Active;i++){s.command.eventKind=3;CommandRules.Choose(s,false);}
+            Check(s.agents[0].condition==Condition.Lost&&t.actor==-1&&CommandRules.ReservedMoney(s)==0&&CommandRules.ReservedIntel(s)==0,"Betrayal releases stranded reservations immediately");
+            s=Fresh();t=s.command.tasks[0];t.plan=1;t.required=1;t.actor=0;s.agents[0].intel=s.agents[0].stealth=s.agents[0].persuade=s.agents[0].organize=6;
+            other=s.command.tasks[1];other.plan=1;other.actor=1;s.agents[1].stamina=0;s.money=4;CommandRules.Resolve(s);
+            Check(t.lastResult.Contains("骰")&&other.actor==-1,"Unavailable later actor releases budget before earlier valid order resolves");
+            s=Fresh();s.command.tasks.Clear();s.command.nextTask=100;foreach(var p in s.command.people)p.level=1;s.command.people[0].level=4;s.agents[0].condition=Condition.Lost;
+            s.command.config.templates=new System.Collections.Generic.List<CommandTemplate>{new CommandTemplate{title="高阶身份任务",body="检查准入",level=4}};CommandRules.AddTask(s,"上级指示",-1);
+            Check(s.command.tasks.Count==0,"Departed member does not unlock new identity-gated tasks");
+            s.agents[0].condition=Condition.Active;CommandRules.AddTask(s,"上级指示",-1);Check(s.command.tasks.Count==1,"Active qualified member still unlocks task");
+            s=Fresh();t=s.command.tasks[0];t.stepsRequired=2;t.deadline=s.turn;t.plan=1;int beforeMoney=s.money;
+            Check(CommandRules.Assign(s,0,t.id).Contains("剩余夜数")&&t.actor==-1&&s.money==beforeMoney,"Unfinishable stages cannot consume authorization or money");
             s=Fresh();t=s.command.tasks.First(x=>x.level==1);a=s.agents[0];t.required=6;t.plan=1;t.intelSupport=true;s.intelligence=1;s.money=20;a.intel=a.stealth=a.persuade=a.organize=1;
             Check(CommandRules.Assign(s,a.id,t.id)!="","Zero probability is blocked before spending");
             t.required=1;a.intel=a.stealth=a.persuade=a.organize=6;Check(CommandRules.Assign(s,a.id,t.id)=="","Assisted task authorizes");

@@ -44,6 +44,7 @@ namespace Minglu
         {
             EnsureStrategy(s);if(s.ended||s.command.eventKind!=0)return "先处理待决事件或结束界面";
             if(faction < -1||faction>3)return "未知地区事务";
+            if(faction>=0&&s.config.Value("turns")-s.turn+1<2)return "联盟委托需要至少两夜；行动窗口不足，可安排单夜街坊互助";
             int operation=faction<0?3:1;
             if(s.command.tasks.Any(t=>t.status==0&&t.operation==operation&&t.target==faction))return "已有同类委托，请前往任务指挥安排负责人";
             if(faction>=0&&s.command.strategy.alliances[faction]>=100)return "该势力信任已满";
@@ -68,12 +69,16 @@ namespace Minglu
         public static void CaptureForCommand(RunState s,int id)
         {
             EnsureStrategy(s);var a=Agent(s,id);if(a.condition!=Condition.Active)return;var p=Person(s,id);a.condition=Condition.Captured;p.capturedTurn=s.turn;p.resisted=0;
-            foreach(var t in s.command.tasks.Where(t=>t.status==0&&t.actor==id))t.actor=-1;
+            WithdrawAssignments(s,id,a.name+"被捕");
             foreach(var r in s.command.routes.Where(r=>new[]{r.source,r.liaison,r.courier}.Contains(id))){r.enabled=false;r.last=a.name+"被捕，此线暂停；积压继续计时，请替换岗位或营救。";}
-            CreateTask(s,new CommandTemplate{title="营救"+a.name,body="先核实关押线索，再组织撤离。两次成功后归队；每夜需重新授权，可以更换负责人。",category="紧急救援",skill=1,required=1,reward=5,money=0},"成员被捕",id,s.command.strategy.baseDistrict);
-            var rescue=s.command.tasks.Last();rescue.operation=2;rescue.target=id;rescue.stepsRequired=2;rescue.deadline=Math.Min(s.config.Value("turns"),s.turn+s.command.strategy.config.rescueWindow);
-            Notice(s,new CommandNotice{title="成员被捕 · 尚有救援窗口",body=a.name+"被捕。已撤回其任务并释放预算。\n营救需两次成功，第"+rescue.deadline+"夜截止；可在任务页比较可用人选。",tab=0,task=rescue.id,actor=s.agents.FirstOrDefault(w=>w.condition==Condition.Active)?.id??id});
-            Log(s,a.name+"被捕，生成两阶段营救；救援不占普通任务名额限制。");
+            int remaining=s.config.Value("turns")-s.turn;
+            if(remaining<=0){Log(s,a.name+"在最后一夜被捕；本轮行动窗口已结束，没有可执行的后续营救。" );return;}
+            int stages=Math.Min(2,remaining);
+            string rescueBody=stages==1?"行动窗口只剩一夜：上级合并核实与撤离，授权一次紧急营救，成功即可归队。":"先核实关押线索，再组织撤离。两次成功后归队；每夜需重新授权，可以更换负责人。";
+            CreateTask(s,new CommandTemplate{title="营救"+a.name,body=rescueBody,category="紧急救援",skill=1,required=1,reward=5,money=0},"成员被捕",id,s.command.strategy.baseDistrict);
+            var rescue=s.command.tasks.Last();rescue.operation=2;rescue.target=id;rescue.stepsRequired=stages;rescue.deadline=Math.Min(s.config.Value("turns"),s.turn+s.command.strategy.config.rescueWindow);
+            Notice(s,new CommandNotice{title="成员被捕 · 尚有救援窗口",body=a.name+"被捕。已撤回其任务并释放预算。\n营救需"+stages+"次成功，第"+rescue.deadline+"夜截止；可在任务页比较可用人选。"+(stages==1?"\n行动窗口仅余一夜，已合并为一次紧急营救。":""),tab=0,task=rescue.id,actor=s.agents.FirstOrDefault(w=>w.condition==Condition.Active)?.id??id});
+            Log(s,a.name+"被捕，生成"+stages+"阶段营救；救援不占普通任务名额限制。");
         }
         static void StrategyNight(RunState s,HashSet<int> busy)
         {
@@ -130,9 +135,11 @@ namespace Minglu
             {
                 var conflict=s.command.tasks.Where(t=>t.status==0&&t.actor>=0&&new[]{r.source,r.liaison,r.courier}.Contains(t.actor)).Select(t=>Agent(s,t.actor).name).Distinct().ToArray();
                 if(conflict.Length>0)rows.Add("链"+(r.id+1)+"岗位等待："+string.Join("、",conflict)+"优先执行任务");
+                string error=RouteError(s,r);if(error!="")rows.Add("链"+(r.id+1)+"暂停："+error);
+                foreach(int id in new[]{r.source,r.liaison,r.courier}.Where(id=>id>=0).Distinct()){string unavailable=Availability(s,id);if(unavailable!="")rows.Add(Agent(s,id).name+"岗位等待："+unavailable);}
                 if(r.age>=5&&r.waiting+r.atRelay>0)rows.Add("链"+(r.id+1)+"积压即将失效，请检查接头与外送岗位");
             }
-            foreach(var a in s.agents.Where(a=>a.condition==Condition.Active&&a.exposure>=s.command.strategy.config.warning))rows.Add(a.name+"暴露"+a.exposure+"：建议换岗休养");
+            foreach(var a in s.agents.Where(a=>a.condition==Condition.Active&&a.exposure>=s.command.strategy.config.warning))rows.Add(a.name+"暴露"+a.exposure+(Person(s,a.id).policy==1||Person(s,a.id).leaveUntil>=s.turn?"：休养已安排，本夜预计下降10"+(a.exposure-10>=s.command.strategy.config.capture?"；休养后仍达到捕获阈值，已被预警者仍有被捕风险":""):"：建议换岗休养"));
             return rows.Count==0?"没有紧急风险。空闲成员将自动工作与休养。":string.Join("\n",rows);
         }
     }
