@@ -7,6 +7,7 @@ namespace Minglu
         public int id,level=1,xp,loyalty=75,neglect,leaveUntil,policy,age;
         public string profession,code,life,temper,last="正常生活";
         public Appearance originalLook;
+        public int warningTurn=-1,capturedTurn=-1,resisted;
     }
     [Serializable] public class CommandTask
     {
@@ -15,6 +16,7 @@ namespace Minglu
         public int plan,intelReward,pressureRelief,failExposure=6;
         public bool intelSupport,followupSpawned;
         public string lastResult="";
+        public int operation,target=-1,stepsRequired=1,stepsDone;
     }
     [Serializable] public class CommandRoute
     {
@@ -42,6 +44,7 @@ namespace Minglu
     [Serializable] public class CommandState
     {
         public int missionRevision;
+        public CommandStrategy strategy;
         public int version=1,nextTask,delivered,completed,gate,eventKind,eventActor=-1,pauseUntil,variant;
         public string eventText="";
         public List<CommandNotice> notices=new List<CommandNotice>();

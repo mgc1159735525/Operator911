@@ -10,9 +10,9 @@ namespace Minglu
         public static int ReservedMoney(RunState s,int except=-1){return s.command.tasks.Where(t=>t.status==0&&t.actor>=0&&t.id!=except).Sum(PlanCost);}
         public static int ReservedIntel(RunState s,int except=-1){return s.command.tasks.Count(t=>t.status==0&&t.actor>=0&&t.id!=except&&t.intelSupport);}
         public static int DistrictPenalty(RunState s,CommandTask t){return t.level<=1?0:Mathf.Clamp(s.config.District(t.district).difficulty,0,1);}
-        public static int TaskDice(RunState s,Agent a,CommandTask t){return Math.Max(1,Dice(s,a,t.skill)+(t.plan==0?0:1)+(t.intelSupport?1:0)-DistrictPenalty(s,t));}
+        public static int TaskDice(RunState s,Agent a,CommandTask t){return Math.Max(1,Dice(s,a,t.skill)+(t.plan==0?0:1)+(t.intelSupport?1:0)-DistrictPenalty(s,t)+AllianceDice(s,t));}
         public static int TaskExposure(RunState s,Agent a,CommandTask t){return Math.Max(1,(Person(s,a.id).temper=="谨慎"?3:5)+Mathf.Clamp(s.config.District(t.district).risk,0,6)+(t.plan==1?-2:t.plan==2?8:0));}
-        public static string TaskReward(CommandTask t){return "成果+"+t.reward+" / 银两+"+t.money+(t.intelReward>0?" / 情报+"+t.intelReward:"")+(t.pressureRelief>0?" / 压力−"+t.pressureRelief:"");}
+        public static string TaskReward(CommandTask t){return "成果+"+t.reward+" / 银两+"+t.money+(t.intelReward>0?" / 情报+"+t.intelReward:"")+(t.pressureRelief>0?" / 压力−"+t.pressureRelief:"")+OperationReward(t);}
         public static string TaskResourceError(RunState s,CommandTask t)
         {
             if(s.money-ReservedMoney(s,t.id)<PlanCost(t))return "筹备需4银两（已授权任务的预算已预留）；撤回其他授权或改常规方案";

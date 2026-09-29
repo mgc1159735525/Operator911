@@ -331,6 +331,7 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--strategy-only")>=0){yield return StrategySmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--portrait-repair")>=0){yield return PortraitRepairSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--command-only")>=0){yield return CommandSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--guidance-only")>=0){yield return GuidanceSmoke(path);Application.Quit();yield break;}

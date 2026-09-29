@@ -96,3 +96,5 @@ v0.8当前局独立保存为 `minglu-run-v8.json`，局外档案为 `minglu-prof
 安装包：Builds/Installer/MingluSetup.exe（固定文件名）。中文安装向导、桌面快捷方式、开始菜单入口、覆盖更新及卸载；存档独立保留。教程：Docs/Minglu/安装与游玩指南.html。重新打包：Tools/Installer/Build-Installer.ps1；仅重新制作安装包可传 -SkipGameBuild。已实测首次安装、覆盖安装与安装后游戏界面回归；覆盖安装前后5个现有JSON存档文件校验一致。
 
 2026-09-29 外观调整：女性头部尺寸由232调整为246，四款女性发型独立调整发量与发际线；男性发型保持原参数。胡须宽度微收4%，长度不再随脸宽伸长，嘴部附近胡须跟随嘴形编辑同步变形。实际渲染对照：outputs/portrait-current；外观编辑、预设与保存回归通过。构建和安装包继续覆盖固定路径。
+
+2026-09-30 地区经营：当前首脑模式接入四势力联盟、民心、追查预警、据点撤离、被捕审讯与两阶段营救。新增地区经营页、人员对比、任务定位、换岗损失确认和夜前风险清单。说明：Docs/Minglu/地区经营与交互设计.md；规则配置：Assets/Minglu/Resources/Minglu/Config/strategy_config.json。新系统与旧存档迁移、原有任务及60局种子回归、实际界面流程均经过检查；平衡仍需试玩反馈。
