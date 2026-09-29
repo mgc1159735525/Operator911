@@ -25,17 +25,17 @@ namespace Minglu
         {
             var existing=State.command.tasks.FirstOrDefault(t=>t.status==0&&t.operation==(faction<0?3:1)&&t.target==faction);
             toast=existing==null?CommandRules.StartCivicTask(State,faction):"";
-            if(toast==""){commandTask=(existing??State.command.tasks.Last()).id;commandTab=0;toast="委托已定位：比较成员、配置方案，再授权。";Save(false);}Draw();
+            if(toast==""){FocusCommandTask((existing??State.command.tasks.Last()).id);toast="委托已定位：比较成员、配置方案，再授权。";Save(false);}Draw();
         }
         void GoNextCommand()
         {
             var urgent=State.command.tasks.Where(t=>t.status==0&&t.actor<0).OrderBy(t=>t.operation==2?0:1).ThenBy(t=>t.deadline).FirstOrDefault();
             var watched=State.agents.FirstOrDefault(a=>a.condition==Condition.Active&&a.exposure>=State.command.strategy.config.warning);
             if(watched!=null){commandTab=2;selectedAgent=watched.id;}
-            else if(urgent!=null&&urgent.operation==2){commandTab=0;commandTask=urgent.id;}
+            else if(urgent!=null&&urgent.operation==2){FocusCommandTask(urgent.id);}
             else if(!State.command.routes.Any(r=>r.enabled)||State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))commandTab=1;
             else if(State.command.people.Any(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active)){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active).id;}
-            else if(urgent!=null){commandTab=0;commandTask=urgent.id;}
+            else if(urgent!=null){FocusCommandTask(urgent.id);}
             else commandTab=5;
             Draw();
         }

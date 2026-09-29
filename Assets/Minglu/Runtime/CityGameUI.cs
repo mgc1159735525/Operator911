@@ -61,7 +61,7 @@ namespace Minglu
         {
             if (State == null) return;
             if(atTitle){if(Input.GetKeyDown(KeyCode.Escape)&&homePage!="main")BackHome();return;}
-            if (Input.GetKeyDown(KeyCode.Escape)) { if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
+            if (Input.GetKeyDown(KeyCode.Escape)) { if(State.command!=null&&(State.command.eventKind!=0||State.ended||State.command.notices.Count>0))return; if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
             if (Input.GetKeyDown(KeyCode.F5)) Save();
             if (Input.GetKeyDown(KeyCode.F9)) Load();
         }
@@ -87,6 +87,9 @@ namespace Minglu
             var r = Box(name, parent, x, y, w, h, primary ? Gold : Hex("24383C"));
             var b = r.gameObject.AddComponent<Button>(); var colors = b.colors; colors.normalColor = Color.white; colors.highlightedColor = Hex("DFD4BA"); colors.pressedColor = Hex("9FAEAA"); colors.disabledColor = new Color(.43f,.43f,.43f,.7f); b.colors = colors; b.interactable = enabled;
             Label(r, text, 7, 0, w - 14, h, 17, primary ? Ink : TextColor, TextAnchor.MiddleCenter);
+            colors.selectedColor=Hex("DFD4BA");b.colors=colors;
+            var focus=r.gameObject.AddComponent<Outline>();focus.effectColor=Gold;focus.effectDistance=new Vector2(2,-2);focus.enabled=false;
+            r.gameObject.AddComponent<UIFocusOutline>();
             b.onClick.AddListener(() => { Sound(); action(); }); return b;
         }
         void Border(Transform parent, float x, float y, float w, float h, Color color)
@@ -110,6 +113,14 @@ namespace Minglu
             var viewport=Box(name,parent,x,y,w,h,new Color(0,0,0,0)); viewport.gameObject.AddComponent<RectMask2D>();
             var content=Rect("Content",viewport,0,0,w-12,Mathf.Max(h,contentHeight));
             var scroll=viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport=viewport; scroll.content=content; scroll.horizontal=false; scroll.movementType=ScrollRect.MovementType.Clamped; scroll.scrollSensitivity=35;
+            if(contentHeight>h)
+            {
+                var track=Box("ScrollTrack",viewport,w-10,2,10,h-4,Line);
+                var handle=Box("ScrollHandle",track,0,0,10,h-4,Teal);
+                handle.anchorMin=Vector2.zero;handle.anchorMax=Vector2.one;handle.offsetMin=handle.offsetMax=Vector2.zero;
+                var bar=track.gameObject.AddComponent<Scrollbar>();bar.direction=Scrollbar.Direction.BottomToTop;bar.handleRect=handle;bar.targetGraphic=handle.GetComponent<Image>();
+                scroll.verticalScrollbar=bar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.Permanent;
+            }
             return content;
         }
         void Draw()

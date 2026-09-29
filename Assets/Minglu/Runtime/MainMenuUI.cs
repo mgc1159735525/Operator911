@@ -78,7 +78,7 @@ namespace Minglu
         {
             LoadArt();selectedAgent=State.agents.First(x=>x.condition==Condition.Active).id;
             selectedSite="";selectedDistrict=0;rescueTarget=-1;selectedMission="";selectedDuty=Duty.Recon;modal="";tab=State.command!=null?0:State.courierEnabled?6:3;reviewingEnding=false;scrollPositions.Clear();
-            commandTab=0;commandTask=-1;
+            commandTab=0;commandTask=-1;taskFilter=0;
             toast="本局种子 "+State.initialSeed+(State.command!=null?"。先设计链条，授权任务，再推进一夜。":State.courierEnabled?"。先选成员接回首份密件，再安排外送。":"。先查看限时任务，再选择成员。");
         }
         void DrawHome()
@@ -103,7 +103,7 @@ namespace Minglu
                 Button("HomeHelp",p,"玩法与操作",326,415,276,53,()=>{homePage="help";Draw();});
                 Button("HomeQuit",p,"退出游戏",38,493,564,53,QuitGame);
                 Button("HomeAppearance",p,"负责人外观 / 组合头像",38,566,564,53,()=>OpenAppearance(-1));
-                Label(p,"v0.16.1  组织首脑 · 任务方案与线索推进\n负责人及队员可编辑部件，预设跨局保存。\n自动存档：新局、结算、剧情选择、应用外观。",38,641,564,96,16,Muted);
+                Label(p,"组织首脑 · 联盟经营与多阶段行动\n负责人及队员可编辑部件，预设跨局保存。\n自动存档：新局、结算、剧情选择、应用外观。",38,641,564,96,16,Muted);
             }
             else if(homePage=="new"||homePage=="replace")
             {

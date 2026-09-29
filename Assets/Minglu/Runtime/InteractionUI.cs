@@ -60,6 +60,7 @@ namespace Minglu
         }
         void RestoreScroll()
         {
+            if(resetCommandTaskScroll){scrollPositions.Remove("CommandTasks");resetCommandTaskScroll=false;}
             Canvas.ForceUpdateCanvases();
             foreach (var scroll in root.GetComponentsInChildren<ScrollRect>())
             {
