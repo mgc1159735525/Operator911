@@ -56,7 +56,7 @@ namespace Minglu
         void RememberScroll()
         {
             if (root == null) return;
-            foreach (var scroll in root.GetComponentsInChildren<ScrollRect>()) scrollPositions[scroll.name] = scroll.normalizedPosition;
+            foreach (var scroll in root.GetComponentsInChildren<ScrollRect>()) scrollPositions[scroll.name] = scroll.content.rect.height<=scroll.viewport.rect.height+.5f ? new Vector2(0,1) : scroll.normalizedPosition;
         }
         void RestoreScroll()
         {

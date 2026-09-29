@@ -16,7 +16,7 @@ namespace Minglu
                 int id=i,y=171+i*72;Label(panel,CommandRules.Factions[i]+" · 信任 "+x.alliances[i]+" / "+c.allianceThreshold,20,y,470,26,20,Gold);
                 Label(panel,(x.alliances[i]>=c.allianceThreshold?"已生效：":"达标后：")+CommandRules.AllianceEffects[i],20,y+29,470,25,16,Teal);
                 bool pending=State.command.tasks.Any(t=>t.status==0&&t.operation==1&&t.target==id);
-                Button("AllianceTask_"+i,panel,pending?"查看进行中的委托":"发起联络 · 2次成功",516,y+7,282,43,()=>OpenCivicTask(id));
+                Button("AllianceTask_"+i,panel,pending?"查看进行中的委托":x.alliances[i]>=100?"信任已满 · 收益持续":"发起联络 · 2次成功",516,y+7,282,43,()=>OpenCivicTask(id),pending||x.alliances[i]<100);
             }
             Button("CommunityTask",panel,"安排街坊互助 · 民心+10 / 追查−8",20,480,778,44,()=>OpenCivicTask(-1));
             Label(panel,"发起委托不花钱、不推进时间。到任务页选择负责人；每阶段可换人，完成全部阶段才获奖励。",20,535,790,45,16,Muted);
@@ -36,7 +36,7 @@ namespace Minglu
             else if(!State.command.routes.Any(r=>r.enabled)||State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))commandTab=1;
             else if(State.command.people.Any(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active)){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&CommandRules.Agent(State,p.id).condition==Condition.Active).id;}
             else if(urgent!=null){FocusCommandTask(urgent.id);}
-            else commandTab=5;
+            else modal="commandConfirm";
             Draw();
         }
         void DrawCandidateComparison()

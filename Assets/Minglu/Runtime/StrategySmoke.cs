@@ -13,6 +13,12 @@ namespace Minglu
             yield return Click("TaskFilter_2");if(root.Find("CommandCenter").GetComponentsInChildren<UnityEngine.UI.Button>().Any(b=>b.name.StartsWith("CommandTask_")))throw new Exception("Authorized filter shows unassigned tasks");yield return Click("TaskFilter_0");Capture(Path.ChangeExtension(path,"tasks.png"));
             var taskScroll=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CommandTasks");taskScroll.verticalNormalizedPosition=0;
             yield return Click("TaskFilter_1");taskScroll=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CommandTasks");if(taskScroll.verticalNormalizedPosition<.99f)throw new Exception("Task filter did not reset scroll position");yield return Click("TaskFilter_0");
+            yield return Click("TaskFilter_2");CommandRules.Notice(State,new CommandNotice{title="定位检查",body="从通知定位未授权任务",tab=0,task=State.command.tasks[0].id});Draw();yield return null;yield return Click("CommandNoticeOpen");
+            if(taskFilter!=0||commandTask!=State.command.tasks[0].id)throw new Exception("Notice target hidden by filter");
+            Save(false);Load();if(commandTask!=-1||taskFilter!=0)throw new Exception("Stale task selection survived load");
+            yield return Click("CommandTab_2");var person=CommandRules.Person(State,selectedAgent);string originalHistory=person.last;person.last=string.Concat(Enumerable.Repeat("近期行动记录较长，需要完整阅读而不遮挡政策按钮。",12));Draw();yield return null;
+            var details=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(v=>v.name=="PersonDetails_"+selectedAgent);var detailText=details.content.GetComponentInChildren<UnityEngine.UI.Text>();if(detailText.preferredHeight>detailText.rectTransform.rect.height)throw new Exception("Personal history clipped");if(details.verticalNormalizedPosition<.99f)throw new Exception("Growing history unexpectedly jumped to bottom");Capture(Path.ChangeExtension(path,"people-long.png"));person.last=originalHistory;
+            yield return Click("CommandTab_0");
             yield return Click("CommandTab_5");Capture(Path.ChangeExtension(path,"strategy.png"));
             yield return Click("AllianceTask_0");var task=State.command.tasks.Last();if(task.operation!=1)throw new Exception("Alliance UI did not create task");
             yield return Click("CommandCompare_"+task.id);Capture(Path.ChangeExtension(path,"compare.png"));

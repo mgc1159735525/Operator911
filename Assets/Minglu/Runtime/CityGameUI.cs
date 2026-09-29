@@ -113,13 +113,13 @@ namespace Minglu
             var viewport=Box(name,parent,x,y,w,h,new Color(0,0,0,0)); viewport.gameObject.AddComponent<RectMask2D>();
             var content=Rect("Content",viewport,0,0,w-12,Mathf.Max(h,contentHeight));
             var scroll=viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport=viewport; scroll.content=content; scroll.horizontal=false; scroll.movementType=ScrollRect.MovementType.Clamped; scroll.scrollSensitivity=35;
-            if(contentHeight>h)
+            // Dynamic text may grow after construction; keep an auto-hiding scrollbar wired up.
             {
                 var track=Box("ScrollTrack",viewport,w-10,2,10,h-4,Line);
                 var handle=Box("ScrollHandle",track,0,0,10,h-4,Teal);
                 handle.anchorMin=Vector2.zero;handle.anchorMax=Vector2.one;handle.offsetMin=handle.offsetMax=Vector2.zero;
                 var bar=track.gameObject.AddComponent<Scrollbar>();bar.direction=Scrollbar.Direction.BottomToTop;bar.handleRect=handle;bar.targetGraphic=handle.GetComponent<Image>();
-                scroll.verticalScrollbar=bar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.Permanent;
+                scroll.verticalScrollbar=bar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.AutoHide;
             }
             return content;
         }
@@ -335,7 +335,7 @@ namespace Minglu
         void Save(bool redraw) {try{PrototypeSave.Write(State,SavePath);toast="已保存当前进度和指令。";}catch(Exception e){toast="保存失败："+e.Message;}if(redraw)Draw();}
         void Load()
         {
-            try{State=PrototypeSave.Read(SavePath);selectedSite="";atTitle=false;LoadArt();selectedAgent=State.agents[0].id;selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast="已恢复存档及当局规则。";}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
+            try{State=PrototypeSave.Read(SavePath);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTask=-1;taskFilter=0;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast="已恢复存档及当局规则。";}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
         }
         IEnumerator CaptureIfRequested()
         {
