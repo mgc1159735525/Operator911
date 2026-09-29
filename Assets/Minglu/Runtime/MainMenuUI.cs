@@ -83,7 +83,7 @@ namespace Minglu
         }
         void DrawHome()
         {
-            if(homePage=="appearance"){var studio=Box("HomeAppearance",root,350,145,900,620,Panel);DrawAppearance(studio);return;}
+            if(homePage=="appearance"){DrawAppearanceOverlay();return;}
             var art=Rect("HomeArt",root,0,0,1600,900).gameObject.AddComponent<RawImage>();art.texture=Resources.Load<Texture2D>("Minglu/UI/Noir/title_city")??map;art.color=Color.white;art.raycastTarget=false;
             Box("HomeVeil",root,0,0,1600,900,new Color(.03f,.03f,.03f,.13f));
             Label(root,"明路 · 地下",100,76,720,96,64,Gold);Box("TitleRule",root,106,166,88,5,Hex("AB493C"));Label(root,"新京二十夜 / 单人回合制策略",106,184,900,34,23,TextColor);

@@ -20,7 +20,7 @@ namespace Minglu
             if(lookDraft.style==1&&n==1)return lookDraft.sex==0?new[]{"束髻","短束","披发","巾帽"}:new[]{"高髻","低髻","侧髻","半束"};
             return AppearanceRules.Names[n];
         }
-        void DrawRealisticLook(Transform parent,Appearance look,float x,float y,float w,float h,Color tint)
+        void DrawRealisticLook(Transform parent,Appearance look,float x,float y,float w,float h,Color tint,bool headOnly=false)
         {
             if(realisticAtlas==null)realisticAtlas=Resources.Load<Texture2D>("Minglu/Art/realistic-atlas-v10");
             if(baldAtlas==null)baldAtlas=Resources.Load<Texture2D>("Minglu/Art/bald-atlas-v11");
@@ -31,7 +31,7 @@ namespace Minglu
             var bg=Hex(new[]{"243D3B","2D4053","584437","D4C4A6"}[look.parts[9]])*tint;
             var frame=Box("RealisticPortrait",parent,x,y,w,h,bg);frame.GetComponent<Image>().raycastTarget=false;frame.gameObject.AddComponent<RectMask2D>();
             if(realisticAtlas==null){Label(frame,"立绘资源未加载",2,2,w,h,12,Red);return;}
-            bool closePortrait=w<115;
+            bool closePortrait=w<115||headOnly;
             float scale=closePortrait?Mathf.Min(w/285,h/340):Mathf.Min(w/400,h/690),dx=(w-400*scale)/2,dy=closePortrait?25*scale:(h-690*scale)/2+25*scale;
             var skin=new[]{Color.white,new Color(1,.94f,.87f),new Color(.88f,.76f,.64f),new Color(.72f,.59f,.49f)}[look.parts[10]];
             var head=PortraitLayout.Head(look);

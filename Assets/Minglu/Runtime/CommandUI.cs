@@ -29,7 +29,7 @@ namespace Minglu
             Label(root,"明路 · 地下",24,20,250,44,30,Gold);
             Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"  ·  民心 "+State.command.strategy.hearts,24,83,265,24,16,Muted);
             Label(root,"第 "+State.turn+" / "+State.config.Value("turns")+" 夜",310,24,220,35,27,Gold);
-            Label(root,"成果 "+State.progress+"  ·  送达 "+State.command.delivered+"  ·  可用情报 "+(State.intelligence-CommandRules.ReservedIntel(State))+"  ·  可用银两 "+(State.money-CommandRules.ReservedMoney(State))+"  ·  压力 "+State.pressure,545,28,640,34,19,Teal);
+            Label(root,"成果 "+State.progress+"  ·  可用情报 "+(State.intelligence-CommandRules.ReservedIntel(State))+"  ·  可用银两 "+(State.money-CommandRules.ReservedMoney(State)),545,28,640,34,19,Teal);
 
             Button("Save",root,"保存",1192,28,88,38,Save);Button("Load",root,"读取",1290,28,88,38,Load,System.IO.File.Exists(SavePath));
             Button("CommandHome",root,"返回",1390,28,82,38,ReturnHome);
@@ -48,6 +48,8 @@ namespace Minglu
             if(State.command.eventKind!=0)DrawCommandEvent();
             else if(State.ended)DrawCommandEnding();
             else if(State.command.notices!=null&&State.command.notices.Count>0)DrawCommandNotice();
+            else if(modal=="memberDetails")DrawMemberDetails();
+            else if(modal=="commandOverview")DrawCommandOverview();
             else if(modal=="menu")DrawCommandMenu();
             else if(modal=="commandHelp")DrawCommandGuide();
             else if(modal=="appearance")DrawModal();
@@ -80,11 +82,12 @@ namespace Minglu
         }
         void DrawCommandAdvice()
         {
-            var p=Box("CommandAdvice",root,1164,79,412,625,Panel);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
+            var taskSelected=commandTab==0&&State.command.tasks.Any(tk=>tk.id==commandTask&&tk.status==0);
+            var p=Box("CommandAdvice",root,1164,79,412,taskSelected?625:365,Panel);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
             Label(p,"指挥席 / "+a.name,18,16,375,33,25,Gold);
             Label(p,member.profession+" Lv."+member.level+" / "+CommandRole(a.id),18,62,375,28,18,Teal);
-            Label(p,"情报 "+a.intel+" · 潜行 "+a.stealth+" · 说服 "+a.persuade+" · 组织 "+a.organize,18,103,375,52,18);
-            Label(p,"体力 "+a.stamina+" / 精神 "+a.spirit+" / 暴露 "+a.exposure+"\n日常："+member.life+" · 积压"+member.neglect+"夜",18,161,375,65,17,Muted);
+            Label(p,"体力 "+a.stamina+" / 精神 "+a.spirit+" / 暴露 "+a.exposure,18,106,375,28,18,Muted);
+            Button("CommandMemberOpen",p,"人物档案 / 能力与生活",18,153,375,40,()=>{modal="memberDetails";Draw();});
             var t=State.command.tasks.FirstOrDefault(tk=>tk.id==commandTask&&tk.status==0);
             if(commandTab==0&&t!=null)
             {
@@ -97,10 +100,9 @@ namespace Minglu
             }
             else
             {
-                Label(p,"当前关卡门槛",18,250,375,32,23,Gold);
-                Label(p,CommandRules.GateText(State)+"\n\n已完成任务 "+State.command.completed+"\n已送达情报 "+State.command.delivered+"\n身份2级以上 "+State.command.people.Count(x=>x.level>=2&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人 / 3级以上 "+State.command.people.Count(x=>x.level>=3&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人",18,298,375,180,19);
-                Label(p,"预算已预留："+CommandRules.ReservedMoney(State)+"银两 / "+CommandRules.ReservedIntel(State)+"情报。\n每夜：任务 → 链条 → 日常；一人只做一项地下工作。",18,490,375,90,17,Muted);
-                Button("CommandHelpRoute",p,"查看 / 设计传递链条",18,576,375,33,()=>{commandTab=1;Draw();});
+                Button("CommandOverview",p,"组织概况 / 关卡与预算",18,214,375,40,()=>{modal="commandOverview";Draw();});
+                Button("CommandHelpRoute",p,"查看 / 设计传递链条",18,278,375,40,()=>{commandTab=1;Draw();});
+
             }
         }
         void DrawCommandRoutes(Transform panel)
@@ -128,7 +130,7 @@ namespace Minglu
             DrawLook(panel,a.appearance,20,22,230,360);
             Label(panel,a.name+" / 代号「"+p.code+"」",270,23,540,38,25,Gold);
             var details=Scroll(panel,"PersonDetails_"+a.id,270,83,540,247,248);
-            var personText=Label(details,p.age+"岁 · 性情"+p.temper+"\n表身份："+p.profession+" Lv."+p.level+"\n地下岗位："+CommandRole(a.id)+"\n生活牵挂："+p.life+"\n身份经验："+p.xp+" / "+(State.command.config.coverXP*p.level)+"\n组织信任："+p.loyalty+" / 100\n近期情况："+p.last,0,0,514,247,20);
+            var personText=Label(details,p.age+"岁 · 性情"+p.temper+"\n表身份："+p.profession+" Lv."+p.level+"\n能力：情报"+a.intel+" 潜行"+a.stealth+" 说服"+a.persuade+" 组织"+a.organize+"\n地下岗位："+CommandRole(a.id)+"\n生活牵挂："+p.life+"\n身份经验："+p.xp+" / "+(State.command.config.coverXP*p.level)+"\n组织信任："+p.loyalty+" / 100\n近期情况："+p.last,0,0,514,247,20);
             float detailsHeight=Mathf.Max(247,personText.preferredHeight+12);personText.rectTransform.sizeDelta=new Vector2(514,detailsHeight);details.sizeDelta=new Vector2(details.sizeDelta.x,detailsHeight);
             string[] policies={"平衡安排","生活优先","主动发现"};
             for(int i=0;i<3;i++){int n=i;Button("LifePolicy_"+i,panel,policies[i],270+i*181,343,170,41,()=>{p.policy=n;Save(false);toast="政策已修改："+policies[n]+"。生活优先会暂停该成员的任务和链条岗位。";Draw();},true,p.policy==i);}

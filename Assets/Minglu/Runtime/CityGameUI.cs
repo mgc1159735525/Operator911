@@ -60,6 +60,8 @@ namespace Minglu
         void Update()
         {
             if (State == null) return;
+            if((atTitle&&homePage=="appearance"||modal=="appearance")&&Input.GetKeyDown(KeyCode.Escape)){RequestCloseAppearance();return;}
+            if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
             if(atTitle){if(Input.GetKeyDown(KeyCode.Escape)&&homePage!="main")BackHome();return;}
             if (Input.GetKeyDown(KeyCode.Escape)) { if(State.command!=null&&(State.command.eventKind!=0||State.ended||State.command.notices.Count>0))return; if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
             if (Input.GetKeyDown(KeyCode.F5)) Save();
@@ -268,6 +270,7 @@ namespace Minglu
         }
         void DrawModal()
         {
+            if(modal=="appearance"){DrawAppearanceOverlay();return;}
             var shade=Box("ModalShade",root,0,0,1600,900,new Color(0,0,0,.78f));var p=Box("Modal",shade,350,145,900,620,Panel);Border(p,0,0,900,620,Gold);
             if(modal!="event"&&modal!="ending")Button("CloseModal",p,"关闭",784,20,94,35,()=>{modal="";Draw();});
             if(modal=="confirm")
@@ -344,6 +347,7 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--studio-only")>=0){yield return AppearanceStudioSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--strategy-only")>=0){yield return StrategySmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--portrait-repair")>=0){yield return PortraitRepairSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--command-only")>=0){yield return CommandSmoke(path);Application.Quit();yield break;}
