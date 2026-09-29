@@ -94,3 +94,5 @@ v0.8当前局独立保存为 `minglu-run-v8.json`，局外档案为 `minglu-prof
 开发约定：直接在当前项目中修改，以 Git 提交记录历史。Windows 构建统一输出到 Builds/MingluCity/MingluCity.exe，并在后续构建时覆盖，不再按版本创建新目录。历史构建暂时保留。SourceTree 打开当前项目目录即可管理本地提交；远程同步需配置明确的目标仓库。缓存、日志、测试截图和构建包不纳入 Git，Assets 及其 .meta、Packages、ProjectSettings、Tools、Docs 纳入版本管理。
 
 安装包：Builds/Installer/MingluSetup.exe（固定文件名）。中文安装向导、桌面快捷方式、开始菜单入口、覆盖更新及卸载；存档独立保留。教程：Docs/Minglu/安装与游玩指南.html。重新打包：Tools/Installer/Build-Installer.ps1；仅重新制作安装包可传 -SkipGameBuild。已实测首次安装、覆盖安装与安装后游戏界面回归；覆盖安装前后5个现有JSON存档文件校验一致。
+
+2026-09-29 外观调整：女性头部尺寸由232调整为246，四款女性发型独立调整发量与发际线；男性发型保持原参数。胡须宽度微收4%，长度不再随脸宽伸长，嘴部附近胡须跟随嘴形编辑同步变形。实际渲染对照：outputs/portrait-current；外观编辑、预设与保存回归通过。构建和安装包继续覆盖固定路径。

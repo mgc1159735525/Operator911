@@ -30,7 +30,7 @@ Shader "Minglu/PortraitFeatures"
    #include "UnityUI.cginc"
    struct input {float4 vertex:POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;};
    struct output {float4 vertex:SV_POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;float4 world:TEXCOORD1;};
-   sampler2D _MainTex,_HairMask;fixed4 _Color,_HairShadow,_HairLight;float4 _NeckFit,_Crown,_ClipRect,_HeadRect,_FeatureCols,_Landmarks,_FrontFade,_HairMap,_HairBounds,_Exclude0,_Exclude1,_Exclude2;float _EarCol,_Sex,_HairMode,_NeckMode;
+   sampler2D _MainTex,_HairMask;fixed4 _Color,_HairShadow,_HairLight;float4 _BeardMap,_NeckFit,_Crown,_ClipRect,_HeadRect,_FeatureCols,_Landmarks,_FrontFade,_HairMap,_HairBounds,_Exclude0,_Exclude1,_Exclude2;float _BeardMode,_EarCol,_Sex,_HairMode,_NeckMode;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 crownUV(float2 uv)
    {
@@ -54,6 +54,13 @@ Shader "Minglu/PortraitFeatures"
    {return option<.5?float2(1,1):option<1.5?a:option<2.5?b:c;}   fixed4 frag(output i):SV_Target
    {
     float2 sampleUV=_HairMode>.5?crownUV(i.uv):i.uv;
+    if(_BeardMode>.5)
+    {
+     float2 local=float2((i.uv.x-_HeadRect.x)/_HeadRect.z,1-(i.uv.y-_HeadRect.y)/_HeadRect.w);
+     float2 p=_BeardMap.xy+local*_BeardMap.zw;
+     float2 delta=morph(p,float2(_Landmarks.x,_Landmarks.w),float2(.142,.068),shape(_FeatureCols.w,float2(.87,1),float2(1.12,1),float2(1,1.18)),0)/_BeardMap.zw;
+     sampleUV+=float2(delta.x*_HeadRect.z,-delta.y*_HeadRect.w);
+    }
     fixed4 c=tex2D(_MainTex,sampleUV);
     if(_HairMode>.5&&_Crown.y>0)c.a*=excluded(sampleUV,_HairBounds);
     if(_NeckMode>.5)

@@ -7,7 +7,7 @@ namespace Minglu
     {
         public static Rect Head(Appearance look)
         {
-            float size=look.sex==0?240:232;
+            float size=look.sex==0?240:246;
             return new Rect((400-size)/2,298-size,size,size);
         }
         public static Vector4 Landmarks(int sex,int face)
@@ -24,10 +24,10 @@ namespace Minglu
             {new Vector2(195,230),new Vector2(578,219),new Vector2(968,199),new Vector2(1345,230)},
             {new Vector2(196,690),new Vector2(578,693),new Vector2(959,695),new Vector2(1340,662)},
             {new Vector2(201,920),new Vector2(554,916),new Vector2(905,868),new Vector2(1260,917)}};
-        public static readonly float[,] HairScale={{.515f,.525f,.535f,.515f},{.515f,.52f,.515f,.53f},{.52f,.52f,.52f,.53f}};
+        public static readonly float[,] HairScale={{.515f,.525f,.535f,.515f},{.53f,.535f,.53f,.54f},{.52f,.52f,.52f,.53f}};
         // Compress only the crown above the hairline, keeping temples and lower locks fixed.
-        public static readonly float[,] CrownHeight={{.93f,.92f,.94f,.96f},{.93f,.94f,.95f,.94f}};
-        public static readonly float[,] Hairline={{.335f,.325f,.33f,.345f},{.33f,.325f,.33f,.325f}};
+        public static readonly float[,] CrownHeight={{.93f,.92f,.94f,.96f},{1.02f,1.02f,1.01f,1.02f}};
+        public static readonly float[,] Hairline={{.335f,.325f,.33f,.345f},{.34f,.335f,.34f,.335f}};
         // Opaque temple width measured at 40% of each face crop, excluding ears.
         // Expansion faces are broader: fit the hair to the face, not to atlas padding.
         static readonly float[,] TempleWidth={{146,146,148,149,153,157,154,156},{147,147,148,149,158,156,157,158}};
@@ -38,7 +38,10 @@ namespace Minglu
             float faceFit=row==2?TempleWidth[0,look.parts[0]]/147f:TempleWidth[look.sex,look.parts[0]]/147f;
             float factor=HairScale[row,column]*head.width/280f*faceFit;
             var target=new Vector2(head.x+head.width*face.x,head.y+head.height*(row==2?face.w:Hairline[look.sex,column]-.025f));
-            return new Rect(target.x-(anchor.x-src.x)*factor,target.y-(anchor.y-src.y)*factor,src.width*factor,src.height*factor);
+            // Beard width is independent of its length: a wider face must not grow a longer beard.
+            float widthFactor=row==2?factor*.96f:factor;
+            float heightFactor=row==2?HairScale[row,column]*head.width/280f:factor;
+            return new Rect(target.x-(anchor.x-src.x)*widthFactor,target.y-(anchor.y-src.y)*heightFactor,src.width*widthFactor,src.height*heightFactor);
         }
         public static Vector2 NeckFit(Appearance look)
         {

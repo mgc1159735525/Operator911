@@ -45,6 +45,16 @@ namespace Minglu
             owned.SetVector("_HairBounds",new Vector4(src.x/atlas.width,1-(src.y+src.height)/atlas.height,(src.x+src.width)/atlas.width,1-src.y/atlas.height));
         }
         public void ConfigureCrown(int sex,int style){SetCrown(sex,style,texture);}
+        public void ConfigureBeard(Appearance look,Rect destination)
+        {
+            var head=PortraitLayout.Head(look);
+            var landmarks=PortraitLayout.Landmarks(look.sex,look.parts[0]);
+            owned.SetFloat("_BeardMode",1);
+            owned.SetVector("_HeadRect",new Vector4(uvRect.x,uvRect.y,uvRect.width,uvRect.height));
+            owned.SetVector("_BeardMap",new Vector4((destination.x-head.x)/head.width,(destination.y-head.y)/head.height,destination.width/head.width,destination.height/head.height));
+            owned.SetVector("_Landmarks",landmarks);
+            owned.SetVector("_FeatureCols",new Vector4(0,0,0,look.featureEditing?look.parts[5]:0));
+        }
         public void ExcludeAtlasRegion(int index,float x,float y,float width,float height)
         {owned.SetVector("_Exclude"+index,new Vector4(x/texture.width,1-(y+height)/texture.height,(x+width)/texture.width,1-y/texture.height));}
         public void HairFade(float bottom,float top,bool back){owned.SetVector("_FrontFade",new Vector4(bottom,top,back?1:0,0));}

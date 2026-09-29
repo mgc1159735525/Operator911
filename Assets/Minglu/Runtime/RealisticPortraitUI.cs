@@ -65,6 +65,7 @@ namespace Minglu
             var raw=Rect(back?"BackHair":"FrontHairBeard",parent,dx+dst.x*scale,dy+dst.y*scale,dst.width*scale,dst.height*scale).gameObject.AddComponent<FeaturePortrait>();raw.texture=atlas;
             raw.uvRect=new UnityEngine.Rect(src.x/atlas.width,1-(src.y+src.height)/atlas.height,src.width/atlas.width,src.height/atlas.height);raw.color=tint;raw.raycastTarget=false;raw.ConfigureHair(look.parts[12]);if(row<2)raw.ConfigureCrown(row,column);
             if(row<2){float factor=src.height/dst.height;var head=PortraitLayout.Head(look);raw.HairFade(1-(src.y+(head.y+head.height*.936f-dst.y)*factor)/atlas.height,1-(src.y+(head.y+head.height*.793f-dst.y)*factor)/atlas.height,back);}
+            else raw.ConfigureBeard(look,dst);
         }
     }
 }
