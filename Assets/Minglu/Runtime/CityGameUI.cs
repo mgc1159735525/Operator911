@@ -341,6 +341,7 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--button-art-only")>=0){yield return ButtonArtSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--design-only")>=0){yield return DesignSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--producer-only")>=0){yield return ProducerSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--studio-only")>=0){yield return AppearanceStudioSmoke(path);Application.Quit();yield break;}

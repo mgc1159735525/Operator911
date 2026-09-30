@@ -84,7 +84,7 @@ namespace Minglu
         Button HomeTextButton(string name,Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true,Color? tint=null)
         {
             var button=Button(name,parent,text,x,y,w,h,action,enabled);
-            button.image.sprite=null;button.image.color=Color.white;
+            button.image.sprite=null;button.image.overrideSprite=null;button.image.type=Image.Type.Simple;button.image.color=Color.white;
             button.transition=Selectable.Transition.ColorTint;
             var colors=button.colors;colors.normalColor=Color.clear;colors.highlightedColor=new Color(1,1,1,.055f);colors.selectedColor=new Color(1,1,1,.055f);colors.pressedColor=new Color(1,1,1,.11f);colors.disabledColor=Color.clear;button.colors=colors;
             foreach(Transform child in button.transform)if(child.name.StartsWith("Icon_")||child.name=="PrintRule")child.gameObject.SetActive(false);

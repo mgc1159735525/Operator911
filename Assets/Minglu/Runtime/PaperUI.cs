@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 namespace Minglu
@@ -7,6 +8,39 @@ namespace Minglu
     {
         static readonly Color Paper=Hex("E6DFCF"),PaperInk=Hex("282A27"),PaperMuted=Hex("5D6157"),Accent=Hex("943F32"),PaperLine=Hex("C4BEAF"),PaperInset=Hex("DCD5C5");
         Font titleFont;
+        sealed class PrintButtonArt
+        {
+            public Sprite normal,hover,pressed,selected,disabled;
+            public bool Complete { get { return normal!=null&&hover!=null&&pressed!=null&&selected!=null&&disabled!=null; } }
+        }
+        readonly Dictionary<string,PrintButtonArt> printButtonArt=new Dictionary<string,PrintButtonArt>();
+        PrintButtonArt ButtonArt(string family)
+        {
+            PrintButtonArt art;
+            if(printButtonArt.TryGetValue(family,out art))return art;
+            string path="Minglu/UI/PrintButtons/button_"+family+"_";
+            art=new PrintButtonArt
+            {
+                normal=Resources.Load<Sprite>(path+"normal"),hover=Resources.Load<Sprite>(path+"hover"),
+                pressed=Resources.Load<Sprite>(path+"pressed"),selected=Resources.Load<Sprite>(path+"selected"),
+                disabled=Resources.Load<Sprite>(path+"disabled")
+            };
+            // A partially installed set must fall back as a whole; never leave an invisible state.
+            printButtonArt[family]=art.Complete?art:null;
+            return printButtonArt[family];
+        }
+        bool UseButtonArt(Button button,string family,bool selected)
+        {
+            var art=ButtonArt(family);if(art==null)return false;
+            var image=button.image;image.color=family=="primary"?new Color(.82f,.82f,.82f,1):Color.white;image.type=Image.Type.Sliced;image.fillCenter=true;
+            image.sprite=selected?art.selected:art.normal;
+            var states=button.spriteState;states.highlightedSprite=art.hover;states.pressedSprite=art.pressed;states.selectedSprite=art.selected;states.disabledSprite=art.disabled;
+            button.spriteState=states;button.transition=Selectable.Transition.SpriteSwap;
+            image.overrideSprite=button.interactable?null:art.disabled;
+            // Clear the old tint immediately; SpriteSwap changes textures without a colour tween.
+            image.CrossFadeColor(Color.white,0,true,true);
+            return true;
+        }
         bool PaperSurface(Transform parent)
         {
             for(var p=parent;p!=null;p=p.parent){var theme=p.GetComponent<UISurfaceTheme>();if(theme!=null)return theme.paper;}
@@ -50,6 +84,11 @@ namespace Minglu
             SurfaceTheme(r,paper);
             var b=r.gameObject.AddComponent<Button>();b.targetGraphic=im;b.interactable=enabled;b.transition=Selectable.Transition.ColorTint;
             var colors=b.colors;colors.normalColor=normal;colors.highlightedColor=submit?Hex("AD5141"):paper?Hex("D1C9B6"):Hex("3D403A");colors.pressedColor=submit?Hex("753329"):paper?Hex("C6BEAB"):Hex("45483F");colors.selectedColor=normal;colors.disabledColor=paper?Hex("DFD9CD"):Hex("242622");colors.fadeDuration=.1f;b.colors=colors;
+            // Directory links, portrait choices and map pins keep their existing understated styles.
+            // Map pins also receive a dynamic urgent tint from DrawCommandMap.
+            bool artwork=!choice&&!quiet&&!photo&&!name.StartsWith("CommandDistrict_")&&UseButtonArt(b,submit?"primary":paper?"paper":"dark",selected);
+            if(artwork&&submit&&enabled)foreground=Hex("FFF6E8");
+            if(artwork&&!enabled)foreground=submit?Hex("DED6C5"):paper?Hex("625F57"):Hex("A3A294");
             bool left=nav||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
             var label=Label(r,text,left?14:8,0,w-(left?26:16),h,nav?21:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
             if(choice)
@@ -62,13 +101,13 @@ namespace Minglu
             {
                 if(selected){Border(r,0,0,w,h,paper?Accent:Gold);}
             }
-            else if(!quiet&&!submit)
+            else if(!quiet&&!submit&&!artwork)
             {
                 Rule(r,0,h-1,w,paper?Hex("B7AF9D"):Hex("64665A"));
             }
             var outline=r.gameObject.AddComponent<Outline>();outline.effectColor=paper?Accent:Gold;outline.effectDistance=new Vector2(1,-1);outline.enabled=false;r.gameObject.AddComponent<UIFocusOutline>();
             // Set the first visible frame directly: a full redraw must not fade every surface from white.
-            im.CrossFadeColor(enabled?normal:colors.disabledColor,0,true,true);
+            im.CrossFadeColor(artwork?Color.white:enabled?normal:colors.disabledColor,0,true,true);
             b.onClick.AddListener(()=>{Sound();action();});return b;
         }
     }

@@ -1,0 +1,24 @@
+Tool: built-in image_gen; not CLI.
+Selected source: exec-8a4980d8-8d34-4372-ae96-c1394e2ad2c2.png
+Production note: PNG contains actual transparency (verified pixel alpha). The 15 button faces are losslessly cropped from the source; alpha and original artwork are preserved. Hidden RGB values in transparent pixels are not a game background.
+
+INITIAL PROMPT
+Use case: stylized-concept. Asset type: production-ready blank 2D game UI button sprite atlas for a restrained historical intelligence management game, printed dossier art direction.
+Generate ONE transparent PNG sprite atlas, landscape canvas 1536 x 1024 pixels. Exactly 15 isolated rectangular horizontal buttons arranged in a perfectly regular 3-column x 5-row grid. No words, no labels, no numbers, no icons anywhere. Actual transparent alpha background, no drawn checkerboard.
+Geometry: all buttons same flat rectangle silhouette, width 416 px and height 104 px, tiny natural ink variation only. Column centers x=256,768,1280. Row centers y=128,320,512,704,896. Leave generous fully transparent empty gaps and margins. Each button must be separate and entirely inside its grid cell; no connected shapes, no shadows outside the rectangular outline, no perspective. Safe empty center for separately-rendered game text. Orthographic flat front view.
+Columns:
+1. Primary action: muted oxide iron-red ink (#943F32), warm ivory fine edge on selected state only.
+2. Secondary action on cream pages: warm gray paper (#DCD5C5), quiet gray-brown single bottom rule.
+3. Secondary action on charcoal pages: deep charcoal green (#343B35), faint desaturated sage bottom rule.
+Rows in exact order:
+1. Normal: flat matte field.
+2. Hover: subtly lighter but clearly distinct, slightly clearer fine boundary.
+3. Pressed: subtly darker field with a quiet inset top rule, no 3D bevel.
+4. Selected: same-family field with a restrained fine continuous border; paper column uses muted red hairline border, charcoal uses warm ivory hairline border.
+5. Disabled: muted, desaturated, quieter colors; primary gray-brown #777368, paper #DFD9CD, charcoal #242B26. No scratch marks.
+Materials/style: very delicate, fine, low contrast letterpress ink grain. Sophisticated editorial game interface. Clean, purposeful shapes with mostly smooth centers to protect text legibility. Absolutely no decorative flourishes, paper tears, conspicuous grunge, drop shadows, gradients, glossy lighting, gold trim, metal bevels, rounded pill shapes, fake writing, emblems, watermarks, or ornamental corners. This is usable blank UI sprite art, NOT a poster, NOT a website, NOT a screenshot or an exploded mockup.
+
+REVISION PROMPT
+Use case: background-extraction. Edit this button sprite atlas for actual game-engine use. Keep exactly the 15 flat blank button faces (3 columns, 5 rows), their interior ink and paper grain, and their straight rectangular borders. REMOVE EVERY PIXEL OUTSIDE THE 15 RECTANGULAR BUTTONS: all the colored gradient backdrop, all ambient haze, all shadows, all glow and all vignette must become fully transparent alpha. The button edges must be perfectly horizontal/vertical rectangular cutouts. Do not replace the background with a color or checkerboard. True transparent PNG required.
+Keep all buttons at the same positions and dimensions. No text/icons/labels.
+Increase state distinction without changing the design: row 2 hover must be visibly about 12% lighter than row 1; row 3 pressed about 12% darker than row 1. Row 4 selected retains its fine outline. Row 5 stays desaturated. Preserve the elegant, restrained printed-dossier flat UI aesthetic. Keep button interiors fully opaque.
