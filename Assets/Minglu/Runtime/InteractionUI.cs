@@ -66,6 +66,7 @@ namespace Minglu
             {
                 Vector2 position;
                 scroll.normalizedPosition = scrollPositions.TryGetValue(scroll.name, out position) ? position : new Vector2(0,1);
+                if(scroll.verticalScrollbar!=null)scroll.verticalScrollbar.gameObject.SetActive(scroll.content.rect.height>scroll.viewport.rect.height+.5f);
             }
         }
     }

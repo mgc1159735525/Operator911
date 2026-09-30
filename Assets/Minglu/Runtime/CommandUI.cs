@@ -26,25 +26,29 @@ namespace Minglu
         void DrawCommandGame()
         {
             CommandRules.EnsureStrategy(State);
-            Label(root,"明路 · 地下",24,20,250,44,30,Gold);
-            Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"  ·  民心 "+State.command.strategy.hearts,24,83,265,24,16,Muted);
-            Label(root,"第 "+State.turn+" / "+State.config.Value("turns")+" 夜",310,24,220,35,27,Gold);
-            Label(root,"成果 "+State.progress+"  ·  可用情报 "+(State.intelligence-CommandRules.ReservedIntel(State))+"  ·  可用银两 "+(State.money-CommandRules.ReservedMoney(State)),545,28,640,34,19,Teal);
-
-            Button("Save",root,"保存",1192,28,88,38,Save);Button("Load",root,"读取",1290,28,88,38,Load,System.IO.File.Exists(SavePath));
-            Button("CommandHome",root,"返回",1390,28,82,38,ReturnHome);
-            Button("CommandHelp",root,"?",1482,28,42,38,()=>{modal="commandHelp";Draw();});Button("CommandMenu",root,"菜单",1530,28,46,38,()=>{modal="menu";Draw();});
-            Box("TopRule",root,24,113,1552,1,Line);
+            Label(root,"明路 · 地下",32,24,238,48,32,Gold);
+            Label(root,"新京地区  /  机密",33,78,228,24,14,Muted);
+            Label(root,"第 "+State.turn.ToString("00")+" 夜",286,26,234,48,37,Gold);
+            Label(root,"行动期限  "+State.config.Value("turns")+" 夜",288,80,225,24,14,Muted);
+            Label(root,"行动成果",548,28,155,22,14,Muted);Label(root,State.progress.ToString("00"),548,54,155,43,28,Gold);
+            Label(root,"可用情报",720,28,155,22,14,Muted);Label(root,(State.intelligence-CommandRules.ReservedIntel(State))+" 份",720,54,155,43,28,Gold);
+            Label(root,"可用经费",893,28,230,22,14,Muted);Label(root,(State.money-CommandRules.ReservedMoney(State))+" 银两",893,54,230,43,28,Gold);
+            Button("Save",root,"保存",1150,29,88,32,Save);Button("Load",root,"读档",1240,29,88,32,Load,System.IO.File.Exists(SavePath));
+            Button("CommandHome",root,"返回",1330,29,78,32,ReturnHome);
+            Button("CommandHelp",root,"指南",1410,29,70,32,()=>{modal="commandHelp";Draw();});Button("CommandMenu",root,"菜单",1490,29,78,32,()=>{modal="menu";Draw();});
+            Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"     民心 "+State.command.strategy.hearts,1155,81,410,24,15,Muted);
+            Rule(root,32,108,1536);
+            string[] tabs={"任务簿","联络网","人事档案","城区地图","值夜报告","地方事务"};
+            for(int i=0;i<tabs.Length;i++){int n=i;Button("CommandTab_"+i,root,tabs[i],32,130+i*47,228,39,()=>{commandTab=n;Draw();},true,commandTab==i);}
             DrawNoirBrief();DrawNoirRoster();
-            string[] tabs={"任务指挥","传递链条","人事生活","城区态势","执行报告","地区经营"};
-            for(int i=0;i<tabs.Length;i++){int n=i;Button("CommandTab_"+i,root,tabs[i],310+i*140,79,132,36,()=>{commandTab=n;Draw();},true,commandTab==i);}
-            var panel=Box("CommandCenter",root,310,126,838,578,Panel);
+            Box("PageShadow",root,290,127,838,578,new Color(0,0,0,.2f));
+            var panel=Box("CommandCenter",root,286,122,838,578,Panel);
             if(commandTab==0)DrawCommandTasks(panel);else if(commandTab==1)DrawCommandRoutes(panel);else if(commandTab==2)DrawCommandPeople(panel);else if(commandTab==3)DrawCommandMap(panel);else if(commandTab==4){if(!(State.ended&&modal=="endingReview"))DrawCommandReport(panel);}else DrawStrategy(panel);
             DrawCommandAdvice();
-            Box("CommandFooter",root,24,850,1552,42,Panel);
-            Label(root,toast,38,860,985,26,16,Muted);
-            Button("CommandNextAction",root,"前往处理",1040,854,214,34,GoNextCommand);
-            Button("CommandEnd",root,"推进一夜 · 执行授权",1285,854,268,34,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,true);
+            Rule(root,32,847,1536);
+            Label(root,toast,32,862,958,30,15,Muted);
+            Button("CommandNextAction",root,"处理下一项  ›",1010,855,230,37,GoNextCommand);
+            Button("CommandEnd",root,"签发指令  /  结束今夜",1260,855,308,37,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,true);
             if(State.command.eventKind!=0)DrawCommandEvent();
             else if(State.ended){if(modal=="endingReview")DrawEndingReview();else DrawCommandEnding();}
             else if(State.command.notices!=null&&State.command.notices.Count>0)DrawCommandNotice();
@@ -62,69 +66,80 @@ namespace Minglu
         }
         void DrawCommandTasks(Transform panel)
         {
-            Label(panel,"你决定目标与负责人，成员决定具体执行",20,15,800,32,23,Gold);
-            Label(panel,"选目标 → 比较人员 → 配置方案 → 授权；失败可在期限内重试。",20,56,798,30,17,Muted);
+            Label(panel,"任务簿",26,16,560,40,29,Gold);
+            Label(panel,State.command.tasks.Count(t=>t.status==0)+" 项待办",645,25,155,26,16,Muted);
+            Label(panel,"选择任务，比较成员，再签发行动方案。",26,61,772,28,16,Muted);
             string[] filters={"全部","待授权","已授权","两夜内截止"};
             for(int f=0;f<4;f++){int value=f;Button("TaskFilter_"+f,panel,filters[f],20+f*198,92,187,32,()=>{taskFilter=value;resetCommandTaskScroll=true;Draw();},true,taskFilter==f);}
             var tasks=State.command.tasks.Where(t=>t.status==0&&(taskFilter==0||taskFilter==1&&t.actor<0||taskFilter==2&&t.actor>=0||taskFilter==3&&t.deadline<=State.turn+1)).OrderBy(t=>t.id==commandTask?0:t.operation==2?1:2).ThenBy(t=>t.deadline).ToList();
-            var content=Scroll(panel,"CommandTasks",18,137,802,431,Mathf.Max(100,tasks.Count*174));int i=0;
+            var content=Scroll(panel,"CommandTasks",18,137,802,431,Mathf.Max(100,tasks.Count*164));int i=0;
             if(tasks.Count==0)Label(content,"当前筛选没有任务。可切换「全部」，或到地区经营发起委托；链条与日常仍会运行。",12,15,750,70,20,Teal);
             foreach(var t in tasks)
             {
-                int y=i++*174;var card=Box("CommandTaskCard",content,0,y,780,162,Ink);
-                Label(card,t.title+" / "+(string.IsNullOrEmpty(t.category)?"委托":t.category)+" · "+t.origin.Split('：')[0],12,9,575,29,21,Gold);Label(card,(t.deadline<=State.turn?"今夜截止":"剩"+(t.deadline-State.turn+1)+"夜"),592,12,173,26,16,t.deadline==State.turn?Red:Muted);
-                Label(card,State.config.District(t.district).name+" · "+CommandRules.Skills[t.skill]+"骰 / "+t.required+"个成功 / 身份Lv."+t.level+(t.profession==""?"":" / "+t.profession),12,48,750,27,17);
-                Label(card,(t.stepsRequired>1?"阶段 "+t.stepsDone+"/"+t.stepsRequired+" · ":"")+CommandRules.TaskReward(t)+" · "+(t.actor<0?"待授权":CommandName(t.actor)+" / "+CommandRules.Plans[t.plan]),12,81,750,28,16,Teal);
-                Button("CommandTask_"+t.id,card,"查看与分配",12,118,200,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;Draw();},true,t.id==commandTask);
-                Button("CommandRecommend_"+t.id,card,"推荐可用人选",226,118,212,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;var candidate=State.agents.Where(a=>CommandRules.TaskError(State,a.id,t)=="").OrderByDescending(a=>CommandRules.TaskDice(State,a,t)).ThenBy(a=>CommandRole(a.id)=="机动成员"?0:1).FirstOrDefault();if(candidate!=null){selectedAgent=candidate.id;toast="已推荐"+candidate.name+"。请检查右侧成功率和岗位冲突，再授权。";}else toast="暂无满足要求的人选：可先培养身份、安排休养，或选择其他任务。";Draw();});
-                if(t.actor>=0)Button("CommandCancel_"+t.id,card,"撤回授权",452,118,165,32,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();},t.actor>=0);
-                Button("CommandCompare_"+t.id,card,"对比人选",631,118,137,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;modal="compareCandidates";Draw();});
+                int index=i++;int y=index*164;var card=Rect("CommandTaskCard",content,0,y,780,156);
+                Rule(card,0,155,780);Label(card,(index+1).ToString("00"),8,13,41,30,18,Muted);
+                if(t.id==commandTask){var marker=Box("TaskSelection",card,0,10,3,132,Accent);marker.GetComponent<UnityEngine.UI.Image>().raycastTarget=false;}
+                Label(card,t.title,55,7,520,33,24,Gold);Label(card,(t.deadline<=State.turn?"今夜截止":"剩"+(t.deadline-State.turn+1)+"夜"),592,12,173,26,16,t.deadline==State.turn?Red:Muted);
+                Label(card,State.config.District(t.district).name+" · "+t.origin.Split('：')[0]+"    "+CommandRules.Skills[t.skill]+" / "+t.required+"成功 / 身份"+t.level+"级"+(t.profession==""?"":" / "+t.profession),55,49,710,25,16,Muted);
+                Label(card,(t.stepsRequired>1?"阶段 "+t.stepsDone+"/"+t.stepsRequired+" · ":"")+CommandRules.TaskReward(t)+" · "+(t.actor<0?"待授权":CommandName(t.actor)+" / "+CommandRules.Plans[t.plan]),55,80,710,27,15,Teal);
+                Button("CommandTask_"+t.id,card,"查看任务  ›",42,116,158,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;Draw();},true,t.id==commandTask);
+                Button("CommandRecommend_"+t.id,card,"推荐人选  ›",205,116,158,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;var candidate=State.agents.Where(a=>CommandRules.TaskError(State,a.id,t)=="").OrderByDescending(a=>CommandRules.TaskDice(State,a,t)).ThenBy(a=>CommandRole(a.id)=="机动成员"?0:1).FirstOrDefault();if(candidate!=null){selectedAgent=candidate.id;toast="已推荐"+candidate.name+"。请检查右侧成功率和岗位冲突，再授权。";}else toast="暂无满足要求的人选：可先培养身份、安排休养，或选择其他任务。";Draw();});
+                if(t.actor>=0)Button("CommandCancel_"+t.id,card,"撤回授权",391,116,135,32,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();},t.actor>=0);
+                Button("CommandCompare_"+t.id,card,"比较人选  ›",620,116,148,32,()=>{commandTask=t.id;resetCommandTaskScroll=true;modal="compareCandidates";Draw();});
             }
         }
         void DrawCommandAdvice()
         {
             var taskSelected=commandTab==0&&State.command.tasks.Any(tk=>tk.id==commandTask&&tk.status==0);
-            var p=Box("CommandAdvice",root,1164,79,412,taskSelected?625:365,Panel);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
-            Label(p,"指挥席 / "+a.name,18,16,375,33,25,Gold);
-            Label(p,member.profession+" Lv."+member.level+" / "+CommandRole(a.id),18,62,375,28,18,Teal);
-            Label(p,"体力 "+a.stamina+" / 精神 "+a.spirit+" / 暴露 "+a.exposure,18,106,375,28,18,Muted);
-            Button("CommandMemberOpen",p,"人物档案 / 能力与生活",18,153,375,40,()=>{modal="memberDetails";Draw();});
+            var p=Box("CommandAdvice",root,1146,122,422,taskSelected?578:350,Ink);var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,a.id);
+            Label(p,"指挥签发",20,0,374,26,15,Muted);
+            Portrait(p,a,20,40,61,90);Label(p,a.name,102,43,295,39,28,Gold);
+            Label(p,member.profession+" · "+member.level+"级",103,88,289,27,18,TextColor);
+            Label(p,"体力 "+a.stamina+"    精神 "+a.spirit+"    暴露 "+a.exposure,20,148,379,26,17,Muted);
+            Button("CommandMemberOpen",p,"查看人物档案  ›",20,185,379,34,()=>{modal="memberDetails";Draw();});
             var t=State.command.tasks.FirstOrDefault(tk=>tk.id==commandTask&&tk.status==0);
             if(commandTab==0&&t!=null)
             {
                 string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t);double chance=DispatchRules.Probability(dice,t.required);
-                Label(p,t.title,18,235,375,34,23,Gold);Label(p,t.body,18,277,375,72,17);
-                Label(p,CommandRules.Plans[t.plan]+(t.intelSupport?" + 情报支援":"")+" / "+State.config.District(t.district).name+"\n"+dice+"骰 / 需"+t.required+"成功 / "+(chance*100).ToString("0.#")+"%\n执行：14体力、6精神、暴露+"+CommandRules.TaskExposure(State,a,t),18,356,375,88,18,Teal);
-                Button("CommandPlan",p,"方案 / 投入 / 完整后果",18,452,375,40,()=>{modal="missionPlan";Draw();});
-                Label(p,error!=""?error:CommandRole(a.id)!="机动成员"?"此人优先执行任务，对应链条岗位本夜等待。":"条件满足，授权时预留资源，执行时扣除。",18,501,375,68,17,error==""?Muted:Red);
-                Button("CommandAuthorize",p,"授权 "+a.name,18,578,375,32,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已授权并预留资源；推进一夜后执行。";Save(false);}Draw();},error=="",true);
+                Rule(p,20,232,379);Label(p,t.title,20,247,379,35,24,Gold);Label(p,t.body,20,292,379,57,17);
+                Label(p,(chance*100).ToString("0.#")+"%",20,354,172,54,38,Gold);
+                Label(p,"成功概率\n"+dice+"骰 / 需"+t.required+"个成功",203,357,196,52,16,Muted);
+                Label(p,CommandRules.Plans[t.plan]+"  ·  体力−14  /  暴露+"+CommandRules.TaskExposure(State,a,t),20,415,379,28,16,Muted);
+                Button("CommandPlan",p,"调整方案与投入  ›",20,452,379,34,()=>{modal="missionPlan";Draw();});
+                Label(p,error!=""?error:CommandRole(a.id)!="机动成员"?"本夜优先执行任务，联络岗位将等待。":"授权后预留资源，结束今夜时执行。",20,495,379,40,15,error==""?Muted:Red);
+                Button("CommandAuthorize",p,"签发给 "+a.name,20,540,379,38,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已授权并预留资源；推进一夜后执行。";Save(false);}Draw();},error=="",true);
             }
             else
             {
-                Button("CommandOverview",p,"组织概况 / 关卡与预算",18,214,375,40,()=>{modal="commandOverview";Draw();});
-                Button("CommandHelpRoute",p,"查看 / 设计传递链条",18,278,375,40,()=>{commandTab=1;Draw();});
-
+                Rule(p,20,232,379);
+                Button("CommandOverview",p,"组织概况  ›",20,252,379,38,()=>{modal="commandOverview";Draw();});
+                Button("CommandHelpRoute",p,"检查联络网  ›",20,302,379,38,()=>{commandTab=1;Draw();});
             }
         }
         void DrawCommandRoutes(Transform panel)
         {
-            Label(panel,"设计链条，接头由成员自动完成",20,14,798,33,24,Gold);
-            Label(panel,"① 点岗位比较人选 → ② 三人到位后启用 → ③ 推进一夜自动执行。",20,55,798,45,17,Muted);
+            Label(panel,"联络网",26,16,570,40,29,Gold);Label(panel,"观察  →  接头  →  外送",507,27,296,28,16,Muted);
+            Label(panel,"点选岗位安排成员。启用后，成员会按各自的周期行动。",26,63,772,29,16,Muted);
             int i=0;
             foreach(var r in State.command.routes)
             {
-                int y=110+i++*226;Label(panel,"联络链 "+(r.id+1)+"  /  "+(r.enabled?"自动运行":"暂停或未启用"),20,y,790,29,21,Gold);
+                int y=112+i++*211;Rule(panel,26,y,772);
+                Label(panel,(r.id+1).ToString("00")+"   联络链",26,y+14,500,30,21,Gold);
+                Label(panel,r.enabled?"运行中":"未启用",677,y+17,125,25,15,r.enabled?Teal:Muted);
                 for(int slot=0;slot<3;slot++)
                 {
-                    int n=slot,id=slot==0?r.source:slot==1?r.liaison:r.courier;string label=new[]{"内线 · 情报","接头人 · 说服","交通员 · 潜行"}[slot];
-                    Button("RouteSlot_"+r.id+"_"+slot,panel,label+"\n"+CommandName(id),20+slot*266,y+40,252,55,()=>OpenRoutePicker(r,n));
+                    int n=slot,id=slot==0?r.source:slot==1?r.liaison:r.courier;
+                    var role=Button("RouteSlot_"+r.id+"_"+slot,panel,"",26+slot*260,y+53,245,64,()=>OpenRoutePicker(r,n));
+                    Label(role.transform,new[]{"内线 · 情报","接头人 · 说服","交通员 · 潜行"}[slot],14,7,217,21,13,Muted);
+                    Label(role.transform,id<0?"选择成员  ＋":CommandName(id)+"  ›",14,31,217,29,20,Gold);
+                    if(slot<2)Label(panel,"›",272+slot*260,y+73,14,25,19,Muted);
                 }
                 string error=CommandRules.RouteError(State,r);
-                Label(panel,"待接 "+r.waiting+" → 中继 "+r.atRelay+" → 上级累计收到 "+r.delivered,20,y+104,555,27,18,Teal);
-                Label(panel,RouteForecast(r),20,y+138,555,67,17,error==""?Muted:Red);
-                Button("RouteEnable_"+r.id,panel,r.enabled?"暂停此线":"确认启用此线",588,y+112,210,42,()=>{r.enabled=!r.enabled;r.last=r.enabled?"已启用：内线隔夜尝试产出，接头与外送自动推进。":"已暂停，成员按其他任务或生活安排工作。";Save(false);toast=r.enabled?"链条已启用：后续夜晚自动判定，任务优先占用人手。":"链条已暂停，成员可以生活与休养。";Draw();},r.enabled||error=="",true);
+                Label(panel,"待接 "+r.waiting+"   →   中继 "+r.atRelay+"   →   已送达 "+r.delivered,26,y+128,551,27,17,Teal);
+                Label(panel,RouteForecast(r),26,y+163,551,45,15,error==""?Muted:Red);
+                Button("RouteEnable_"+r.id,panel,r.enabled?"暂停":"启用此线",642,y+139,156,38,()=>{r.enabled=!r.enabled;r.last=r.enabled?"已启用：内线隔夜尝试产出，接头与外送自动推进。":"已暂停，成员按其他任务或生活安排工作。";Save(false);toast=r.enabled?"链条已启用：后续夜晚自动判定，任务优先占用人手。":"链条已暂停，成员可以生活与休养。";Draw();},r.enabled||error=="",true);
             }
-            Label(panel,"从产出到送达至少跨三次结算。换人须重新启用；暂停保留积压，6夜未送达会失效。",20,546,798,28,14,Muted);
+            Label(panel,"传递至少跨三夜。换人须重新启用；暂停保留积压，6夜未送达会失效。",26,548,772,25,14,Muted);
         }
         void DrawCommandPeople(Transform panel)
         {
@@ -148,16 +163,16 @@ namespace Minglu
             {
                 var tasks=State.command.tasks.Where(t=>t.status==0&&t.district==d.id).ToList();
                 bool urgent=tasks.Any(t=>t.deadline<=State.turn&&t.actor<0);
-                string status=urgent?"! 今夜截止":tasks.Count==0?"暂无待办":"待授权 "+tasks.Count(t=>t.actor<0)+" / 已授权 "+tasks.Count(t=>t.actor>=0);
+                string status=urgent?"! 今夜截止":tasks.Count==0?"暂无待办":"待派 "+tasks.Count(t=>t.actor<0)+" · 已派 "+tasks.Count(t=>t.actor>=0);
                 var pin=Button("CommandDistrict_"+d.id,panel,d.name+" / 风险+"+Mathf.Clamp(d.risk,0,6)+"\n"+status,d.x*650+10,d.y*445+25,168,56,()=>{var t=tasks.OrderBy(tk=>tk.actor>=0?1:0).ThenBy(tk=>tk.deadline).FirstOrDefault();if(t!=null){FocusCommandTask(t.id);toast="已定位该区最紧急待办；比较人员后授权。";}else toast=d.name+"当前没有待办，可查看其他城区或地区经营。";Draw();});
-                if(urgent)pin.image.color=Hex("893C34");
+                if(urgent){var colors=pin.colors;colors.normalColor=Accent;colors.highlightedColor=Hex("AD5141");colors.pressedColor=Hex("753329");colors.selectedColor=Accent;pin.colors=colors;pin.image.CrossFadeColor(Accent,0,true,true);pin.GetComponentInChildren<UnityEngine.UI.Text>().color=Paper;}
             }
-            Box("MapNote",panel,16,508,806,64,Ink);Label(panel,"地区风险会增加暴露；进阶任务受盘查影响。点击城区选择任务，再比较人员与方案。",28,522,775,44,18,Gold);
+            Box("MapNote",panel,16,508,806,64,Ink);Label(panel,"点选城区查看任务。风险越高，成员行动时的暴露越大。",28,522,775,44,18,Gold);
         }
         void DrawCommandReport(Transform panel){DrawNightReport(panel);}
         Transform CommandModal(string title,float height=600)
         {
-            var shade=Box("CommandShade",root,0,0,1600,900,new Color(0,0,0,.8f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);Border(p,0,0,900,height,Line);Box("CaseRibbon",p,0,0,8,height,Hex("AB493C"));Label(p,title,28,24,840,45,30,Gold);return p;
+            var shade=Box("CommandShade",root,0,0,1600,900,new Color(0,0,0,.76f));Box("DialogShadow",shade,359,(900-height)/2+10,900,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);Box("CaseRibbon",p,28,0,64,5,Accent);Label(p,title,28,24,840,45,30,Gold);Rule(p,28,73,844);return p;
         }
         void DrawCommandConfirm()
         {
@@ -196,7 +211,7 @@ namespace Minglu
             var noticeText=Label(content,n.body,0,0,806,Mathf.Max(bodyHeight,contentHeight),21);
             float measured=Mathf.Max(bodyHeight,noticeText.preferredHeight+12);noticeText.rectTransform.sizeDelta=new Vector2(806,measured);content.sizeDelta=new Vector2(content.sizeDelta.x,measured);
             Button("CommandNoticeDismiss",p,"已阅 · 继续安排",28,height-80,350,50,()=>AcknowledgeNotice(false));
-            Button("CommandNoticeOpen",p,n.tab==0?"前往任务指挥":n.tab==1?"检查传递链条":n.tab==2?"查看成员情况":n.tab==5?"查看地区经营":"查看执行报告",398,height-80,474,50,()=>AcknowledgeNotice(true),true,true);
+            Button("CommandNoticeOpen",p,n.tab==0?"查看任务簿":n.tab==1?"检查联络网":n.tab==2?"查看成员情况":n.tab==5?"查看地方事务":"查看执行报告",398,height-80,474,50,()=>AcknowledgeNotice(true),true,true);
         }
         void AcknowledgeNotice(bool navigate)
         {

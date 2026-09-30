@@ -26,13 +26,14 @@ namespace Minglu
         uint nextSeed = 911;
         string smokeSave;
         string SavePath { get { return smokeSave ?? Path.Combine(Application.persistentDataPath,"minglu-run-v14.json"); } }
-        static readonly Color Ink = Hex("191B1D"), Panel = Hex("282A2B"), Line = Hex("53514A"), Gold = Hex("E7D9BB"), TextColor = Hex("EAE5D9"), Muted = Hex("B5B0A4"), Red = Hex("EC816B"), Teal = Hex("BDCAAF");
+        static readonly Color Ink = Hex("1D2321"), Panel = Hex("29302C"), Line = Hex("495047"), Gold = Hex("E4D9BD"), TextColor = Hex("E7E3D7"), Muted = Hex("ACB0A0"), Red = Hex("DE8B73"), Teal = Hex("BDCAAF");
 
         void Start()
         {
             try
             {
                 font = font != null ? font : Font.CreateDynamicFontFromOSFont("Microsoft YaHei", 18);
+                titleFont=Font.CreateDynamicFontFromOSFont(new[]{"SimSun","Microsoft YaHei"},28);
                 if (Environment.GetCommandLineArgs().Contains("--minglu-capture")) smokeSave = Path.Combine(Path.GetTempPath(), "minglu-ui-" + Guid.NewGuid().ToString("N") + ".json");
                 InitializeProfile();
                 State = PrototypeRules.NewRun(true, nextSeed, ConfigStore.Load(), true, true);
@@ -82,20 +83,12 @@ namespace Minglu
         }
         Text Label(Transform parent, string text, float x, float y, float w, float h, int size = 18, Color? color = null, TextAnchor align = TextAnchor.UpperLeft)
         {
-            var r = Rect("Text", parent, x, y, w, h); var t = r.gameObject.AddComponent<Text>(); t.font = font; t.text = text; t.fontSize = size; t.color = color ?? TextColor; t.alignment = align;
-            t.horizontalOverflow = HorizontalWrapMode.Wrap; t.verticalOverflow = VerticalWrapMode.Truncate; t.raycastTarget = false; t.supportRichText = false; t.lineSpacing = 1.12f;if(size>=23)t.fontStyle=FontStyle.Bold; return t;
+            var r = Rect("Text", parent, x, y, w, h); var t = r.gameObject.AddComponent<Text>(); t.font = font; t.text = text; t.fontSize = size; t.color = SurfaceText(parent,color ?? TextColor); t.alignment = align;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap; t.verticalOverflow = VerticalWrapMode.Truncate; t.raycastTarget = false; t.supportRichText = false; t.lineSpacing = 1.12f;if(size>=23){t.font=titleFont??font;t.fontStyle=FontStyle.Normal;} return t;
         }
         Button Button(string name, Transform parent, string text, float x, float y, float w, float h, Action action, bool enabled = true, bool primary = false)
         {
-            var r = Box(name, parent, x, y, w, h, RedAction(name)?Hex("AB493C"):primary?Gold:Hex("3A3C3D"));
-            var buttonImage=r.GetComponent<Image>();buttonImage.sprite=NoirSprite("button_idle");buttonImage.type=Image.Type.Sliced;
-            var b = r.gameObject.AddComponent<Button>(); var colors = b.colors; colors.normalColor = Color.white; colors.highlightedColor = Hex("DFD4BA"); colors.pressedColor = Hex("9FAEAA"); colors.disabledColor = new Color(.55f,.55f,.55f,1); b.colors = colors; b.interactable = enabled;
-            Label(r, text, 7, 0, w - 14, h, w<60?14:17, primary&&!RedAction(name) ? Ink : TextColor, TextAnchor.MiddleCenter);
-            colors.selectedColor=Hex("DFD4BA");b.colors=colors;
-            var focus=r.gameObject.AddComponent<Outline>();focus.effectColor=Gold;focus.effectDistance=new Vector2(2,-2);focus.enabled=false;
-            r.gameObject.AddComponent<UIFocusOutline>();
-            var states=b.spriteState;states.highlightedSprite=NoirSprite("button_hover");states.pressedSprite=NoirSprite("button_pressed");states.disabledSprite=NoirSprite("button_disabled");b.spriteState=states;b.transition=Selectable.Transition.SpriteSwap;if(!enabled)buttonImage.color*=new Color(.65f,.65f,.65f,1);DecorateButton(b,name,w,h,primary);
-            b.onClick.AddListener(() => { Sound(); action(); }); return b;
+            return PrintButton(name,parent,text,x,y,w,h,action,enabled,primary);
         }
         void Border(Transform parent, float x, float y, float w, float h, Color color)
         {
@@ -120,9 +113,9 @@ namespace Minglu
             var scroll=viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport=viewport; scroll.content=content; scroll.horizontal=false; scroll.movementType=ScrollRect.MovementType.Clamped; scroll.scrollSensitivity=35;
             // Dynamic text may grow after construction; keep an auto-hiding scrollbar wired up.
             {
-                var track=Box("ScrollTrack",viewport,w-10,2,10,h-4,Line);
-                var handle=Box("ScrollHandle",track,0,0,10,h-4,Teal);
-                handle.anchorMin=Vector2.zero;handle.anchorMax=Vector2.one;handle.offsetMin=handle.offsetMax=Vector2.zero;
+                var track=Box("ScrollTrack",viewport,w-10,2,10,h-4,new Color(0,0,0,.025f));
+                var handle=Box("ScrollHandle",track,2,0,6,h-4,PaperSurface(parent)?PaperMuted:Muted);
+                handle.anchorMin=Vector2.zero;handle.anchorMax=Vector2.one;handle.offsetMin=new Vector2(2,0);handle.offsetMax=new Vector2(-2,0);
                 var bar=track.gameObject.AddComponent<Scrollbar>();bar.direction=Scrollbar.Direction.BottomToTop;bar.handleRect=handle;bar.targetGraphic=handle.GetComponent<Image>();
                 scroll.verticalScrollbar=bar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.AutoHide;
             }
@@ -348,6 +341,7 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--design-only")>=0){yield return DesignSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--producer-only")>=0){yield return ProducerSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--studio-only")>=0){yield return AppearanceStudioSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--strategy-only")>=0){yield return StrategySmoke(path);Application.Quit();yield break;}

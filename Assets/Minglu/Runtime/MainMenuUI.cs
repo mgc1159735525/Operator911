@@ -81,87 +81,136 @@ namespace Minglu
             commandTab=State.turn==1?1:3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;
             toast="本局种子 "+State.initialSeed+(State.command!=null?"。先设计链条，授权任务，再推进一夜。":State.courierEnabled?"。先选成员接回首份密件，再安排外送。":"。先查看限时任务，再选择成员。");
         }
+        Button HomeTextButton(string name,Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true,Color? tint=null)
+        {
+            var button=Button(name,parent,text,x,y,w,h,action,enabled);
+            button.image.sprite=null;button.image.color=Color.white;
+            button.transition=Selectable.Transition.ColorTint;
+            var colors=button.colors;colors.normalColor=Color.clear;colors.highlightedColor=new Color(1,1,1,.055f);colors.selectedColor=new Color(1,1,1,.055f);colors.pressedColor=new Color(1,1,1,.11f);colors.disabledColor=Color.clear;button.colors=colors;
+            foreach(Transform child in button.transform)if(child.name.StartsWith("Icon_")||child.name=="PrintRule")child.gameObject.SetActive(false);
+            var label=button.GetComponentInChildren<Text>();label.alignment=TextAnchor.MiddleLeft;label.fontSize=20;label.color=enabled?(tint??TextColor):Muted;
+            label.rectTransform.anchoredPosition=new Vector2(0,0);label.rectTransform.sizeDelta=new Vector2(w,h);
+            button.image.CrossFadeColor(Color.clear,0,true,true);
+            return button;
+        }
+        void DrawHomeHeading(Transform panel,string title,string note)
+        {
+            Label(panel,title,0,12,758,58,38,Gold);
+            Label(panel,note,0,79,758,38,17,Muted);
+            Box("HomeSectionRule",panel,0,129,758,1,Line);
+        }
         void DrawHome()
         {
             if(homePage=="appearance"){DrawAppearanceOverlay();return;}
-            var art=Rect("HomeArt",root,0,0,1600,900).gameObject.AddComponent<RawImage>();art.texture=Resources.Load<Texture2D>("Minglu/UI/Noir/title_city")??map;art.color=Color.white;art.raycastTarget=false;
-            Box("HomeVeil",root,0,0,1600,900,new Color(.03f,.03f,.03f,.13f));
-            Label(root,"明路 · 地下",100,76,720,96,64,Gold);Box("TitleRule",root,106,166,88,5,Hex("AB493C"));Label(root,"新京二十夜 / 单人回合制策略",106,184,900,34,23,TextColor);
-            var p=Box("HomePanel",root,860,70,640,750,new Color(.09f,.10f,.10f,.96f));Border(p,0,0,640,750,Line);
-            Label(root,"城中每一盏灯，都可能是新的起点。",106,680,720,45,27,Gold);
-            Label(root,"本局资源与人员状态不跨局继承。\n设置与战绩独立保存；同种子、同配置、同选择可复现。",106,746,710,88,20,TextColor);
+            var art=Rect("HomeArt",root,0,0,1600,900).gameObject.AddComponent<RawImage>();art.texture=Resources.Load<Texture2D>("Minglu/UI/Noir/title_city")??map;art.color=new Color(.66f,.68f,.65f,1);art.raycastTarget=false;
+            Box("HomeVeil",root,0,0,1600,900,new Color(.045f,.05f,.05f,.36f));
+            Box("HomeReadingShade",root,0,0,630,900,new Color(.055f,.06f,.06f,.83f));
+            Label(root,"新京 / 地区工作档案",98,69,452,26,16,Muted);
+            Label(root,"明路 · 地下",94,122,540,84,60,Gold);
+            Label(root,"人员安排 · 情报传递 · 行动授权",98,223,470,32,18,Muted);
+            Box("HomeTitleRule",root,98,284,408,1,Line);
+            Label(root,"单人回合制策略",98,815,408,25,15,Muted);
             if(homePage=="main")
             {
-                Label(p,"行动总部",38,30,560,48,32,Gold);
-                RunState saved=null;string description="尚无本版存档。开始一局新的行动。";
-                if(File.Exists(SavePath))try{saved=PrototypeSave.Read(SavePath);description=(saved.ended?"已结束":"可继续")+" · 第"+saved.turn+"夜 · 成果"+saved.progress+"\n种子 "+saved.initialSeed;}catch(Exception e){description="存档不可读取。可保留旧文件并开始新局。\n"+e.Message;}
-                Label(p,description,38,91,560,80,19,Muted);
-                Button("HomeContinue",p,saved!=null&&saved.ended?"查看上局结局":"继续行动",38,190,564,58,()=>{Load();},saved!=null,true);
-                Button("HomeNew",p,"开始新局",38,265,564,58,()=>{homePage="new";homeNotice="";replaceConfirmed=false;Draw();});
-                Button("HomeArchive",p,"行动档案 · "+profile.records.Count+" 局",38,340,564,58,()=>{homePage="archive";Draw();});
-                Button("HomeSettings",p,"设置",38,415,272,53,OpenSettings);
-                Button("HomeHelp",p,"玩法与操作",326,415,276,53,()=>{homePage="help";Draw();});
-                Button("HomeQuit",p,"退出游戏",38,493,564,53,QuitGame);
-                Button("HomeAppearance",p,"负责人外观 / 组合头像",38,566,564,53,()=>OpenAppearance(-1));
-                Label(p,"组织首脑 · 联盟经营与多阶段行动\n负责人及队员可编辑部件，预设跨局保存。\n自动存档：新局、结算、剧情选择、应用外观。",38,641,564,96,16,Muted);
-            }
-            else if(homePage=="new"||homePage=="replace")
-            {
-                Label(p,"新的一夜",38,28,550,46,32,Gold);
-                Label(p,"难度",38,92,560,25,18,Muted);
-                for(int i=0;i<3;i++){int n=i;Button("Difficulty_"+i,p,RunLifecycle.DifficultyName(i),38+i*192,126,180,43,()=>{newDifficulty=n;Draw();},true,newDifficulty==i);}
-                Label(p,newCampaign?"组织考验：建立链条 → 培养身份 → 完成随机门槛":"8夜组织挑战：相同规则，更紧迫的截止时间",38,182,564,30,17,Muted);
-                Label(p,"开局方案",38,224,560,26,18,Muted);
-                for(int i=0;i<3;i++){int n=i;Button("Doctrine_"+i,p,RunLifecycle.DoctrineName(i),38+i*192,264,180,43,()=>{newDoctrine=n;Draw();},true,newDoctrine==i);}
-                Label(p,newDoctrine==0?"均衡：使用默认资源与人员状态。":newDoctrine==1?"情报先行：情报+2，全体可行动成员初始暴露10。":"隐蔽入城：初始压力-8，全体可行动成员体力85。",38,321,564,63,18,Muted);
-                Label(p,"随机种子（留空随机）",38,396,564,26,18,Muted);
-                var field=Box("Seed",p,38,435,360,46,Ink);var input=field.gameObject.AddComponent<InputField>();
-                var text=Label(field,seedText,12,8,336,32,21);input.textComponent=text;input.text=seedText;input.characterLimit=10;input.contentType=InputField.ContentType.IntegerNumber;input.onValueChanged.AddListener(v=>seedText=v);
-                Button("RandomSeed",p,"随机",416,435,186,46,()=>{seedText="";Draw();});
-                Button("CrisisToggle",p,newCrisis?"危机开局：开（一名成员临时离岗）":"危机开局：关（全员归队）",38,500,564,43,()=>{newCrisis=!newCrisis;Draw();});
-                Button("CampaignToggle",p,newCampaign?"模式：组织首脑 · 20夜":"模式：快速试玩 · 8夜",38,548,564,32,()=>{newCampaign=!newCampaign;Draw();});
-                Button("BeginRun",p,"出发 · 初始化本局",38,591,564,48,BeginConfiguredRun,true,true);
-                Button("HomeBack",p,"返回",38,652,160,42,BackHome);
-                if(homePage=="replace")
+                RunState saved=null;string description="尚无行动存档。\n从「开始新局」建立本次组织。";
+                if(File.Exists(SavePath))try{saved=PrototypeSave.Read(SavePath);description=(saved.ended?"行动已结束":"安排已保存，可继续指挥")+"\n成果 "+saved.progress+" / 种子 "+saved.initialSeed;}catch(Exception e){description="存档暂时无法读取，原文件仍保留。\n"+e.Message;}
+                if(saved!=null)
                 {
-                    var shade=Box("ReplaceShade",root,0,0,1600,900,new Color(0,0,0,.78f));
-                    var cover=Box("Replace",shade,500,270,600,340,Panel);Border(cover,0,0,600,340,Gold);
-                    Label(cover,"开始新局将替换当前存档",30,30,540,50,29,Gold);
-                    Label(cover,"已有存档会保留为备份。未结束的行动不会计入结算战绩。",30,112,540,90,22);
-                    Button("ConfirmNewRun",cover,"确认开始",30,250,258,50,()=>{replaceConfirmed=true;homePage="new";BeginConfiguredRun();},true,true);
-                    Button("CancelNewRun",cover,"返回配置",310,250,258,50,()=>{homePage="new";Draw();});
+                    Button("HomeContinue",root,saved.ended?"查看上局结局":"继续行动",98,327,408,55,()=>{Load();},true,true);
+                    HomeTextButton("HomeNew",root,"开始新局",98,406,408,44,()=>{homePage="new";homeNotice="";replaceConfirmed=false;Draw();});
                 }
-            }
-            else if(homePage=="settings")
-            {
-                Label(p,"设置",38,30,560,48,32,Gold);
-                Button("SettingSound",p,sound?"界面音效：开":"界面音效：关",38,126,564,56,()=>{sound=!sound;PersistProfile();Draw();});
-                Label(p,"音量 "+Mathf.RoundToInt(profile.volume*100)+"%",38,219,564,35,23);
-                Button("VolumeDown",p,"降低",38,269,272,50,()=>{profile.volume=Mathf.Max(0,profile.volume-.1f);PersistProfile();Draw();});
-                Button("VolumeUp",p,"提高",330,269,272,50,()=>{profile.volume=Mathf.Min(1,profile.volume+.1f);PersistProfile();Draw();});
-                Button("SettingFullscreen",p,profile.fullscreen?"显示：全屏":"显示：窗口",38,360,564,56,()=>{profile.fullscreen=!profile.fullscreen;if(smokeSave==null)Screen.fullScreen=profile.fullscreen;PersistProfile();Draw();});
-                Label(p,"设置立即生效并独立保存。\n本版只有界面音效，暂未制作背景音乐。",38,460,564,90,20,Muted);
-                Button("HomeBack",p,"返回",38,652,160,42,BackHome);
-            }
-            else if(homePage=="archive")
-            {
-                Label(p,"历次行动",38,30,560,48,32,Gold);Label(p,"完成 "+profile.records.Count+" 局  /  成功 "+profile.records.Count(r=>r.won)+" 局",38,94,564,33,22);
-                var list=Scroll(p,"RunArchive",38,157,564,458,Math.Max(1,profile.records.Count)*105);
-                if(profile.records.Count==0)Label(list,"完成首局后，这里会记下种子、结果与开局方案。",0,16,540,90,22,Muted);
-                int i=0;foreach(var r in profile.records.AsEnumerable().Reverse())Label(list,(r.won?"行动成功":"行动失败")+" · "+r.date+"\n种子 "+r.seed+" / "+r.doctrine+"\n第"+r.turn+"夜 · 成果"+r.progress,0,i++*105,540,97,19,Muted);
-                Button("HomeBack",p,"返回",38,652,160,42,BackHome);
+                else
+                {
+                    Button("HomeNew",root,"开始新局",98,327,408,55,()=>{homePage="new";homeNotice="";replaceConfirmed=false;Draw();},true,true);
+                    HomeTextButton("HomeContinue",root,"继续行动 · 尚无存档",98,406,408,44,()=>{Load();},false);
+                }
+                HomeTextButton("HomeArchive",root,"历次行动    "+profile.records.Count,98,460,408,44,()=>{homePage="archive";Draw();});
+                HomeTextButton("HomeAppearance",root,"负责人外观",98,514,408,44,()=>OpenAppearance(-1));
+                Box("HomeMenuRule",root,98,585,408,1,Line);
+                HomeTextButton("HomeSettings",root,"设置",98,609,408,42,OpenSettings);
+                HomeTextButton("HomeHelp",root,"玩法与操作",98,661,408,42,()=>{homePage="help";Draw();});
+                HomeTextButton("HomeQuit",root,"退出游戏",98,713,408,42,QuitGame);
+                Label(root,"当前档案",1000,524,460,28,16,Muted);
+                Label(root,saved==null?"未立卷":"第 "+saved.turn+" 夜",994,567,468,79,53,Gold);
+                var status=Label(root,description,1000,665,460,100,19,TextColor);
+                status.verticalOverflow=VerticalWrapMode.Truncate;
             }
             else
             {
-                Label(p,"行动指南",38,30,560,48,32,Gold);
-                Label(p,"你是地区负责人\n只做人事和任务授权，不亲自执行接头。\n\n开局三步\n在传递链条选内线、接头人、交通员并启用。\n在任务页看需求，推荐负责人后授权。\n推进一夜，成员自动执行并提交骰面报告。\n\n人员与生活\n体力、精神、暴露和生活积压会影响骰子。\n空闲成员处理日常，提升表身份；合理轮替岗位。\n\n关卡与重开\n按顶部目标完成送达、任务与身份门槛。\n不同种子生成不同队伍、任务与事件。\n\n鼠标操作、滚轮翻页；F5保存、F9读取。",38,113,564,509,20);
-                Button("HomeBack",p,"返回",38,652,160,42,BackHome);
+                string section=homePage=="new"||homePage=="replace"?"新局登记":homePage=="settings"?"声音与显示":homePage=="archive"?"历次行动":"指挥手册";
+                Label(root,section,98,337,408,48,29,Gold);
+                string detail=homePage=="new"||homePage=="replace"?"选择行动时限与开局条件。\n人员、任务与事件随种子生成。":homePage=="settings"?"设置立即生效。\n返回后继续当前安排。":homePage=="archive"?"已结束的行动保存在此。\n成员与资源不跨局继承。":"你担任地区负责人。\n安排人事与目标，由成员执行。";
+                Label(root,detail,98,406,408,113,21,Muted);
+                var p=Rect("HomePanel",root,694,66,810,742);
+                if(homePage=="new"||homePage=="replace")
+                {
+                    DrawHomeHeading(p,"新局登记",newCampaign?"组织首脑 / 二十夜行动":"快速试玩 / 八夜行动");
+                    Label(p,"难度",0,163,128,32,20,Muted);
+                    for(int i=0;i<3;i++){int n=i;Button("Difficulty_"+i,p,RunLifecycle.DifficultyName(i),150+i*205,155,193,44,()=>{newDifficulty=n;Draw();},true,newDifficulty==i);}
+                    Label(p,"开局方案",0,242,138,32,20,Muted);
+                    for(int i=0;i<3;i++){int n=i;Button("Doctrine_"+i,p,RunLifecycle.DoctrineName(i),150+i*205,234,193,44,()=>{newDoctrine=n;Draw();},true,newDoctrine==i);}
+                    Label(p,newDoctrine==0?"按默认资源与人员状态开始。":newDoctrine==1?"情报 +2；全体可行动成员初始暴露 10。":"初始压力 −8；全体可行动成员体力 85。",150,297,603,64,18,Muted);
+                    Label(p,"随机种子",0,377,138,32,20,Muted);
+                    var field=Box("Seed",p,150,369,389,44,new Color(.08f,.09f,.09f,1));var input=field.gameObject.AddComponent<InputField>();
+                    var text=Label(field,seedText,12,7,365,31,20);input.textComponent=text;input.text=seedText;input.characterLimit=10;input.contentType=InputField.ContentType.IntegerNumber;input.onValueChanged.AddListener(v=>seedText=v);
+                    var placeholder=Label(field,"留空随机",12,7,365,31,18,Muted);input.placeholder=placeholder;placeholder.gameObject.SetActive(string.IsNullOrEmpty(seedText));
+                    HomeTextButton("RandomSeed",p,"重新随机",564,369,194,44,()=>{seedText="";Draw();});
+                    HomeTextButton("CrisisToggle",p,newCrisis?"危机开局    开 / 一名成员临时离岗":"危机开局    关 / 全员归队",0,449,758,42,()=>{newCrisis=!newCrisis;Draw();});
+                    HomeTextButton("CampaignToggle",p,newCampaign?"行动时限    二十夜 / 组织首脑":"行动时限    八夜 / 快速试玩",0,499,758,42,()=>{newCampaign=!newCampaign;Draw();});
+                    Box("HomeSubmitRule",p,0,574,758,1,Line);
+                    HomeTextButton("HomeBack",p,"返回",0,604,170,49,BackHome);
+                    Button("BeginRun",p,"开始行动",439,604,319,49,BeginConfiguredRun,true,true);
+                    Label(p,"新局、夜间结算与事件选择后自动保存。",0,697,758,28,16,Muted);
+                    if(homePage=="replace")
+                    {
+                        var shade=Box("ReplaceShade",root,0,0,1600,900,new Color(0,0,0,.84f));
+                        var cover=Box("Replace",shade,430,248,740,368,Paper);
+                        Label(cover,"替换当前行动",34,32,672,49,33,PaperInk);
+                        Label(cover,"现有存档将保留为备份。\n未结束的行动不会记入历次战绩。",34,110,672,109,22,PaperInk);
+                        Box("ReplaceRule",cover,34,239,672,1,PaperMuted);
+                        HomeTextButton("CancelNewRun",cover,"返回配置",34,279,268,48,()=>{homePage="new";Draw();},true,PaperInk);
+                        Button("ConfirmNewRun",cover,"确认开始新局",376,279,330,48,()=>{replaceConfirmed=true;homePage="new";BeginConfiguredRun();},true,true);
+                    }
+                }
+                else if(homePage=="settings")
+                {
+                    DrawHomeHeading(p,"设置","声音与显示偏好独立保存");
+                    Label(p,"界面音效",0,174,246,34,22,TextColor);
+                    Button("SettingSound",p,sound?"已开启":"已关闭",388,165,218,45,()=>{sound=!sound;PersistProfile();Draw();},true,sound);
+                    Label(p,"音量",0,267,246,34,22,TextColor);
+                    Label(p,Mathf.RoundToInt(profile.volume*100)+"%",388,266,104,34,22,Gold);
+                    Button("VolumeDown",p,"−",522,262,58,43,()=>{profile.volume=Mathf.Max(0,profile.volume-.1f);PersistProfile();Draw();});
+                    Button("VolumeUp",p,"+",594,262,58,43,()=>{profile.volume=Mathf.Min(1,profile.volume+.1f);PersistProfile();Draw();});
+                    Box("SettingsRule",p,0,349,758,1,Line);
+                    Label(p,"显示模式",0,396,246,34,22,TextColor);
+                    Button("SettingFullscreen",p,profile.fullscreen?"全屏":"窗口",388,388,218,45,()=>{profile.fullscreen=!profile.fullscreen;if(smokeSave==null)Screen.fullScreen=profile.fullscreen;PersistProfile();Draw();},true,profile.fullscreen);
+                    Label(p,"当前提供界面音效，暂无背景音乐。",0,509,758,65,19,Muted);
+                    HomeTextButton("HomeBack",p,settingsFromGame?"返回当前行动":"返回",0,644,220,48,BackHome);
+                }
+                else if(homePage=="archive")
+                {
+                    DrawHomeHeading(p,"历次行动","完成 "+profile.records.Count+" 局 / 成功 "+profile.records.Count(r=>r.won)+" 局");
+                    var list=Scroll(p,"RunArchive",0,154,758,471,Math.Max(1,profile.records.Count)*116);
+                    if(profile.records.Count==0)Label(list,"完成首局后，这里会记录结果、种子与开局方案。",0,21,724,94,22,Muted);
+                    int i=0;foreach(var r in profile.records.AsEnumerable().Reverse())
+                    {
+                        int y=i++*116;
+                        Label(list,(r.won?"行动成功":"行动失败")+" / "+r.date,0,y+5,715,34,24,TextColor);
+                        Label(list,"第 "+r.turn+" 夜 · 成果 "+r.progress+"\n种子 "+r.seed+" / "+r.doctrine,0,y+46,715,52,18,Muted);
+                        Box("ArchiveRule",list,0,y+111,715,1,Line);
+                    }
+                    HomeTextButton("HomeBack",p,"返回",0,660,170,48,BackHome);
+                }
+                else
+                {
+                    DrawHomeHeading(p,"行动指南","目标由你确定，具体行动由成员完成");
+                    var list=Scroll(p,"HomeGuide",0,154,758,472,860);
+                    var guide=Label(list,"建立传递链\n点击岗位，比较并安排内线、接头人、交通员。三名成员须不同，确认启用后自动执行。\n\n授权任务\n看任务需求与期限，比较负责人，再选择行动方案。提交前检查成功率、资源投入及岗位冲突。\n\n推进与复盘\n确认夜间安排后才推进时间。成员提交执行结果；失败、暂停和到期原因都可在报告中查阅。\n\n生活与成长\n同一成员优先执行授权任务，对应链条岗位会等待。空闲时恢复状态、处理日常并培养表身份；留意连续工作与暴露预警。\n\n阶段目标\n按值班简报中的当前进度，完成送达、任务和身份门槛。不同种子生成不同队伍与事件。\n\n操作\n鼠标选择，滚轮翻页；F5 保存，F9 读取，Esc 返回。",0,0,725,860,20,TextColor);
+                    float guideHeight=Mathf.Max(472,guide.preferredHeight+18);guide.rectTransform.sizeDelta=new Vector2(725,guideHeight);list.sizeDelta=new Vector2(list.sizeDelta.x,guideHeight);
+                    HomeTextButton("HomeBack",p,"返回",0,660,170,48,BackHome);
+                }
             }
-            if(!string.IsNullOrEmpty(homeNotice))Label(root,homeNotice,100,845,1400,48,18,Red);
+            if(!string.IsNullOrEmpty(homeNotice))Label(root,homeNotice,98,853,1406,40,17,Red);
         }
     }
 }
-
-
-
-
