@@ -1,4 +1,4 @@
-param([switch]$SkipGameBuild)
+﻿param([switch]$SkipGameBuild)
 $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $unity = 'C:/Program Files/Unity/Hub/Editor/2022.3.62f3c1/Editor/Unity.exe'
@@ -7,7 +7,7 @@ if (!(Test-Path $compiler)) { $compiler = 'C:/Program Files (x86)/Inno Setup 6/I
 if (!(Test-Path $compiler)) { throw 'Install Inno Setup 6 before packaging.' }
 if (!$SkipGameBuild) {
     $buildLog = Join-Path $projectRoot 'Logs/installer-build.log'
-    $process = Start-Process $unity -ArgumentList "-batchmode -nographics -projectPath `"$projectRoot`" -executeMethod Minglu.EditorTools.StrategyVerification.BatchDeliver -logFile `"$buildLog`"" -WindowStyle Hidden -Wait -PassThru
+    $process = Start-Process $unity -ArgumentList "-batchmode -nographics -projectPath `"$projectRoot`" -executeMethod Minglu.EditorTools.InstitutionVerification.BatchDeliver -logFile `"$buildLog`"" -WindowStyle Hidden -Wait -PassThru
     if ($process.ExitCode -ne 0) { throw "Unity build failed. See $buildLog" }
 }
 & $compiler (Join-Path $PSScriptRoot 'Minglu.iss')

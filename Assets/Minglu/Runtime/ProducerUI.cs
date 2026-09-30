@@ -34,7 +34,7 @@ namespace Minglu
         {
             bool chain=State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)=="");
             bool task=State.command.completed>0||State.command.tasks.Any(t=>t.actor>=0&&t.status==0);
-            return (chain?"✓":"①")+" 建立并启用传递链\n"+(task?"✓":"②")+" 比较人选，授权一项任务\n"+(State.turn>1?"✓":"③")+" 推进一夜，查看执行报告";
+            return (chain?"✓":"①")+" 机构内线接入传递链\n"+(task?"✓":"②")+" 比较人选，授权一项任务\n"+(State.turn>1?"✓":"③")+" 推进一夜，查看执行报告";
         }
         string RouteForecast(CommandRoute r)
         {
@@ -56,6 +56,7 @@ namespace Minglu
         string RouteCandidateError(CommandRoute route,int slot,int id)
         {
             string error=CommandRules.Availability(State,id);if(error!="")return error;
+            if(slot==0){error=CommandRules.SourceError(State,id);if(error!="")return error;}
             int[] ids={route.source,route.liaison,route.courier};
             if(ids.Where((n,i)=>i!=slot).Contains(id))return "已在此链其他岗位；需要三名不同成员";
             if(State.command.routes.Any(r=>r.id!=route.id&&r.enabled&&new[]{r.source,r.liaison,r.courier}.Contains(id)))return "已在另一条运行中的链上";
@@ -66,13 +67,13 @@ namespace Minglu
         {
             var route=State.command.routes.First(r=>r.id==routePickerId);int skill=new[]{0,2,1}[routePickerSlot];
             var p=CommandModal("选择"+new[]{"内线","接头人","交通员"}[routePickerSlot]+" / 联络链 "+(route.id+1),730);
-            Label(p,"按当前"+CommandRules.Skills[skill]+"骰数比较；一骰4—6算成功，每环需1次成功。任务优先于长期岗位。",28,83,844,53,18,Muted);
+            Label(p,routePickerSlot==0?"内线须在敌方机构任职，名单标明来源；无任职身份者可在人事档案建立。每次产出需1个成功。":"按当前"+CommandRules.Skills[skill]+"骰数比较；一骰4—6算成功，每环需1次成功。民间身份可承担传递。",28,83,844,53,18,Muted);
             var list=Scroll(p,"RouteCandidates",28,150,844,465,State.agents.Count*74);
             var people=State.agents.OrderBy(a=>RouteCandidateError(route,routePickerSlot,a.id)==""?0:1).ThenByDescending(a=>CommandRules.Dice(State,a,skill)).ToList();
             for(int i=0;i<people.Count;i++)
             {
                 var a=people[i];string error=RouteCandidateError(route,routePickerSlot,a.id);int dice=CommandRules.Dice(State,a,skill);
-                Label(list,a.name+" / "+dice+"骰 / 当前成功率 "+(DispatchRules.Probability(dice,1)*100).ToString("0.#")+"%",8,i*74,594,31,21,Gold);
+                Label(list,a.name+" / "+(routePickerSlot==0?CommandRules.Employment(CommandRules.Person(State,a.id))+" / ":"")+dice+"骰 / "+(DispatchRules.Probability(dice,1)*100).ToString("0.#")+"%",8,i*74,594,31,18,Gold);
                 Label(list,error!=""?error:State.command.tasks.Any(t=>t.status==0&&t.actor==a.id)?"已有任务：本夜优先做任务，链条岗位将等待":"可用 · 体力"+a.stamina+" / 暴露"+a.exposure,8,i*74+34,594,38,17,error!=""?Red:Muted);
                 Button("RouteCandidate_"+a.id,list,"安排此人",625,i*74+12,180,43,()=>{selectedAgent=a.id;modal="";RequestRouteReplacement(route,routePickerSlot);if(modal=="")Draw();},error=="");
             }

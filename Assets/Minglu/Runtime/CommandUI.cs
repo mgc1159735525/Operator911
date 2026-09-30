@@ -17,7 +17,8 @@ namespace Minglu
             if(State.command.eventKind!=0)return "先处理突发事件，组织正等待你的决定。";
             if(State.agents.Any(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning))return "有人被重点追查：前往人事页安排生活优先，并检查链条替补。";
             if(State.command.tasks.Any(t=>t.status==0&&t.operation==2&&t.actor<0))return "有人被捕：优先比较救援人选，按任务阶段逐夜推进，留意截止夜。";
-            if(!State.command.routes.Any(r=>r.enabled))return "第一步：打开传递链条，选择三名成员并启用。";
+            if(!HasActiveInsider())return "缺少机构内线：在人事档案建立任职身份，再配置传递链。";
+            if(!State.command.routes.Any(r=>r.enabled))return "第一步：选择敌方机构内线，配齐接头人与交通员，再启用链条。";
             if(State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))return "联络链有失效岗位，请替换成员并恢复联系。";
             if(State.command.people.Any(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id))))return "有人生活事务积压：在人事页安排生活优先，或替换链条岗位。";
             if(State.command.tasks.Any(t=>t.status==0&&t.actor<0))return "还有待授权事项：比较人员与方案；也可留待后续，链条会自动执行。";
@@ -58,6 +59,7 @@ namespace Minglu
             else if(modal=="commandHelp")DrawCommandGuide();
             else if(modal=="appearance")DrawModal();
             else if(modal=="compareCandidates")DrawCandidateComparison();
+            else if(modal=="institutionPicker")DrawInstitutionPicker();
             else if(modal=="routePicker")DrawRoutePicker();
             else if(modal=="routeReplace")DrawRouteReplacement();
             else if(modal=="missionPlan")DrawMissionPlan();
@@ -120,13 +122,13 @@ namespace Minglu
         }
         void DrawCommandRoutes(Transform panel)
         {
-            Label(panel,"联络网",26,16,570,40,29,Gold);Label(panel,"观察  →  接头  →  外送",507,27,296,28,16,Muted);
-            Label(panel,"点选岗位安排成员。启用后，成员会按各自的周期行动。",26,63,772,29,16,Muted);
+            Label(panel,"联络网",26,16,570,40,29,Gold);Label(panel,"机构情报  →  接头  →  外送",507,27,296,28,16,Muted);
+            Label(panel,"仅敌方机构任职者可任内线。普通成员可接头、外送或执行任务。",26,63,772,29,16,Muted);
             int i=0;
             foreach(var r in State.command.routes)
             {
                 int y=112+i++*211;Rule(panel,26,y,772);
-                Label(panel,(r.id+1).ToString("00")+"   联络链",26,y+14,500,30,21,Gold);
+                Label(panel,(r.id+1).ToString("00")+"   "+(r.source<0?"未指定机构来源":CommandRules.Employment(CommandRules.Person(State,r.source))),26,y+14,630,30,21,Gold);
                 Label(panel,r.enabled?"运行中":"未启用",677,y+17,125,25,15,r.enabled?Teal:Muted);
                 for(int slot=0;slot<3;slot++)
                 {
@@ -149,11 +151,12 @@ namespace Minglu
             DrawLook(panel,a.appearance,20,22,230,360);
             Label(panel,a.name+" / 代号「"+p.code+"」",270,23,540,38,25,Gold);
             var details=Scroll(panel,"PersonDetails_"+a.id,270,83,540,247,248);
-            var personText=Label(details,p.age+"岁 · 性情"+p.temper+"\n表身份："+p.profession+" Lv."+p.level+"\n能力：情报"+a.intel+" 潜行"+a.stealth+" 说服"+a.persuade+" 组织"+a.organize+"\n地下岗位："+CommandRole(a.id)+"\n生活牵挂："+p.life+"\n身份经验："+p.xp+" / "+(State.command.config.coverXP*p.level)+"\n组织信任："+p.loyalty+" / 100\n近期情况："+p.last,0,0,514,247,20);
+            var personText=Label(details,p.age+"岁 · 性情"+p.temper+"\n表身份："+p.profession+" Lv."+p.level+"\n任职："+CommandRules.Employment(p)+"\n能力：情报"+a.intel+" 潜行"+a.stealth+" 说服"+a.persuade+" 组织"+a.organize+"\n地下岗位："+CommandRole(a.id)+"\n生活牵挂："+p.life+"\n身份经验："+p.xp+" / "+(State.command.config.coverXP*p.level)+"\n组织信任："+p.loyalty+" / 100\n近期情况："+p.last,0,0,514,247,20);
             float detailsHeight=Mathf.Max(247,personText.preferredHeight+12);personText.rectTransform.sizeDelta=new Vector2(514,detailsHeight);details.sizeDelta=new Vector2(details.sizeDelta.x,detailsHeight);
             string[] policies={"平衡安排","生活优先","主动发现"};
             for(int i=0;i<3;i++){int n=i;Button("LifePolicy_"+i,panel,policies[i],270+i*181,343,170,41,()=>{CommandRules.SetPolicy(State,p.id,n);Save(false);toast="政策已修改："+policies[n]+"。生活优先会暂停该成员的任务和链条岗位。";Draw();},true,p.policy==i);}
-            Label(panel,"空闲时自动工作、处理家事并恢复体力精神，累计经验提升表身份。连续地下工作3夜后，生活积压会影响状态与信任。主动发现有机会提交新任务。",20,411,790,85,19,Muted);
+            Button("CommandEmployment",panel,CommandRules.HasInstitution(p)?"已任职 · 可在联络网担任内线":"建立机构任职 / 查看任职任务  ›",270,397,528,36,OpenEmployment,!CommandRules.HasInstitution(p));
+            Label(panel,"空闲时工作与休养，积累身份经验。民间日常、主动发现和普通任务不会直接产出情报；任职内线须接入链条，外送完成后才计入可用情报。",20,446,790,43,16,Muted);
             Label(panel,State.agents.Count>=State.command.config.capacity?"招募已满员：达到本局人数上限。":State.money-CommandRules.ReservedMoney(State)<12?"招募需12可用银两；预留预算不能用于招募。":"可招募：新人身份与能力随机，先检查再安排。",20,490,790,26,16,Muted);
             ActionTicket("CommandRecruit",panel,"接纳随机新成员","12 银两",20,520,385,43,()=>{State.money-=12;CommandRules.AddPerson(State);Save(false);toast="新人已到场，请检查身份能力并安排岗位。";Draw();},State.money-CommandRules.ReservedMoney(State)>=12&&State.agents.Count<State.command.config.capacity);
             Button("CommandEditLook",panel,"编辑外观 / 保留角色能力",423,520,375,43,()=>OpenAppearance(a.id));

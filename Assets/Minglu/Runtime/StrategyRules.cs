@@ -31,7 +31,8 @@ namespace Minglu
         {
             EnsureStrategy(s);var x=s.command.strategy;var c=x.config;
             if(x.version!=1||x.alliances==null||x.alliances.Length!=4||x.alliances.Any(v=>v<0||v>100)||x.trace<0||x.trace>100||x.hearts<0||x.hearts>100||c==null||c.warning<1||c.capture<=c.warning||c.capture>100||c.raid<10||c.raid>100||c.graceNight<2||c.rescueWindow<2||c.rescueWindow>8||c.allianceThreshold<1||c.allianceThreshold>100||c.allianceGain<1||c.allianceGain>50||c.relocateCost<0||c.relocateCost>50||!s.config.districts.Any(d=>d.id==x.baseDistrict))throw new Exception("地区经营数据无效");
-            foreach(var t in s.command.tasks)if(t.stepsRequired<1||t.stepsRequired>3||t.stepsDone<0||t.stepsDone>t.stepsRequired||t.operation<0||t.operation>3||t.operation==1&&(t.target<0||t.target>3)||t.operation==2&&!s.agents.Any(a=>a.id==t.target))throw new Exception("多阶段任务数据无效");
+            foreach(var t in s.command.tasks)if(t.stepsRequired<1||t.stepsRequired>3||t.stepsDone<0||t.stepsDone>t.stepsRequired||t.operation<0||t.operation>4||t.operation==1&&(t.target<0||t.target>3)||t.operation==2&&!s.agents.Any(a=>a.id==t.target))throw new Exception("多阶段任务数据无效");
+            foreach(var t in s.command.tasks.Where(t=>t.operation==4))if(t.institution<1||t.institution>=Institutions.Length||!s.command.people.Any(p=>p.id==t.target))throw new Exception("机构任职任务无效");
         }
         public static int AllianceDice(RunState s,CommandTask t)
         {
@@ -39,7 +40,7 @@ namespace Minglu
             return (t.skill==0&&x.alliances[2]>=x.config.allianceThreshold||t.skill==1&&x.alliances[3]>=x.config.allianceThreshold)?1:0;
         }
         public static string OperationReward(CommandTask t)
-        {return t.operation==1?" / 联盟信任提升":t.operation==2?" / 救回被捕成员":t.operation==3?" / 民心+10、追查−8":"";}
+        {return t.operation==1?" / 联盟信任提升":t.operation==2?" / 救回被捕成员":t.operation==3?" / 民心+10、追查−8":t.operation==4?" / 获得机构内线资格":"";}
         public static string StartCivicTask(RunState s,int faction)
         {
             EnsureStrategy(s);if(s.ended||s.command.eventKind!=0)return "先处理待决事件或结束界面";
@@ -56,6 +57,7 @@ namespace Minglu
         static void CompleteOperation(RunState s,CommandTask t)
         {
             var x=s.command.strategy;
+            if(t.operation==4){var p=Person(s,t.target);p.institution=t.institution;Log(s,Agent(s,p.id).name+"已在"+Employment(p)+"任职。前往联络网配置来源、接头人与交通员，才会开始产出与传递。");Notice(s,new CommandNotice{title="机构任职已建立",body=Agent(s,p.id).name+"获得"+Employment(p)+"任职身份。\n情报范围："+InstitutionIntel[p.institution]+"。\n下一步：在联络网安排为内线，并配齐接头人与交通员后启用。",tab=1,actor=p.id});}
             if(t.operation==1){int old=x.alliances[t.target];x.alliances[t.target]=Math.Min(100,old+x.config.allianceGain);Log(s,Factions[t.target]+"信任 "+old+" → "+x.alliances[t.target]+"；达到"+x.config.allianceThreshold+"解锁："+AllianceEffects[t.target]);}
             if(t.operation==3){x.hearts=Math.Min(100,x.hearts+10);x.trace=Math.Max(0,x.trace-8);}
             if(t.operation==2)

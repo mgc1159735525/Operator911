@@ -33,6 +33,7 @@ namespace Minglu
             var watched=State.agents.FirstOrDefault(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning);
             if(watched!=null){commandTab=2;selectedAgent=watched.id;}
             else if(urgent!=null&&urgent.operation==2){FocusCommandTask(urgent.id);}
+            else if(!HasActiveInsider()){var job=State.command.tasks.FirstOrDefault(t=>t.operation==4&&t.status==0);if(job!=null){FocusCommandTask(job.id);selectedAgent=job.target;}else{commandTab=2;selectedAgent=State.agents.First(a=>a.condition==Condition.Active).id;}}
             else if(!State.command.routes.Any(r=>r.enabled)||State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))commandTab=1;
             else if(State.command.people.Any(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id)))){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id))).id;}
             else if(urgent!=null){FocusCommandTask(urgent.id);}
@@ -63,7 +64,7 @@ namespace Minglu
         }
         void ApplyRouteReplacement()
         {
-            var r=State.command.routes.First(v=>v.id==pendingRoute);r.enabled=false;r.waiting=0;r.atRelay=0;r.age=0;
+            var r=State.command.routes.First(v=>v.id==pendingRoute);string error=RouteCandidateError(r,pendingSlot,pendingMember);if(error!=""){modal="";toast=error;Draw();return;}r.enabled=false;r.waiting=0;r.atRelay=0;r.age=0;
             if(pendingSlot==0)r.source=pendingMember;else if(pendingSlot==1)r.liaison=pendingMember;else r.courier=pendingMember;
             modal="";toast="岗位已修改，链条暂停；检查成员后重新启用。";Save(false);Draw();
         }

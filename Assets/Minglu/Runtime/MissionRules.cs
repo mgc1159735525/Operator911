@@ -12,7 +12,7 @@ namespace Minglu
         public static int DistrictPenalty(RunState s,CommandTask t){return t.level<=1?0:Mathf.Clamp(s.config.District(t.district).difficulty,0,1);}
         public static int TaskDice(RunState s,Agent a,CommandTask t){return Math.Max(1,Dice(s,a,t.skill)+(t.plan==0?0:1)+(t.intelSupport?1:0)-DistrictPenalty(s,t)+AllianceDice(s,t));}
         public static int TaskExposure(RunState s,Agent a,CommandTask t){return Math.Max(1,(Person(s,a.id).temper=="谨慎"?3:5)+Mathf.Clamp(s.config.District(t.district).risk,0,6)+(t.plan==1?-2:t.plan==2?8:0));}
-        public static string TaskReward(CommandTask t){return "成果+"+t.reward+" / 银两+"+t.money+(t.intelReward>0?" / 情报+"+t.intelReward:"")+(t.pressureRelief>0?" / 压力−"+t.pressureRelief:"")+OperationReward(t);}
+        public static string TaskReward(CommandTask t){return "成果+"+t.reward+" / 银两+"+t.money+(t.pressureRelief>0?" / 压力−"+t.pressureRelief:"")+OperationReward(t);}
         public static string TaskResourceError(RunState s,CommandTask t)
         {
             if(s.money-ReservedMoney(s,t.id)<PlanCost(t))return "筹备需4银两（已授权任务的预算已预留）；撤回其他授权或改常规方案";
@@ -21,7 +21,7 @@ namespace Minglu
         }
         public static void CreateTask(RunState s,CommandTemplate template,string origin,int source,int district)
         {
-            s.command.tasks.Add(new CommandTask{id=s.command.nextTask++,title=template.title,body=template.body,origin=origin,source=source,skill=template.skill,required=template.required,level=template.level,profession=template.profession,reward=template.reward,money=template.money,district=district,deadline=Math.Min(s.config.Value("turns"),s.turn+3+Next(s,3)),category=template.category,followup=template.followup,intelReward=template.intelReward,pressureRelief=template.pressureRelief,failExposure=template.failExposure});
+            s.command.tasks.Add(new CommandTask{id=s.command.nextTask++,title=template.title,body=template.body,origin=origin,source=source,skill=template.skill,required=template.required,level=template.level,profession=template.profession,reward=template.reward,money=template.money,district=district,deadline=Math.Min(s.config.Value("turns"),s.turn+3+Next(s,3)),category=template.category,followup=template.followup,intelReward=0,pressureRelief=template.pressureRelief,failExposure=template.failExposure});
         }
         static void SpawnFollowups(RunState s)
         {
@@ -42,7 +42,7 @@ namespace Minglu
             foreach(var t in s.command.tasks.Where(t=>t.status==0))
             {
                 var match=updated.templates.FirstOrDefault(x=>x.title==t.title);if(match==null)continue;
-                t.category=match.category;t.followup=match.followup;t.intelReward=match.intelReward;t.pressureRelief=match.pressureRelief;t.failExposure=match.failExposure;
+                t.category=match.category;t.followup=match.followup;t.intelReward=0;t.pressureRelief=match.pressureRelief;t.failExposure=match.failExposure;
             }
             s.command.missionRevision=1;
         }
@@ -51,7 +51,8 @@ namespace Minglu
             if(c.templates.Select(t=>t.title).Distinct().Count()!=c.templates.Count)throw new Exception("任务标题必须唯一");
             foreach(var t in c.templates)
             {
-                if(t.intelReward<0||t.intelReward>5||t.pressureRelief<0||t.pressureRelief>20||t.failExposure<0||t.failExposure>20)throw new Exception("任务后果字段超出范围");
+                if(t.intelReward!=0)throw new Exception("普通任务不得直接奖励情报：intelReward须为0，情报须由机构内线经链条送达");
+                if(t.pressureRelief<0||t.pressureRelief>20||t.failExposure<0||t.failExposure>20)throw new Exception("任务后果字段超出范围");
                 var seen=new System.Collections.Generic.HashSet<string>();var cursor=t;
                 while(!string.IsNullOrEmpty(cursor.followup))
                 {

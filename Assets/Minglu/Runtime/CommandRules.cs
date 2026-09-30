@@ -15,10 +15,10 @@ namespace Minglu
         public static void Initialize(RunState s,bool crisis=false)
         {
             var asset=Resources.Load<TextAsset>("Minglu/Config/command_config");
-            s.command=new CommandState{missionRevision=1,config=JsonUtility.FromJson<CommandConfig>(asset.text),variant=(int)(s.initialSeed%3)};
+            s.command=new CommandState{missionRevision=1,institutionRevision=1,config=JsonUtility.FromJson<CommandConfig>(asset.text),variant=(int)(s.initialSeed%3)};
             ValidateConfig(s.command.config);
             s.courierEnabled=false;s.organizationEnabled=false;s.cityEnabled=false;s.dispatchEnabled=false;s.storyEnabled=false;s.campaignEnabled=false;
-            s.pendingEvent="";s.agents.Clear();s.config.agents.Clear();s.config.missions.Clear();s.config.events.Clear();s.journal.Clear();s.money=60+(1-s.difficulty)*12;s.progress=0;s.pressure=10+s.difficulty*5;s.turn=1;s.ended=false;
+            s.pendingEvent="";s.agents.Clear();s.config.agents.Clear();s.config.missions.Clear();s.config.events.Clear();s.journal.Clear();s.money=60+(1-s.difficulty)*12;s.progress=0;s.intelligence=0;s.pressure=10+s.difficulty*5;s.turn=1;s.ended=false;
             for(int i=0;i<s.command.config.startingCrew;i++)AddPerson(s);
             if(s.doctrine==1)foreach(var a in s.agents)a.exposure=10;
             if(s.doctrine==2){s.pressure=Math.Max(0,s.pressure-8);foreach(var a in s.agents)a.stamina=85;}
@@ -26,7 +26,7 @@ namespace Minglu
             EnsureStrategy(s);
             s.command.routes.Add(new CommandRoute{id=0});s.command.routes.Add(new CommandRoute{id=1});
             AddTask(s,"上级指示",-1);AddTask(s,"上级指示",-1);AddTask(s,"成员发现",s.agents[Next(s,s.agents.Count)].id);
-            Log(s,"你是地区组织首脑。先设计一条情报链，再授权任务；成员自动接头、工作、生活。三个阶段门槛全部完成才能赢得本局。");
+            Log(s,"你是地区组织首脑。先将敌方机构内线接入情报链，再授权任务；成员自动接头、工作、生活。三个阶段门槛全部完成才能赢得本局。");
         }
         public static void AddPerson(RunState s)
         {
@@ -41,6 +41,7 @@ namespace Minglu
             // All entry points use the same age-coherent, local morph generator.
             a.appearance.parts[12]=a.appearance.parts[0]%4==3?2+Next(s,2):Next(s,2);
             var p=new CommandPerson{id=id,profession=Professions[Next(s,Professions.Length)],code="灯影"+(Next(s,800)+100),age=new[]{22,32,44,58}[a.appearance.parts[0]%4]+Next(s,10),loyalty=60+Next(s,31),level=1+Next(s,2),life=new[]{"照顾家人","经营铺面","进修学业","偿还旧债","照顾病亲","维系同乡"}[Next(s,6)],temper=new[]{"谨慎","热心","果断"}[Next(s,3)],originalLook=AppearanceRules.Copy(a.appearance)};
+            p.institution=id==0?1+Next(s,4):(Next(s,100)<25?1+Next(s,4):0);
             a.coverRole=p.profession;s.agents.Add(a);s.command.people.Add(p);
             s.config.agents.Add(new AgentRow{id=id,name=name,role=p.profession,bio=p.age+"岁，平日"+p.life+"。性情"+p.temper+"，地下代号「"+p.code+"」。",intel=a.intel,stealth=a.stealth,handler=-1,portrait=id%4});
         }
@@ -73,6 +74,7 @@ namespace Minglu
             string error=Availability(s,actor);if(error!="")return error;
             if(t==null||t.status!=0||t.deadline<s.turn)return "任务已结束";
             if(t.stepsRequired-t.stepsDone>Math.Min(t.deadline,s.config.Value("turns"))-s.turn+1)return "剩余夜数不足以完成后续阶段；请安排其他任务";
+            if(t.operation==4&&(t.target!=actor||HasInstitution(Person(s,actor))))return "任职任务须由尚无敌方任职身份的指定成员本人执行";
             if(t.actor>=0&&t.actor!=actor)return "任务已有负责人";
             if(s.command.tasks.Any(x=>x.status==0&&x.actor==actor&&x.id!=t.id))return "成员已有授权任务";
             var p=Person(s,actor);if(p.level<t.level)return "表身份需达到"+t.level+"级；日常工作可以提升等级";
@@ -110,6 +112,7 @@ namespace Minglu
         public static string RouteError(RunState s,CommandRoute r)
         {
             if(new[]{r.source,r.liaison,r.courier}.Any(id=>id<0))return "尚缺成员：内线、接头人、交通员均须指定";
+            string sourceError=SourceError(s,r.source);if(sourceError!="")return sourceError;
             if(new[]{r.source,r.liaison,r.courier}.Distinct().Count()!=3)return "三个岗位需要不同成员";
             foreach(int id in new[]{r.source,r.liaison,r.courier})
             {
@@ -155,7 +158,7 @@ namespace Minglu
                 Log(s,"「"+t.title+"」采用"+Plans[t.plan]+"：扣除"+PlanCost(t)+"银两、"+(t.intelSupport?1:0)+"份情报。" );
                 s.money-=PlanCost(t);if(t.intelSupport)s.intelligence--;
                 bool taskSuccess=Roll(s,a,t.skill,t.required,t.title,t);if(t.plan==2)s.pressure=Math.Min(100,s.pressure+2);
-                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;c.completed++;s.progress+=t.reward;s.money+=t.money;s.intelligence+=t.intelReward;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);a.skillExperience[t.skill]++;if(a.skillExperience[t.skill]>=4){a.skillExperience[t.skill]=0;if(t.skill==0)a.intel=Math.Min(6,a.intel+1);if(t.skill==1)a.stealth=Math.Min(6,a.stealth+1);if(t.skill==2)a.persuade=Math.Min(6,a.persuade+1);if(t.skill==3)a.organize=Math.Min(6,a.organize+1);}Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
+                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);a.skillExperience[t.skill]++;if(a.skillExperience[t.skill]>=4){a.skillExperience[t.skill]=0;if(t.skill==0)a.intel=Math.Min(6,a.intel+1);if(t.skill==1)a.stealth=Math.Min(6,a.stealth+1);if(t.skill==2)a.persuade=Math.Min(6,a.persuade+1);if(t.skill==3)a.organize=Math.Min(6,a.organize+1);}Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
                 else{a.exposure=Math.Min(100,a.exposure+t.failExposure);s.pressure=Math.Min(100,s.pressure+2);t.lastResult+="；未成 · 额外暴露+"+t.failExposure+"、压力+2，期限内可重新授权";Log(s,t.lastResult);}
                 t.actor=-1;
             }
@@ -176,7 +179,7 @@ namespace Minglu
                     if(!Roll(s,a,skill,1,stage==0?"链条外送":stage==1?"链条接头":"内线观察")){AddRouteNote(r,a.name+"未通过判定，下夜自动重试");continue;}
                     if(stage==0){r.atRelay--;r.age=0;r.delivered++;c.delivered++;s.intelligence++;s.progress+=2;s.money+=3;AddRouteNote(r,"送达1份：成果+2 / 银两+3");}
                     else if(stage==1){r.waiting--;r.atRelay++;AddRouteNote(r,"接头成功：进入中继，下夜可外送");}
-                    else{r.waiting++;AddRouteNote(r,"内线产出1份，等待接头人");if(Next(s,100)<40&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"内线提议",id);if(c.nextTask>before)Log(s,a.name+"从岗位发现新机会，已提交任务待授权。");}}
+                    else{r.waiting++;AddRouteNote(r,Employment(Person(s,id))+"："+InstitutionIntel[Person(s,id).institution]+"，产出1份待接情报");if(Next(s,100)<40&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"内线提议",id);if(c.nextTask>before)Log(s,a.name+"从岗位发现新机会，已提交任务待授权。");}}
                 }
                 if(r.last=="本夜待报")r.last="按观察周期等待：内线次夜观察，本夜没有上游情报可接头或外送。";
                 AgeRoute(r);
@@ -186,7 +189,7 @@ namespace Minglu
             {
                 var a=Agent(s,p.id);bool paid=s.money>=2;if(paid){s.money-=2;maintenancePaid+=2;}
                 if(busy.Contains(p.id)){p.neglect++;p.last="地下工作 / 日常事务顺延";if(p.neglect>=3){p.loyalty=Math.Max(0,p.loyalty-7);a.suspicion=Math.Min(100,a.suspicion+8);Log(s,a.name+"连续忙于地下工作，家事积压；建议生活优先休养。");}}
-                else{p.neglect=0;p.xp++;a.stamina=Math.Min(100,a.stamina+20);a.spirit=Math.Min(100,a.spirit+15);a.exposure=Math.Max(0,a.exposure-10);a.suspicion=Math.Max(0,a.suspicion-6);p.loyalty=Math.Min(100,p.loyalty+5);p.last=p.profession+"日常 / "+p.life;if(p.xp>=c.config.coverXP*p.level&&p.level<4){p.xp=0;p.level++;Log(s,a.name+"的表身份升至"+p.level+"级，获得更高层级任务准入。");}if(p.policy==2&&Next(s,100)<(p.temper=="热心"?35:22)&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"成员发现",p.id);if(c.nextTask>before)p.last+=" / 主动上报机会";}}
+                else{p.neglect=0;p.xp++;a.stamina=Math.Min(100,a.stamina+20);a.spirit=Math.Min(100,a.spirit+15);a.exposure=Math.Max(0,a.exposure-10);a.suspicion=Math.Max(0,a.suspicion-6);p.loyalty=Math.Min(100,p.loyalty+5);p.last=Employment(p)+" · "+p.profession+"日常 / "+p.life;if(p.xp>=c.config.coverXP*p.level&&p.level<4){p.xp=0;p.level++;Log(s,a.name+"的表身份升至"+p.level+"级，获得更高层级任务准入。");}if(p.policy==2&&Next(s,100)<(p.temper=="热心"?35:22)&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"成员发现",p.id);if(c.nextTask>before)p.last+=" / 主动上报机会";}}
                 if(!paid){unpaidMembers++;p.loyalty=Math.Max(0,p.loyalty-6);a.suspicion=Math.Min(100,a.suspicion+6);}
             }
             s.money+=c.config.income;
@@ -241,9 +244,9 @@ namespace Minglu
         public static void Validate(RunState s)
         {
             var c=s.command;if(c==null||c.version!=1||c.config==null||c.people==null||c.tasks==null||c.routes==null||c.config.templates==null||c.config.templates.Count<1||c.config.coverXP<1||c.config.taskInterval<1||s.turn<1||s.turn>s.config.Value("turns")||s.random==0||s.money<0||s.agents.Count!=c.people.Count||c.people.Select(p=>p.id).Distinct().Count()!=c.people.Count)throw new Exception("组织存档结构无效");
-            UpgradeMissions(s);ValidateStrategy(s);
+            UpgradeMissions(s);UpgradeInstitutions(s);ValidateStrategy(s);
             if(c.notices==null)c.notices=new List<CommandNotice>();
-            foreach(var p in c.people){var a=Agent(s,p.id);if(p.level<1||p.level>4||p.loyalty<0||p.loyalty>100||a.stamina<0||a.stamina>100||a.spirit<0||a.spirit>100)throw new Exception("成员数据无效");AppearanceRules.Validate(a.appearance);}
+            foreach(var p in c.people){var a=Agent(s,p.id);if(p.institution<0||p.institution>=Institutions.Length||p.level<1||p.level>4||p.loyalty<0||p.loyalty>100||a.stamina<0||a.stamina>100||a.spirit<0||a.spirit>100)throw new Exception("成员数据无效");AppearanceRules.Validate(a.appearance);}
             foreach(var t in c.tasks)if(t.skill<0||t.skill>3||t.required<1||t.status<0||t.status>2||t.plan<0||t.plan>2||t.intelReward<0||t.pressureRelief<0||t.failExposure<0||t.actor>=0&&!s.agents.Any(a=>a.id==t.actor))throw new Exception("授权任务数据无效");
             foreach(var r in c.routes)if(new[]{r.source,r.liaison,r.courier}.Any(id=>id!=-1&&!s.agents.Any(a=>a.id==id)))throw new Exception("联络链成员无效");
         }

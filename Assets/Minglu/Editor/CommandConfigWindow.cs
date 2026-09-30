@@ -7,7 +7,7 @@ namespace Minglu.EditorTools
     public class CommandConfigWindow:EditorWindow
     {
         const string PathName="Assets/Minglu/Resources/Minglu/Config/command_config.json";
-        string body,notice="编辑模板与组织参数，发布前检查。修改只影响新局。";Vector2 scroll;
+        string body,notice="编辑模板与组织参数，发布前检查。修改只影响新局。intelReward 必须为0；只有机构内线经链条送达才提供情报。";Vector2 scroll;
         [MenuItem("Minglu/组织首脑配置与任务模板")]
         static void Open(){GetWindow<CommandConfigWindow>("组织首脑配置");}
         void OnEnable(){body=File.ReadAllText(PathName);}

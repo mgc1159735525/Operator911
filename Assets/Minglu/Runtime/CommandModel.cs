@@ -4,6 +4,7 @@ namespace Minglu
 {
     [Serializable] public class CommandPerson
     {
+        public int institution;
         public int id,level=1,xp,loyalty=75,neglect,leaveUntil,policy,age;
         public string profession,code,life,temper,last="正常生活";
         public Appearance originalLook;
@@ -13,6 +14,7 @@ namespace Minglu
     {
         public int id,skill,required=1,level=1,district,deadline,actor=-1,reward=5,money=6,status,source=-1;
         public string title,body,origin,profession="",category="委托",followup="";
+        public int institution;
         public int plan,intelReward,pressureRelief,failExposure=6;
         public bool intelSupport,followupSpawned;
         public string lastResult="";
@@ -43,7 +45,7 @@ namespace Minglu
     }
     [Serializable] public class CommandState
     {
-        public int missionRevision;
+        public int missionRevision,institutionRevision;
         public CommandStrategy strategy;
         public int version=1,nextTask,delivered,completed,gate,eventKind,eventActor=-1,pauseUntil,variant;
         public string eventText="";
