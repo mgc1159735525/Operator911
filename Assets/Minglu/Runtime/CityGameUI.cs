@@ -65,6 +65,7 @@ namespace Minglu
             if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
             if(State.command!=null&&State.ended&&modal=="endingReview"&&Input.GetKeyDown(KeyCode.Escape)){modal="";Draw();return;}
             if(atTitle){if(Input.GetKeyDown(KeyCode.Escape)&&homePage!="main")BackHome();return;}
+            if(!atTitle&&Input.GetKeyDown(KeyCode.Escape)&&HandleCommandModalEscape())return;
             if (Input.GetKeyDown(KeyCode.Escape)) { if(State.command!=null&&(State.command.eventKind!=0||State.ended||State.command.notices.Count>0))return; if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
             if (Input.GetKeyDown(KeyCode.F5)) Save();
             if (Input.GetKeyDown(KeyCode.F9)) Load();
@@ -341,6 +342,8 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--minglu-modal-smoke")>=0){yield return ModalCommandSmoke(path);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--painted-only")>=0){yield return PaintedPortraitSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--institution-only")>=0){yield return InstitutionSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--button-art-only")>=0){yield return ButtonArtSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--design-only")>=0){yield return DesignSmoke(path);Application.Quit();yield break;}

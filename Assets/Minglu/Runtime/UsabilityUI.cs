@@ -7,7 +7,16 @@ namespace Minglu
         bool resetCommandTaskScroll;
         void FocusCommandTask(int id)
         {
-            commandTask=id;commandTab=0;taskFilter=0;resetCommandTaskScroll=true;
+            var task=State.command.tasks.FirstOrDefault(t=>t.id==id&&t.status==0);
+            if(task==null)return;
+            if(modal!="missionPlan"&&modal!="compareCandidates")
+            {
+                taskReturnTab=commandTab;
+                taskReturnModal=modal=="memberDetails"||modal=="institutionPicker"?"memberDetails":"";
+            }
+            commandTask=id;commandTab=0;taskFilter=0;resetCommandTaskScroll=true;modal="missionPlan";
+            if(task.actor>=0)selectedAgent=task.actor;
+            else if(task.operation==4)selectedAgent=task.target;
         }
         void DrawCommandMenu()
         {

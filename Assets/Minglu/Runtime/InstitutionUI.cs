@@ -17,16 +17,16 @@ namespace Minglu
                 Label(p,error==""?"本人说服判定 · 需2成功 · 可选筹备提高成功率":error,28,y+68,810,25,16,error==""?Muted:Red);
                 Button("InstitutionSelect_"+i,p,"生成任职任务",595,y+11,277,43,()=>{
                     toast=CommandRules.StartEmployment(State,a.id,institution);
-                    if(toast==""){FocusCommandTask(State.command.tasks.Last().id);modal="";toast="任职任务已创建，请检查方案后签发给本人。";Save(false);}Draw();
+                    if(toast==""){FocusCommandTask(State.command.tasks.Last().id);toast="任职任务已创建，请检查方案后签发给本人。";Save(false);}Draw();
                 },error=="");
             }
-            Button("InstitutionCancel",p,"返回 · 不建立任务",28,631,844,48,()=>{modal="";Draw();});
+            Button("InstitutionCancel",p,"返回个人档案",28,631,844,48,()=>{modal="memberDetails";Draw();});
         }
         bool HasActiveInsider(){return State.command.people.Any(p=>CommandRules.HasInstitution(p)&&CommandRules.Agent(State,p.id).condition==Condition.Active);}
         void OpenEmployment()
         {
             var pending=State.command.tasks.FirstOrDefault(t=>t.operation==4&&t.target==selectedAgent&&t.status==0);
-            if(pending!=null){FocusCommandTask(pending.id);modal="";}else modal="institutionPicker";
+            if(pending!=null){FocusCommandTask(pending.id);}else modal="institutionPicker";
             Draw();
         }
     }

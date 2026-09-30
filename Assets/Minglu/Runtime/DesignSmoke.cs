@@ -51,12 +51,14 @@ namespace Minglu
                     {
                         yield return Click("CommandDistrict_"+district.id);
                         if(commandTab!=3||selectedDistrict!=district.id)throw new Exception("District selection unexpectedly left the map");
+                        yield return Click("DistrictClose");
                     }
                     var mapTask=State.command.tasks.Where(t=>t.status==0).OrderBy(t=>t.deadline).First();
                     yield return Click("CommandDistrict_"+mapTask.district);
                     Capture(Path.ChangeExtension(path,"district-context.png"));
                     yield return Click("DistrictTask_"+mapTask.id);
                     if(commandTab!=0||commandTask!=mapTask.id)throw new Exception("District task link did not focus the requested task");
+                    yield return Click("MissionBack");
                     yield return Click("CommandTab_3");
                     var emptyDistrict=State.config.districts.FirstOrDefault(d=>!State.command.tasks.Any(t=>t.status==0&&t.district==d.id));
                     if(emptyDistrict!=null)
@@ -64,6 +66,7 @@ namespace Minglu
                         yield return Click("CommandDistrict_"+emptyDistrict.id);
                         Capture(Path.ChangeExtension(path,"empty-district.png"));
                     }
+                    else yield return Click("DistrictOpen");
                     yield return Click("DistrictAffairs");
                     if(commandTab!=5)throw new Exception("District affairs link failed");
                     yield return Click("CommandTab_3");yield return Click("DistrictRoutes");
@@ -77,7 +80,6 @@ namespace Minglu
             yield return Click("CommandRecommend_"+firstTask.id);
             if(commandTask!=firstTask.id||CommandRules.TaskError(State,selectedAgent,firstTask)!="")throw new Exception("Recommendation failed to select an eligible task lead");
             Capture(Path.ChangeExtension(path,"dispatch.png"));
-            yield return Click("CommandPlan");
             if(modal!="missionPlan")throw new Exception("Action plan did not open");
             Capture(Path.ChangeExtension(path,"plan.png"));yield return Click("MissionBack");
             yield return Click("CommandMemberOpen");

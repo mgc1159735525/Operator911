@@ -8,9 +8,10 @@ namespace Minglu
         void DrawStrategy(Transform panel)
         {
             var x=State.command.strategy;var c=x.config;
-            Label(panel,"地区经营 / 安全与盟友",20,14,798,34,24,Gold);
+            Label(panel,"地区经营 / 安全与盟友",20,14,570,34,24,Gold);
+            Button("StrategyDetails",panel,"查看安全规则  ›",608,14,190,34,()=>{modal="strategyDetails";Draw();});
             Label(panel,"据点："+State.config.District(x.baseDistrict).name+"  ·  追查 "+x.trace+" / "+c.raid+"触发撤离  ·  民心 "+x.hearts,20,57,798,30,19,x.trace>=c.raid-15?Red:Teal);
-            Label(panel,"地下行动累积追查；全员休整每夜−5。民心≥60时每夜额外−2。\n暴露≥"+c.warning+"先预警，≥"+c.capture+"且下夜仍未脱险才被捕。",20,94,798,59,17,Muted);
+            Label(panel,x.trace>=c.raid-15?"据点接近暴露。优先轮休，并为转移预留经费。":"选择盟友发起委托，完成后获得长期支援。",20,101,798,39,18,x.trace>=c.raid-15?Red:Muted);
             for(int i=0;i<4;i++)
             {
                 int id=i,y=171+i*72;Label(panel,CommandRules.Factions[i]+" · 信任 "+x.alliances[i]+" / "+c.allianceThreshold,20,y,470,26,20,Gold);
@@ -54,7 +55,7 @@ namespace Minglu
                 Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用运行中的链条岗位":"可用 · "+CommandRole(a.id)+"，授权后本夜该岗位等待",10,y+38,598,58,17,error==""?Teal:Red);
                 Button("CompareSelect_"+a.id,list,"选此人",635,y+18,160,46,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
             }
-            Button("CompareBack",p,"返回 · 不更改授权",28,652,844,48,()=>{modal="";Draw();});
+            Button("CompareBack",p,"返回任务 · 不更改授权",28,652,844,48,()=>{modal="missionPlan";Draw();});
         }
         void RequestRouteReplacement(CommandRoute r,int slot)
         {

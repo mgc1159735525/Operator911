@@ -8,7 +8,20 @@ namespace Minglu
     {
         IEnumerator AppearanceStudioSmoke(string path)
         {
-            yield return Click("HomeAppearance");yield return Click("LookMale");yield return Click("LookCategory_1");yield return Click("LookOption_2");
+            yield return Click("HomeAppearance");yield return Click("LookMale");
+            var studio=GameObject.Find("AppearanceStudio");if(studio==null||!PaperSurface(studio.transform))throw new Exception("Portrait editor is not a paper surface");
+            if(lookOptionPage>0)yield return Click("LookOptionPrevious");
+            string initial=JsonUtility.ToJson(lookDraft);yield return Click("LookOptionNext");
+            if(lookOptionPage!=1||JsonUtility.ToJson(lookDraft)!=initial)throw new Exception("Browsing portrait choices changed the preview");
+            int shown=0;foreach(var button in root.GetComponentsInChildren<UnityEngine.UI.Button>())if(button.name.StartsWith("LookOption_"))shown++;
+            if(shown!=4)throw new Exception("Portrait selector did not limit visible alternatives to four");
+            yield return Click("LookOption_7");if(lookDraft.parts[0]!=7)throw new Exception("Second face page is not selectable");
+            yield return Click("LookOptionPrevious");yield return Click("LookOption_0");
+            string beforeSettings=JsonUtility.ToJson(lookDraft);yield return Click("LookRandomSettings");yield return Click("LookRandomLock_0");
+            if(lookPopup!="random"||!lookLocks[0]||JsonUtility.ToJson(lookDraft)!=beforeSettings)throw new Exception("Random settings changed character instead of only preferences");
+            Capture(Path.ChangeExtension(path,"random-settings.png"));yield return Click("LookUnlockAll");yield return Click("LookPopupBack");
+            if(lookPopup!=""||JsonUtility.ToJson(lookDraft)!=beforeSettings)throw new Exception("Returning from random settings mutated preview");
+            yield return Click("LookCategory_1");yield return Click("LookOption_2");
             int hair=lookDraft.parts[1];yield return Click("LookLock");string before=JsonUtility.ToJson(lookDraft);yield return Click("LookRandom");
             if(lookDraft.parts[1]!=hair||lookDraft.sex!=0)throw new Exception("Locked random changed hair or sex");string after=JsonUtility.ToJson(lookDraft);
             yield return Click("LookUndo");if(JsonUtility.ToJson(lookDraft)!=before)throw new Exception("Undo not exact");yield return Click("LookRedo");if(JsonUtility.ToJson(lookDraft)!=after)throw new Exception("Redo not exact");
@@ -25,7 +38,7 @@ namespace Minglu
             if(modal!="memberDetails"||JsonUtility.ToJson(State.agents.Find(a=>a.id==lookTarget).appearance)!=original)throw new Exception("Discard mutated actor or lost return location");
             yield return Click("MemberDetailsClose");yield return Click("Save");yield return Click("Load");
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",ProfilePath+".tmp",smokeSave,smokeSave+".bak",smokeSave+".tmp"})if(File.Exists(file))File.Delete(file);
-            Debug.Log("MINGLU_STUDIO_UI_SUCCESS: locked random, undo/redo, gender/beard, zoom, comparison, preset confirmation/persistence, chief apply, compact dialogs, discard and save/load");
+            Debug.Log("MINGLU_STUDIO_UI_SUCCESS: paper portrait editor, four-choice pagination, random settings popup, locked random, undo/redo, gender/beard, zoom, comparison, preset confirmation/persistence, chief apply, compact dialogs, discard and save/load");
         }
     }
 }

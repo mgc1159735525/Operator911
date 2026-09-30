@@ -7,20 +7,29 @@ namespace Minglu
         void DrawMissionPlan()
         {
             var t=State.command.tasks.FirstOrDefault(x=>x.id==commandTask&&x.status==0);
-            if(t==null){modal="";return;}
-            var a=CommandRules.Agent(State,selectedAgent);var p=CommandModal("任务方案 / "+t.title,730);
-            Label(p,t.origin+(t.source>=0?" / 提报人："+CommandName(t.source):"")+" · "+State.config.District(t.district).name+" · 第"+t.deadline+"夜截止",28,77,844,30,18,Muted);
-            string[] descriptions={"常规\n无额外预算 / 基础骰池","充分筹备\n4银两 / +1骰 / 暴露−2","紧急推进\n+1骰 / 暴露+8 / 压力+2"};
-            for(int i=0;i<3;i++){int plan=i;Button("MissionPlan_"+i,p,descriptions[i],28+i*284,121,272,73,()=>{t.plan=plan;Draw();},t.actor<0,t.plan==i);}
-            Button("MissionIntel",p,t.intelSupport?"情报支援：开启 · 1份情报换+1骰":"情报支援：关闭 · 可选1份情报换+1骰",28,210,844,43,()=>{t.intelSupport=!t.intelSupport;Draw();},t.actor<0,t.intelSupport);
+            if(t==null){CloseTaskDialog();return;}
+            var a=CommandRules.Agent(State,selectedAgent);var p=CommandModal("任务签发 / "+t.title,820);
+            Label(p,State.config.District(t.district).name+" · "+(t.deadline<=State.turn?"今夜截止":"剩余 "+(t.deadline-State.turn+1)+" 夜")+" · "+t.origin,28,81,844,26,17,t.deadline<=State.turn?Red:Muted);
+            var description=Scroll(p,"TaskDescription_"+t.id,28,118,844,102,102);
+            string follow=t.stepsRequired>1?"阶段 "+t.stepsDone+" / "+t.stepsRequired+"；最后一阶段成功后结算奖励。":string.IsNullOrEmpty(t.followup)?"":"成功后解锁："+t.followup+"。";
+            var text=Label(description,t.body+"\n成功："+CommandRules.TaskReward(t)+(follow==""?"":"\n"+follow),0,0,810,102,19);
+            float h=Mathf.Max(102,text.preferredHeight+8);text.rectTransform.sizeDelta=new Vector2(810,h);description.sizeDelta=new Vector2(description.sizeDelta.x,h);
+            Label(p,"行动要求："+CommandRules.Skills[t.skill]+" / "+t.required+"个成功 / 身份"+t.level+"级"+(string.IsNullOrEmpty(t.profession)?"":" / "+t.profession),28,229,844,29,17,Muted);
+            Rule(p,28,269,844);
+            Label(p,"负责人  "+a.name+" · "+CommandRules.Person(State,a.id).profession,28,282,557,36,25,Gold);
+            Button("CommandCompare_"+t.id,p,"比较 / 更换负责人  ›",609,281,263,37,()=>{modal="compareCandidates";Draw();},t.actor<0);
             int dice=CommandRules.TaskDice(State,a,t);string error=CommandRules.TaskError(State,a.id,t);
-            Label(p,a.name+" · "+CommandRules.Skills[t.skill]+"当前"+CommandRules.Dice(State,a,t.skill)+"骰 / 方案+"+(t.plan==0?0:1)+" / 支援+"+(t.intelSupport?1:0)+" / 联盟+"+CommandRules.AllianceDice(State,t)+" / 盘查−"+CommandRules.DistrictPenalty(State,t)+"\n最终"+dice+"骰，需要"+t.required+"个4—6：成功率 "+(DispatchRules.Probability(dice,t.required)*100).ToString("0.#")+"%",28,269,844,68,21,Teal);
-            Label(p,"执行消耗："+CommandRules.PlanCost(t)+"银两、"+(t.intelSupport?1:0)+"情报、14体力、6精神\n暴露+"+CommandRules.TaskExposure(State,a,t)+(t.plan==2?"；压力+2（成败都生效）":"")+"\n成功："+CommandRules.TaskReward(t)+"\n失败：额外暴露+"+t.failExposure+"、压力+2；已用资源不返还，期限内可再授权",28,349,844,135,19);
-            string follow=t.stepsRequired>1?"多阶段行动：已完成"+t.stepsDone+"/"+t.stepsRequired+"。每次成功推进一阶段，最后一阶段才结算奖励；失败保留进度。":string.IsNullOrEmpty(t.followup)?"此任务没有固定后续。":"成功后解锁："+t.followup+"（同一地区，另行授权）。";
-            Label(p,follow+"\n"+(string.IsNullOrEmpty(t.lastResult)?"每骰独立判定；夜间状态变化会影响后续任务骰池。":t.lastResult),28,496,844,75,17,Muted);
-            Label(p,t.actor>=0?"已授权：先撤回授权才能更改方案。":error!=""?error:"可用："+(State.money-CommandRules.ReservedMoney(State,t.id))+"银两 / "+(State.intelligence-CommandRules.ReservedIntel(State,t.id))+"情报。授权预留，撤回释放；成员自行执行。",28,583,844,53,18,error==""?Teal:Red);
-            Button("MissionBack",p,"返回指挥席",28,652,300,48,()=>{modal="";Draw();});
-            Button("MissionAuthorize",p,"按此方案授权 "+a.name,348,652,524,48,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){modal="";Save(false);}Draw();},error==""&&t.actor<0,true);
+            Label(p,(DispatchRules.Probability(dice,t.required)*100).ToString("0.#")+"%",28,327,200,58,40,Gold);
+            Label(p,dice+" 骰 / 需 "+t.required+" 个成功\n每骰 4—6 计为成功",242,333,275,50,17,Muted);
+            Label(p,"预算 "+CommandRules.PlanCost(t)+" 银两 / 情报 "+(t.intelSupport?1:0)+" 份\n体力 −14 / 精神 −6",557,333,315,50,17,Muted);
+            string[] descriptions={"常规\n不增加投入","充分筹备\n4 银两 · +1骰 · 暴露−2","紧急推进\n+1骰 · 暴露+8 · 压力+2"};
+            for(int i=0;i<3;i++){int plan=i;Button("MissionPlan_"+i,p,descriptions[i],28+i*284,400,272,69,()=>{t.plan=plan;Draw();},t.actor<0,t.plan==i);}
+            Button("MissionIntel",p,t.intelSupport?"✓ 情报支援 · 1份情报换 +1骰":"＋ 情报支援 · 可选1份情报换 +1骰",28,483,844,40,()=>{t.intelSupport=!t.intelSupport;Draw();},t.actor<0,t.intelSupport);
+            Label(p,"行动暴露 +"+CommandRules.TaskExposure(State,a,t)+(t.plan==2?"，压力 +2":"")+"；失败再增加暴露 +"+t.failExposure+"、压力 +2。\n失败保留阶段进度，已用资源不返还；期限内可再次授权。\n"+(CommandRole(a.id)!="机动成员"?"岗位冲突：本夜优先执行任务，"+CommandRole(a.id)+"岗位将等待。":"本夜执行一项任务；授权时预留资源，结束今夜后成员自行行动。"),28,540,844,90,18,Muted);
+            Label(p,t.actor>=0?"已签发给 "+CommandName(t.actor)+"。撤回后才可调整人员与方案。":error!=""?error:"可签发：可用 "+(State.money-CommandRules.ReservedMoney(State,t.id))+" 银两、"+(State.intelligence-CommandRules.ReservedIntel(State,t.id))+" 份情报。",28,647,844,61,19,error==""?Teal:Red);
+            Button("MissionBack",p,taskReturnModal=="memberDetails"?"返回个人档案":"返回"+CommandPageName(taskReturnTab),28,739,276,48,()=>{CloseTaskDialog();Draw();});
+            if(t.actor>=0)Button("CommandCancel_"+t.id,p,"撤回授权 / 释放预留",324,739,548,48,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();});
+            else Button("CommandAuthorize",p,"签发给 "+a.name,324,739,548,48,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已签发给 "+a.name+"；结束今夜后执行。";CloseTaskDialog(false);Save(false);}Draw();},error=="",true);
         }
     }
 }

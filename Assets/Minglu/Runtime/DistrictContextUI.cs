@@ -1,6 +1,5 @@
 using System.Linq;
 using UnityEngine;
-
 namespace Minglu
 {
     public partial class CityGameUI
@@ -8,46 +7,37 @@ namespace Minglu
         void DrawDistrictContext()
         {
             var district=State.config.District(selectedDistrict);
-            var strategy=State.command.strategy;
-            var tasks=State.command.tasks.Where(t=>t.status==0&&t.district==district.id)
-                .OrderBy(t=>t.actor>=0?1:0).ThenBy(t=>t.deadline).ToList();
-            var p=Box("DistrictContext",root,1146,122,422,578,Ink);
-
-            Label(p,"城区档案",20,0,379,26,15,Muted);
-            Label(p,district.name,20,39,245,40,30,Gold);
-            Label(p,"区域暴露 +"+Mathf.Clamp(district.risk,0,6),257,49,143,28,16,Red);
-            Label(p,district.subtitle+(strategy.baseDistrict==district.id?"  ·  当前据点":""),20,87,379,27,17,TextColor);
-            Label(p,"待授权 "+tasks.Count(t=>t.actor<0)+" 项     已授权 "+tasks.Count(t=>t.actor>=0)+" 项",20,124,379,28,19,Teal);
-            Rule(p,20,169,379);
-
-            Label(p,"全区追查 "+strategy.trace+" / "+strategy.config.raid+"   ·   民心 "+strategy.hearts,20,185,379,25,16,Muted);
-            Label(p,"本区行动增加 "+Mathf.Clamp(district.risk,0,6)+" 暴露；具体代价见任务方案。",20,218,379,47,16,Muted);
-            Label(p,"当地待办",20,274,379,27,19,Gold);
-
-            if(tasks.Count==0)
+            var tasks=State.command.tasks.Where(t=>t.status==0&&t.district==district.id).ToList();
+            var p=Box("DistrictContext",root,1146,122,422,376,Ink);
+            Label(p,"已选城区",20,0,379,26,15,Muted);
+            Label(p,district.name,20,42,379,44,32,Gold);
+            Label(p,district.subtitle,20,103,379,29,18,Muted);
+            Label(p,"待签发 "+tasks.Count(t=>t.actor<0)+" 项 · 已签发 "+tasks.Count(t=>t.actor>=0)+" 项",20,153,379,29,20,Teal);
+            int urgent=tasks.Count(t=>t.actor<0&&t.deadline<=State.turn);
+            Label(p,urgent>0?urgent+" 项任务今夜截止":"点击地点，展开当地任务与局势。",20,201,379,48,18,urgent>0?Red:Muted);
+            Button("DistrictOpen",p,"打开城区档案  ›",20,272,379,40,()=>{modal="districtDetails";Draw();},true,true);
+            Button("DistrictRoutes",p,"检查联络网  ›",20,329,379,33,()=>{commandTab=1;Draw();});
+        }
+        void DrawDistrictDetails()
+        {
+            var district=State.config.District(selectedDistrict);var strategy=State.command.strategy;
+            var tasks=State.command.tasks.Where(t=>t.status==0&&t.district==district.id).OrderBy(t=>t.actor>=0?1:0).ThenBy(t=>t.deadline).ToList();
+            var p=CommandModal("城区档案 / "+district.name,710);
+            Label(p,district.subtitle+(strategy.baseDistrict==district.id?" · 当前据点":"")+" · 本区行动暴露 +"+Mathf.Clamp(district.risk,0,6),28,88,844,29,19,Muted);
+            Label(p,"待签发 "+tasks.Count(t=>t.actor<0)+" 项 / 已签发 "+tasks.Count(t=>t.actor>=0)+" 项",28,137,844,29,21,Teal);
+            var list=Scroll(p,"DistrictTasks_"+district.id,28,186,844,385,Mathf.Max(385,tasks.Count*102));
+            if(tasks.Count==0)Label(list,"此区暂无待办。\n联络链与成员生活仍会按安排进行。\n需要新的工作时，可到地方事务发起委托。",0,38,810,160,23,Muted);
+            int row=0;
+            foreach(var task in tasks)
             {
-                Label(p,"此区暂无待办。\n成员仍会按已启用的联络链与日常政策行动。\n可在地方事务查看能够发起的委托。",20,315,379,131,18,Muted);
+                int y=row++*102;
+                Label(list,task.title,0,y+5,556,32,24,Gold);
+                Label(list,(task.deadline<=State.turn?"今夜截止":"第 "+task.deadline+" 夜截止")+" · "+(task.actor<0?"待签发":CommandName(task.actor)+"执行"),0,y+46,556,25,17,task.deadline<=State.turn&&task.actor<0?Red:Muted);
+                Button("DistrictTask_"+task.id,list,"打开任务  ›",600,y+17,206,43,()=>OpenCommandTask(task.id));
+                Rule(list,0,y+91,806);
             }
-            else
-            {
-                var list=Scroll(p,"DistrictTasks_"+district.id,20,313,382,174,Mathf.Max(174,tasks.Count*128));
-                int row=0;
-                foreach(var task in tasks)
-                {
-                    int y=row++*128;
-                    Label(list,task.title,0,y,356,29,20,Gold);
-                    string deadline=task.deadline<=State.turn?"今夜截止":"第 "+task.deadline+" 夜截止";
-                    string state=task.actor<0?"待授权":"已授权 · "+CommandName(task.actor);
-                    Label(list,deadline+"  /  "+state,0,y+34,356,23,14,task.deadline<=State.turn&&task.actor<0?Red:Muted);
-                    Label(list,"来源："+(string.IsNullOrEmpty(task.origin)?"组织事务":task.origin),0,y+60,356,24,14,Muted);
-                    Button("DistrictTask_"+task.id,list,"查看任务  ›",0,y+85,356,31,()=>{FocusCommandTask(task.id);toast="已打开「"+task.title+"」。比较成员与方案后再签发。";Draw();});
-                    Rule(list,0,y+123,356);
-                }
-            }
-
-            Rule(p,20,499,379);
-            Button("DistrictAffairs",p,"查看地方事务  ›",20,507,379,31,()=>{commandTab=5;Draw();});
-            Button("DistrictRoutes",p,"检查联络网  ›",20,544,379,31,()=>{commandTab=1;Draw();});
+            Button("DistrictClose",p,"返回城区地图",28,625,404,48,()=>{modal="";Draw();});
+            Button("DistrictAffairs",p,"查看地方事务  ›",450,625,422,48,()=>{modal="";commandTab=5;Draw();});
         }
     }
 }

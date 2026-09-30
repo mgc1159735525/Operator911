@@ -23,6 +23,7 @@ namespace Minglu
             Capture(Path.ChangeExtension(path,"chain.png"));
             selectedAgent=3;yield return Click("CommandTab_2");
             Capture(Path.ChangeExtension(path,"personnel.png"));
+            yield return Click("CommandPeopleDetails");
             yield return Click("CommandEmployment");Capture(Path.ChangeExtension(path,"employers.png"));
             int count=State.command.tasks.Count;
             yield return Click("InstitutionCancel");if(State.command.tasks.Count!=count)throw new Exception("Cancel created a task");
