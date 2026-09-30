@@ -81,7 +81,7 @@ namespace Minglu
             Label(p,"敌方持续蹲守，组织等待撤离指示。两种方式都会转移据点、追查−45、今夜链条暂停。已授权任务仍会执行。",28,145,844,105,22);
             int lost=State.command.routes.Sum(r=>r.atRelay),free=State.money-CommandRules.ReservedMoney(State);
             Label(p,"有序转移：支出"+x.config.relocateCost+"银两，保留全部情报。\n销毁撤离：不花钱，放弃中继情报"+lost+"份，内线待接情报保留。\n可用经费 "+free+"（已扣除任务预留）。",28,270,844,135,21,Teal);
-            Button("CommandEventSafe",p,"有序转移 · "+x.config.relocateCost+"银两",28,480,404,64,()=>{toast=CommandRules.ResolveRaid(State,true);Save(false);Draw();},free>=x.config.relocateCost,true);
+            ActionTicket("CommandEventSafe",p,"有序转移",x.config.relocateCost+" 银两",28,480,404,64,()=>{toast=CommandRules.ResolveRaid(State,true);Save(false);Draw();},free>=x.config.relocateCost);
             Button("CommandEventRisk",p,"销毁中继情报并撤离",450,480,422,64,()=>{toast=CommandRules.ResolveRaid(State,false);Save(false);Draw();});
         }
     }

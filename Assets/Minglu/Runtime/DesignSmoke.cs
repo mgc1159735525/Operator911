@@ -43,6 +43,34 @@ namespace Minglu
                 yield return Click("CommandTab_"+page);
                 if(commandTab!=page)throw new Exception("Sidebar failed to open page "+page);
                 Capture(Path.ChangeExtension(path,pages[page]+".png"));
+                if(page==3)
+                {
+                    int beforeTurn=State.turn,beforeMoney=State.money;
+                    var beforeActors=State.command.tasks.Select(t=>t.actor).ToArray();
+                    foreach(var district in State.config.districts)
+                    {
+                        yield return Click("CommandDistrict_"+district.id);
+                        if(commandTab!=3||selectedDistrict!=district.id)throw new Exception("District selection unexpectedly left the map");
+                    }
+                    var mapTask=State.command.tasks.Where(t=>t.status==0).OrderBy(t=>t.deadline).First();
+                    yield return Click("CommandDistrict_"+mapTask.district);
+                    Capture(Path.ChangeExtension(path,"district-context.png"));
+                    yield return Click("DistrictTask_"+mapTask.id);
+                    if(commandTab!=0||commandTask!=mapTask.id)throw new Exception("District task link did not focus the requested task");
+                    yield return Click("CommandTab_3");
+                    var emptyDistrict=State.config.districts.FirstOrDefault(d=>!State.command.tasks.Any(t=>t.status==0&&t.district==d.id));
+                    if(emptyDistrict!=null)
+                    {
+                        yield return Click("CommandDistrict_"+emptyDistrict.id);
+                        Capture(Path.ChangeExtension(path,"empty-district.png"));
+                    }
+                    yield return Click("DistrictAffairs");
+                    if(commandTab!=5)throw new Exception("District affairs link failed");
+                    yield return Click("CommandTab_3");yield return Click("DistrictRoutes");
+                    if(commandTab!=1)throw new Exception("District route link failed");
+                    if(State.turn!=beforeTurn||State.money!=beforeMoney||!State.command.tasks.Select(t=>t.actor).SequenceEqual(beforeActors))
+                        throw new Exception("Map browsing changed resources, time or task assignments");
+                }
             }
             yield return Click("CommandTab_0");
             var firstTask=State.command.tasks.Where(t=>t.status==0).OrderBy(t=>t.deadline).First();
@@ -75,7 +103,7 @@ namespace Minglu
             if(State.command.tasks.Any(t=>t.actor>=0)||State.command.routes.Any(r=>r.enabled))throw new Exception("Preview-only navigation unexpectedly authorized work");
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",ProfilePath+".tmp",smokeSave,smokeSave+".bak",smokeSave+".tmp"})
                 if(File.Exists(file))File.Delete(file);
-            Debug.Log("MINGLU_DESIGN_UI_SUCCESS: title/settings/help/archive/new-run, six sidebar pages, dispatch/plan/dossier/overview/candidates/night-review, real button hits and unchanged turn/history after save/load");
+            Debug.Log("MINGLU_DESIGN_UI_SUCCESS: title/settings/help/archive/new-run, six sidebar pages, district selection/context/empty district/navigation without side effects, dispatch/plan/dossier/overview/candidates/night-review, real button hits and unchanged turn/history after save/load");
         }
     }
 }

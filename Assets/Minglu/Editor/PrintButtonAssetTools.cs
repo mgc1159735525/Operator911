@@ -9,7 +9,7 @@ namespace Minglu.EditorTools
     // Lossless sprite-sheet extraction only: artwork and alpha come from the generated source.
     public static class PrintButtonAssetTools
     {
-        const string Source = "ArtSource/UI/PrintButtons/print_buttons_source.png";
+        const string Source = "ArtSource/UI/PrintButtons/white_sun_reference_buttons.png";
         const string Destination = "Assets/Minglu/Resources/Minglu/UI/PrintButtons";
         static readonly string[] Families = { "primary", "paper", "dark" };
         static readonly string[] States = { "normal", "hover", "pressed", "selected", "disabled" };
@@ -23,7 +23,7 @@ namespace Minglu.EditorTools
             if (!texture.LoadImage(File.ReadAllBytes(Source))) throw new Exception("Cannot decode button source atlas");
             if (texture.width != 1536 || texture.height != 1024) throw new Exception("Button source layout changed; review the crop grid before export");
             var pixels = texture.GetPixels32();
-            int[] columns = { 0, 530, 1005, 1536 }, rows = { 0, 223, 402, 581, 760, 1024 };
+            int[] columns = { 0, 530, 1005, 1536 }, rows = { 0, 235, 415, 590, 763, 1024 };
             var manifest = new Manifest();
             Directory.CreateDirectory(Destination);
             for (int row = 0; row < States.Length; row++)

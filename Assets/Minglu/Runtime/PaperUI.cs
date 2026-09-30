@@ -32,7 +32,7 @@ namespace Minglu
         bool UseButtonArt(Button button,string family,bool selected)
         {
             var art=ButtonArt(family);if(art==null)return false;
-            var image=button.image;image.color=family=="primary"?new Color(.82f,.82f,.82f,1):Color.white;image.type=Image.Type.Sliced;image.fillCenter=true;
+            var image=button.image;image.color=Color.white;image.type=Image.Type.Sliced;image.fillCenter=true;
             image.sprite=selected?art.selected:art.normal;
             var states=button.spriteState;states.highlightedSprite=art.hover;states.pressedSprite=art.pressed;states.selectedSprite=art.selected;states.disabledSprite=art.disabled;
             button.spriteState=states;button.transition=Selectable.Transition.SpriteSwap;
@@ -66,6 +66,7 @@ namespace Minglu
         }
         bool QuietControl(string name)
         {
+            if(name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes")return true;
             return name=="Save"||name=="Load"||name=="CommandHome"||name=="CommandMenu"||name=="CommandHelp"||name=="CommandPortrait"||name=="CommandNextAction"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name=="LookClose"||name=="LookUndo"||name=="LookRedo"||name=="LookReset"||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_")||name.StartsWith("CommandTask_")||name.StartsWith("BriefTask_")||name.StartsWith("RosterVacancy_");
         }
         bool ChoiceControl(string name)
@@ -89,7 +90,7 @@ namespace Minglu
             bool artwork=!choice&&!quiet&&!photo&&!name.StartsWith("CommandDistrict_")&&UseButtonArt(b,submit?"primary":paper?"paper":"dark",selected);
             if(artwork&&submit&&enabled)foreground=Hex("FFF6E8");
             if(artwork&&!enabled)foreground=submit?Hex("DED6C5"):paper?Hex("625F57"):Hex("A3A294");
-            bool left=nav||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
+            bool left=nav||name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
             var label=Label(r,text,left?14:8,0,w-(left?26:16),h,nav?21:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
             if(choice)
             {
