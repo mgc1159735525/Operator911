@@ -35,7 +35,7 @@ Shader "Minglu/PaintedPortrait"
    fixed4 _Color,_Complexion,_ClothShadow,_ClothLight,_HairShadow,_HairLight;
    float4 _ClipRect,_AtlasRect,_LayerRect,_DrawRect,_BodyRect,_FeatureCols,_EyeFar,_EyeNear,_BrowFar,_BrowNear,_Nose,_Mouth,_EarFar,_EarNear;
    float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
-   float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_Jaw;
+   float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_CollarAnchor3,_CollarAnchor4,_CollarAnchor5,_CollarAnchor6,_CollarAnchor7,_Jaw;
    float _LayerMode,_EarOption,_BackHair,_CapStrayCut,_OutfitLeftTrim,_FarScalpPad;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 optionShape(float option,float2 one,float2 two,float2 three)
@@ -76,8 +76,9 @@ Shader "Minglu/PaintedPortrait"
    float2 outfitSample(float2 p)
    {
     float3 blend=hairAnchor(p,_CollarAnchor0)+hairAnchor(p,_CollarAnchor1)+hairAnchor(p,_CollarAnchor2);
-    // Preserve the authored shoulders and chest while fitting the collar.
-    blend+=hairAnchor(p,float4(.03,.90,0,0))+hairAnchor(p,float4(.98,.90,0,0))+hairAnchor(p,float4(.50,1.18,0,0));
+    // Both acromion regions and the chest constrain the collar's influence.
+    blend+=hairAnchor(p,_CollarAnchor3)+hairAnchor(p,_CollarAnchor4);
+    blend+=hairAnchor(p,_CollarAnchor5)+hairAnchor(p,_CollarAnchor6)+hairAnchor(p,_CollarAnchor7);
     return (p-blend.xy/blend.z-_LayerRect.xy)/_LayerRect.zw;
    }
    fixed4 bodyAt(float2 p)
@@ -118,6 +119,13 @@ Shader "Minglu/PaintedPortrait"
     fixed4 c=tex2D(_MainTex,uv);c.a*=sourceInside;
     if(_LayerMode<.5)
     {
+     // The source is a connected head/neck painting with an under-robe.
+     // Do not render that obsolete garment behind the selected outfit: its
+     // raised collar and shoulder tips otherwise protrude as a second contour.
+     float jawY=lerp(_Jaw.y,_Jaw.w+.095,saturate((p.x-_Jaw.x)/max(.05,_Jaw.z-_Jaw.x)));
+     float head=1-smoothstep(jawY+.010,jawY+.032,p.y);
+     float neck=smoothstep(.055,.100,c.r-c.b)*(1-smoothstep(.72,.80,p.y));
+     c.a*=max(head,neck);
      // The base painting includes its connected neck and an under-robe. Above
      // the collar the whole face receives the complexion; below it, warm skin
      // pigments distinguish the exposed neck from neutral grey cloth.

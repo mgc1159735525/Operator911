@@ -9,6 +9,22 @@ namespace Minglu
         IEnumerator PaintedPortraitSmoke(string path)
         {
             yield return Click("HomeAppearance");
+            // Compare one variable at a time. Changing face and clothes together
+            // in the age sheets hid shoulder drift and excessive headwear mass.
+            for(int sex=0;sex<2;sex++)
+            {
+                Draw();var comparison=Box("SilhouetteProof",root,0,0,1600,900,Paper);
+                Label(comparison,"轮廓对照 / 同一张脸 / 上排只换发型，下排只换服装",25,12,1500,32,23,PaperInk);
+                for(int row=0;row<2;row++)for(int column=0;column<4;column++)
+                {
+                    var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});
+                    look.parts[0]=0;look.parts[1]=row==0?column:1;look.parts[7]=row==0?7:column;
+                    look.parts[9]=3;look.parts[11]=0;
+                    DrawLook(comparison,look,25+column*398,53+row*420,267,385);
+                    DrawLook(comparison,look,306+column*398,129+row*420,70,103);
+                }
+                yield return null;yield return new WaitForEndOfFrame();Capture(Path.ChangeExtension(path,"silhouette-"+sex+".png"));
+            }
             for(int sex=0;sex<2;sex++)for(int hair=0;hair<4;hair++)
             {
                 Draw();var sheet=Box("PaintedProof",root,0,0,1600,900,Paper);

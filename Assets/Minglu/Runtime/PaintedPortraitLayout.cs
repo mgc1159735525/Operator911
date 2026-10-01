@@ -9,9 +9,9 @@ namespace Minglu
     {
         public const float Width=400, Height=600;
         public static readonly Rect DetailCrop=new Rect(.055f,-.035f,.88f,.84f);
-        // Show the authored shoulder width and more chest. The previous 1.07
-        // crop cut the 1.27-wide garments at both shoulders, exaggerating heads.
-        public static readonly Rect FullCrop=new Rect(-.16f,-.080f,1.32f,1.33f);
+        // One common full-body frame for all headwear and outfits. Leave room
+        // for the shoulder silhouette instead of fitting the frame to the head.
+        public static readonly Rect FullCrop=new Rect(-.235f,-.060f,1.52f,1.46f);
         public struct Features
         {
             public Vector4 eyeFar,eyeNear,browFar,browNear,nose,mouth,earFar,earNear;
@@ -90,7 +90,7 @@ namespace Minglu
             return new Rect((look.sex==0?mx:fx)[h]+b.x*scale,(look.sex==0?my:fy)[h]+b.y*scale,b.width*scale,b.height*scale);
         }
         public static Rect BeardRect(Appearance look){return new Rect(0,0,1,1);}
-        public static Rect OutfitRect(Appearance look){return new Rect(-.112f,look.sex==0?.424f:.416f,1.27f,1.27f*2f/3);}
+        public static Rect OutfitRect(Appearance look){return new Rect(-.185f,look.sex==0?.424f:.416f,1.42f,1.42f*2f/3);}
         // Every generated garment has its own collar height. Bind the far tip,
         // nape tip and opening bottom; a shared rectangle alone cannot do this.
         static readonly Vector2[,] CollarSources={
@@ -128,14 +128,33 @@ namespace Minglu
         public static Vector2 OutfitSamplingPoint(Appearance look,Vector2 p)
         {
             Vector2 delta=Vector2.zero;float total=0;
-            for(int i=0;i<6;i++)
+            for(int i=0;i<8;i++)
             {
-                var b=i<3?CollarBinding(look,i):i==3?new Vector4(.03f,.90f,0,0):i==4?new Vector4(.98f,.90f,0,0):new Vector4(.50f,1.18f,0,0);
+                var b=OutfitBinding(look,i);
                 var d=p-new Vector2(b.x,b.y);d.y*=1.5f;float weight=1/(d.sqrMagnitude+.0000001f);
                 delta+=new Vector2(b.z,b.w)*weight;total+=weight;
             }
             var rect=OutfitRect(look);var source=p-delta/total;
             return new Vector2((source.x-rect.x)/rect.width,(source.y-rect.y)/rect.height);
+        }
+        // Shoulder constraints keep a collar correction local. The old chest
+        // anchors were too low: moving a collar also dragged the entire upper
+        // torso, producing a raised near shoulder and a narrow far shoulder.
+        public static Vector4 OutfitBinding(Appearance look,int anchor)
+        {
+            if(anchor<3)return CollarBinding(look,anchor);
+            var rect=OutfitRect(look);
+            if(anchor<5)
+            {
+                bool near=anchor==4;
+                float row=look.parts[7]<4?0:.075f;
+                var source=new Vector2(near?.93f:.075f,(near?.30f:.40f)-row-(look.sex==1?.055f:0));
+                var original=new Vector2(rect.x+source.x*rect.width,rect.y+source.y*rect.height);
+                var offset=new Vector2(0,near?.034f:-.012f);
+                var target=original+offset;
+                return new Vector4(target.x,target.y,offset.x,offset.y);
+            }
+            return anchor==5?new Vector4(-.12f,1.12f,0,0):anchor==6?new Vector4(1.17f,1.12f,0,0):new Vector4(.50f,1.35f,0,0);
         }
         public static Rect Register(Rect frame,Rect registration)
         {return new Rect(frame.x+frame.width*registration.x,frame.y+frame.height*registration.y,frame.width*registration.width,frame.height*registration.height);}
@@ -174,7 +193,7 @@ namespace Minglu
         }
         public static Vector4 CrownAdjustment(Appearance look)
         {
-            var p=HairTarget(look,0);float amount=look.parts[1]==0?(look.sex==0?.89f:.84f):look.sex==0&&look.parts[1]==3?.90f:1;
+            var p=HairTarget(look,0);float amount=look.parts[1]==0?(look.sex==0?.72f:.76f):look.sex==0&&look.parts[1]==3?.60f:1;
             return new Vector4(p.x,p.y,amount,0);
         }
         public static float FarScalpPad(Appearance look){return look.sex==0&&look.parts[1]<2?.032f:0;}

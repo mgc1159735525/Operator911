@@ -18,7 +18,7 @@ namespace Minglu
             owned.SetVector("_LayerRect",new Vector4(registration.x,registration.y,registration.width,registration.height));
             owned.SetVector("_DrawRect",new Vector4(draw.x,draw.y,draw.width,draw.height));
             for(int i=0;i<4;i++)owned.SetVector("_HairAnchor"+i,PaintedPortraitLayout.HairBinding(look,i));
-            for(int i=0;i<3;i++)owned.SetVector("_CollarAnchor"+i,PaintedPortraitLayout.CollarBinding(look,i));
+            for(int i=0;i<8;i++)owned.SetVector("_CollarAnchor"+i,PaintedPortraitLayout.OutfitBinding(look,i));
             owned.SetVector("_CrownAdjust",PaintedPortraitLayout.CrownAdjustment(look));
             owned.SetFloat("_FarScalpPad",PaintedPortraitLayout.FarScalpPad(look));
             owned.SetVector("_BeardMouth",PaintedPortraitLayout.BeardMouth(look));

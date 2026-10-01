@@ -45,13 +45,22 @@ namespace Minglu.EditorTools
                     for(int clothing=0;clothing<8;clothing++)
                     {
                         look.parts[7]=clothing;
+                        var garment=PaintedPortraitLayout.OutfitRect(look);
+                        Check(PaintedPortraitLayout.FullCrop.xMin<garment.xMin&&PaintedPortraitLayout.FullCrop.xMax>garment.xMax,"full portrait crops the shoulder silhouette");
+                        for(int anchor=3;anchor<5;anchor++)
+                        {
+                            var binding=PaintedPortraitLayout.OutfitBinding(look,anchor);
+                            var target=new Vector2(binding.x,binding.y);
+                            var expected=new Vector2((binding.x-binding.z-garment.x)/garment.width,(binding.y-binding.w-garment.y)/garment.height);
+                            Check(Vector2.Distance(PaintedPortraitLayout.OutfitSamplingPoint(look,target),expected)<.001f,"collar movement displaces a shoulder");
+                        }
                         for(int anchor=0;anchor<3;anchor++)
                             Check(Vector2.Distance(PaintedPortraitLayout.OutfitSamplingPoint(look,PaintedPortraitLayout.CollarTarget(look,anchor)),PaintedPortraitLayout.CollarSource(look,anchor))<.001f,"garment collar misses its anatomical binding");
                         // A valid set of anchor points can still fold the fabric
                         // between them. Check the local sampling orientation.
-                        for(int x=0;x<=8;x++)for(int y=0;y<=8;y++)
+                        for(int x=0;x<=20;x++)for(int y=0;y<=16;y++)
                         {
-                            var p=new Vector2(.30f+x*.07f,.52f+y*.045f);var q=PaintedPortraitLayout.OutfitSamplingPoint(look,p);
+                            var p=new Vector2(-.15f+x*.067f,.52f+y*.05f);var q=PaintedPortraitLayout.OutfitSamplingPoint(look,p);
                             var dx=PaintedPortraitLayout.OutfitSamplingPoint(look,p+new Vector2(.001f,0))-q;
                             var dy=PaintedPortraitLayout.OutfitSamplingPoint(look,p+new Vector2(0,.001f))-q;
                             Check(dx.x*dy.y-dx.y*dy.x>0,"collar registration folds the garment");
