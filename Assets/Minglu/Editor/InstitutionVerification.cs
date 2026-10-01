@@ -43,7 +43,7 @@ namespace Minglu.EditorTools
             s=Fresh();s.turn=s.config.Value("turns")-2;s.command.people[3].institution=0;
             Check(CommandRules.StartEmployment(s,3,1)!="","No futile application when delivery window is gone");
             s=Fresh();s.command.tasks.Clear();r=s.command.routes[0];r.source=0;r.liaison=1;r.courier=2;r.enabled=true;
-            s.command.people[1].institution=s.command.people[2].institution=0;s.turn=2;
+            s.command.people[1].institution=s.command.people[2].institution=0;s.turn=1;
             foreach(var a in s.agents)a.intel=a.persuade=a.stealth=30;
             CommandRules.Resolve(s);Check(r.waiting==1&&r.atRelay==0&&s.intelligence==0,"Insider produces pending information, not inventory");
             CommandRules.Resolve(s);Check(r.waiting==0&&r.atRelay==1&&s.intelligence==0,"Civilian liaison moves it one hop");

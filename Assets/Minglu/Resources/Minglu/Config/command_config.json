@@ -216,7 +216,7 @@
     },
     {
       "title": "交叉核实文书",
-      "body": "文书岗位提供的新线索需要另一轮核实，完成后补充组织情报储备。",
+      "body": "文书岗位提供的新线索需要另一轮核实，完成后获得行动成果与周转经费；库存情报仍须由机构内线经传递链送达。",
       "category": "调查",
       "skill": 0,
       "required": 2,
@@ -229,6 +229,70 @@
       "failExposure": 6,
       "followup": "",
       "followupOnly": true
+    },
+    {
+      "title": "政务署人事异动",
+      "body": "政务署内线在本职工作中发现人事更替。核实名单可为后续安置争取窗口，不直接取得库存情报。",
+      "category": "政务内线", "sourceInstitution": 1,
+      "skill": 0, "required": 1, "level": 1, "profession": "",
+      "reward": 4, "money": 4, "intelReward": 0, "pressureRelief": 0, "failExposure": 4,
+      "followup": "争取临时安置名额", "followupOnly": false
+    },
+    {
+      "title": "争取临时安置名额",
+      "body": "利用已核实的人事窗口，为受影响的街坊协调安置。成功提升民心，日后有助于降低地区追查。",
+      "category": "社会安置", "sourceInstitution": 1,
+      "skill": 2, "required": 2, "level": 1, "profession": "",
+      "reward": 7, "money": 4, "intelReward": 0, "pressureRelief": 2, "heartsReward": 10, "failExposure": 5,
+      "followup": "", "followupOnly": true
+    },
+    {
+      "title": "税务署重复征收",
+      "body": "税务署内线发现账目中存在重复征收。先核实依据，再争取返还被扣款项，帮助组织维持生活经费。",
+      "category": "税务内线", "sourceInstitution": 2,
+      "skill": 0, "required": 1, "level": 1, "profession": "",
+      "reward": 4, "money": 4, "intelReward": 0, "pressureRelief": 0, "failExposure": 4,
+      "followup": "追回重复扣款", "followupOnly": false
+    },
+    {
+      "title": "追回重复扣款",
+      "body": "凭已核实账目协调返款，成功补足组织生活补助与下一轮行动预算。",
+      "category": "经费协调", "sourceInstitution": 2,
+      "skill": 3, "required": 2, "level": 1, "profession": "",
+      "reward": 6, "money": 20, "intelReward": 0, "pressureRelief": 0, "failExposure": 5,
+      "followup": "", "followupOnly": true
+    },
+    {
+      "title": "巡防局临检预告",
+      "body": "巡防局内线从当值通告发现临检调整。核实影响范围后，可授权成员协调受影响的工作安排。",
+      "category": "巡防内线", "sourceInstitution": 3,
+      "skill": 0, "required": 1, "level": 1, "profession": "",
+      "reward": 4, "money": 4, "intelReward": 0, "pressureRelief": 0, "failExposure": 4,
+      "followup": "协调临检应对", "followupOnly": false
+    },
+    {
+      "title": "协调临检应对",
+      "body": "依据已确认的临检变动协调地区工作。成功降低敌方压力，让后续行动获得喘息。",
+      "category": "地区降压", "sourceInstitution": 3,
+      "skill": 3, "required": 2, "level": 1, "profession": "",
+      "reward": 7, "money": 4, "intelReward": 0, "pressureRelief": 10, "failExposure": 5,
+      "followup": "", "followupOnly": true
+    },
+    {
+      "title": "驻军司令部轮值变更",
+      "body": "驻军内线在军需轮值记录中发现变更。核实后可以调整组织的既定联系安排，减少重复活动留下的追查线索。",
+      "category": "驻军内线", "sourceInstitution": 4,
+      "skill": 0, "required": 1, "level": 1, "profession": "",
+      "reward": 4, "money": 4, "intelReward": 0, "pressureRelief": 0, "failExposure": 4,
+      "followup": "重整既定联络安排", "followupOnly": false
+    },
+    {
+      "title": "重整既定联络安排",
+      "body": "按已核实的轮值变化重新协调工作安排。成功削减据点追查，不改变现有情报的传递环节。",
+      "category": "联络保护", "sourceInstitution": 4,
+      "skill": 1, "required": 2, "level": 1, "profession": "",
+      "reward": 7, "money": 4, "intelReward": 0, "pressureRelief": 0, "traceRelief": 10, "failExposure": 5,
+      "followup": "", "followupOnly": true
     }
   ]
 }

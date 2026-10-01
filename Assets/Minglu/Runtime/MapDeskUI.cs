@@ -33,7 +33,8 @@ namespace Minglu
             }
             Rule(root,20,685,140);
             Button("CommandOverview",root,"阶段目标  ›",10,706,160,42,()=>{modal="commandOverview";Draw();});
-            var desk=Rect("CommandMapDesk",root,194,92,1380,684);DrawCommandMap(desk);
+            Label(root,"阶段目标  /  "+GateProgress().Replace(" / 本阶段","").Replace("\n"," · "),206,95,1356,29,18,Gold);
+            var desk=Rect("CommandMapDesk",root,194,136,1380,640);DrawCommandMap(desk);
             Box("DeskFooter",root,0,790,1600,110,Panel);Rule(root,0,790,1600,Gold);
             var step=NextCommandStep();
             Label(root,step.ready?"等待你的指示":"当前重点",24,805,156,26,18,Gold);

@@ -37,7 +37,7 @@ namespace Minglu
             var route=State.command.routes[0];route.waiting=2;route.atRelay=1;Draw();yield return null;
             yield return Click("RouteSlot_0_1");yield return Click("RouteCandidate_4");Capture(Path.ChangeExtension(path,"replace-warning.png"));yield return Click("RouteReplaceCancel");
             if(route.liaison!=1||route.waiting!=2||route.atRelay!=1||!route.enabled)throw new Exception("Cancel replacement changed route");
-            yield return Click("RouteSlot_0_1");yield return Click("RouteCandidate_4");yield return Click("RouteReplaceConfirm");if(route.liaison!=4||route.waiting!=0||route.enabled)throw new Exception("Confirmed route change not applied");
+            yield return Click("RouteSlot_0_1");yield return Click("RouteCandidate_4");yield return Click("RouteReplaceConfirm");if(route.liaison!=4||route.waiting!=2||route.atRelay!=1||route.enabled)throw new Exception("Normal handover did not preserve packets and pause the route");
             yield return SmokeReturnToMap();yield return Click("CommandEnd");Capture(Path.ChangeExtension(path,"night-review.png"));yield return Click("CommandBack");
             State.command.strategy.trace=75;State.command.strategy.raidPending=true;State.command.eventKind=4;Draw();yield return null;Capture(Path.ChangeExtension(path,"raid.png"));
             int money=State.money;yield return Click("CommandEventSafe");if(State.money!=money-10||State.command.eventKind!=0)throw new Exception("Relocation UI failed");yield return DrainCommandNotices(path);

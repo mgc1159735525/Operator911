@@ -51,7 +51,7 @@ namespace Minglu
                 var step=NextCommandStep();
                 return step.enabled&&(name=="CommandNextAction"?!step.ready:step.ready);
             }
-            return new[]{"CommandEnd","CommandExecute","CommandAuthorize","MissionAuthorize","HomeContinue","HomeNew","BeginRun","ConfirmNewRun","RouteReplaceConfirm","LookApply","LookRandomFromSettings","LookPopupConfirm"}.Contains(name);
+            return new[]{"CommandEnd","CommandExecute","CommandAuthorize","MissionAuthorize","RecruitConfirm","CommandNoticeOpen","HomeContinue","HomeNew","BeginRun","ConfirmNewRun","RouteReplaceConfirm","LookApply","LookRandomFromSettings","LookPopupConfirm"}.Contains(name);
         }
         void DrawNoirRoster()
         {

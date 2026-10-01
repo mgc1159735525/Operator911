@@ -16,6 +16,7 @@ namespace Minglu
         public string title,body,origin,profession="",category="委托",followup="";
         public int institution;
         public int plan,intelReward,pressureRelief,failExposure=6;
+        public int traceRelief,heartsReward;
         public bool intelSupport,followupSpawned;
         public bool reconnaissance,reconComplete;
         public string lastResult="";
@@ -25,12 +26,14 @@ namespace Minglu
     {
         public int id,source=-1,liaison=-1,courier=-1,waiting,atRelay,age,delivered;
         public bool enabled;
+        public int compromisedSlots;
         public string last="未配置：选择三名不同成员并启用。";
     }
     [Serializable] public class CommandTemplate
     {
         public string title,body,profession="",category="委托",followup="";
         public int intelReward,pressureRelief,failExposure=6;
+        public int sourceInstitution,traceRelief,heartsReward;
         public bool followupOnly;
         public int skill,required=1,level=1,reward=5,money=6;
     }
@@ -47,6 +50,8 @@ namespace Minglu
     [Serializable] public class CommandState
     {
         public int missionRevision,institutionRevision;
+        public int experienceRevision,goalDeliveries,goalScore,goalLevel,secondGateDeliveries;
+        public bool legacySourceSchedule;
         public CommandStrategy strategy;
         public int version=1,nextTask,delivered,completed,gate,eventKind,eventActor=-1,pauseUntil,variant;
         public string eventText="";

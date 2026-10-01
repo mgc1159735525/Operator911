@@ -24,7 +24,7 @@ namespace Minglu.EditorTools
             CommandRules.Resolve(s);CommandRules.Resolve(saved);
             Check(t.reconComplete&&!t.reconnaissance&&t.actor==-1,"Recon result returns target to delegation");
             Check(t.status==0&&t.stepsDone==0&&s.progress==progress&&s.command.completed==completed&&s.intelligence==intel,"Recon cannot complete stages, grant rewards or bypass intel chain");
-            Check(s.money==money-4&&a.stamina==86,"Recon consumes one worker night and its budget once");
+            Check(s.money==money-4&&a.stamina==100-CommandRules.ActionStaminaCost(s,a),"Recon consumes one worker night and its budget once");
             Check(JsonUtility.ToJson(s.command)==JsonUtility.ToJson(saved.command)&&s.random==saved.random,"Recon save preserves deterministic execution");
             t.level=1;t.profession="";t.required=1;t.plan=0;
             var other=s.agents[1];int prepared=CommandRules.TaskDice(s,other,t),exposure=CommandRules.TaskExposure(s,other,t);
@@ -78,7 +78,7 @@ namespace Minglu.EditorTools
             s=Fresh();t=s.command.tasks[0];t.plan=1;t.intelSupport=true;s.intelligence=3;CommandRules.Assign(s,0,t.id);PrototypeSave.Write(s,file);loaded=PrototypeSave.Read(file);
             Check(CommandRules.ReservedMoney(loaded)==4&&CommandRules.ReservedIntel(loaded)==1,"Reservations survive reload");
             CommandRules.Resolve(s);CommandRules.Resolve(loaded);Check(s.random==loaded.random&&JsonUtility.ToJson(s.command)==JsonUtility.ToJson(loaded.command),"Mission save preserves deterministic future");
-            s=Fresh();s.command.missionRevision=0;s.command.tasks[0].plan=0;s.command.tasks[0].intelSupport=false;CommandRules.Validate(s);Check(s.command.missionRevision==1&&s.command.config.templates.Count==14,"Old mission config migrates");
+            s=Fresh();s.command.missionRevision=0;s.command.tasks[0].plan=0;s.command.tasks[0].intelSupport=false;CommandRules.Validate(s);Check(s.command.missionRevision==2&&s.command.config.templates.Count==22,"Old mission config migrates");
             var config=JsonUtility.FromJson<CommandConfig>(Resources.Load<TextAsset>("Minglu/Config/command_config").text);config.templates[0].followup=config.templates[0].title;bool rejected=false;try{CommandRules.ValidateConfig(config);}catch{rejected=true;}Check(rejected,"Cyclic followups rejected");
             VerifyRecon();File.Delete(file);if(File.Exists(file+".bak"))File.Delete(file+".bak");Debug.Log("MINGLU_MISSION_VERIFY_SUCCESS: "+checks+" mission checks");
         }

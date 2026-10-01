@@ -39,24 +39,25 @@ namespace Minglu
         void DrawCandidateComparison()
         {
             var t=State.command.tasks.FirstOrDefault(v=>v.id==commandTask&&v.status==0);if(t==null){modal="";return;}
-            var p=CommandModal("比较负责人 / "+t.title,706);
-            Label(p,"当前指令："+(t.reconnaissance?"调查目标 · 使用情报能力":"执行目标 · 使用"+CommandRules.Skills[t.skill])+"。按可用性与成功率排序，留意岗位代价。",28,96,844,38,17,Muted);
-            var people=State.agents.OrderBy(a=>CommandRules.TaskError(State,a.id,t)==""?0:1).ThenByDescending(a=>CommandRules.TaskDice(State,a,t)).ToList();
-            var list=Scroll(p,"CandidateList",28,146,844,440,people.Count*126);
+            var p=CommandModal("比较负责人 / "+t.title,776);
+            Label(p,(t.reconnaissance?"调查看情报能力":"本阶段看"+CommandRules.Skills[t.skill])+"。先列可用且不打断今晚传递的人，再比较成功率。\n成功率更高，也可能占用关键岗位；由你决定如何取舍。",28,90,844,53,18,Muted);
+            var people=AssignmentCandidates(t).ToList();
+            var list=Scroll(p,"CandidateList",28,159,844,500,people.Count*150);
             for(int i=0;i<people.Count;i++)
             {
-                var a=people[i];string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t),y=i*126;
-                Portrait(list,a,0,y+6,50,73);
-                Label(list,a.name+" · "+CommandRules.Person(State,a.id).profession+" "+CommandRules.Person(State,a.id).level+"级",66,y+3,424,28,20,Gold);
-                Label(list,"情报 "+a.intel+" / 潜行 "+a.stealth+" / 说服 "+a.persuade+" / 组织 "+a.organize+" · 体力 "+a.stamina,66,y+35,424,24,13,Muted);
-                Label(list,(DispatchRules.Probability(dice,CommandRules.ActionRequired(t))*100).ToString("0.#")+"%",512,y+6,130,32,24,TextColor);
-                Label(list,dice+" 骰 / 需 "+CommandRules.ActionRequired(t)+" 成功",512,y+46,130,22,14,Muted);
-                Label(list,"暴露 "+a.exposure+" → "+UnityEngine.Mathf.Min(100,a.exposure+CommandRules.TaskExposure(State,a,t)),512,y+76,140,22,13,Muted);
-                Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用联络岗位":"可用 · "+CommandRole(a.id)+"，本夜该岗位等待",66,y+65,424,52,15,error==""?Muted:Red);
-                Button("CompareSelect_"+a.id,list,"选此人",668,y+21,144,40,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
-                Rule(list,0,y+122,812);
+                var a=people[i];var person=CommandRules.Person(State,a.id);string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t),y=i*150;
+                Portrait(list,a,0,y+7,50,73);
+                Label(list,a.name+" · "+person.profession+" "+person.level+"级",68,y+3,442,28,21,Gold);
+                Label(list,"体力 "+a.stamina+" / 精神 "+a.spirit+" / 连勤 "+person.neglect+"夜",68,y+37,442,24,17,Muted);
+                Label(list,AssignmentReason(a,t),68,y+69,442,48,18,error!=""||AssignmentChainImpact(a.id)>0?Red:Muted).name="CandidateReason_"+a.id;
+                Label(list,(DispatchRules.Probability(dice,CommandRules.ActionRequired(t))*100).ToString("0.#")+"%",526,y+5,134,33,25,TextColor);
+                Label(list,dice+"骰 / 需"+CommandRules.ActionRequired(t)+"成功",526,y+44,134,25,17,Muted);
+                Label(list,"暴露 "+a.exposure+" → "+Mathf.Min(100,a.exposure+CommandRules.TaskExposure(State,a,t)),526,y+80,270,23,17,Muted);
+                Label(list,person.neglect>=2?"继续工作将积压家事；可在档案安排生活优先。":t.reconnaissance?"调查不增加行动经验；本夜不积累表身份经验。":"完成任务获得行动经验；本夜不积累表身份经验。",68,y+120,724,22,16,person.neglect>=2?Red:Muted);
+                Button("CompareSelect_"+a.id,list,"选此人",678,y+18,134,42,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
+                Rule(list,0,y+147,812);
             }
-            Button("CompareBack",p,"返回任务",28,626,276,48,()=>{modal="missionPlan";Draw();});
+            Button("CompareBack",p,"返回任务",28,699,276,48,()=>{modal="missionPlan";Draw();});
         }
         void RequestRouteReplacement(CommandRoute r,int slot)
         {
@@ -66,16 +67,18 @@ namespace Minglu
         }
         void ApplyRouteReplacement()
         {
-            var r=State.command.routes.First(v=>v.id==pendingRoute);string error=RouteCandidateError(r,pendingSlot,pendingMember);if(error!=""){modal="";toast=error;Draw();return;}r.enabled=false;r.waiting=0;r.atRelay=0;r.age=0;
-            if(pendingSlot==0)r.source=pendingMember;else if(pendingSlot==1)r.liaison=pendingMember;else r.courier=pendingMember;
-            modal="";toast="岗位已修改，链条暂停；检查成员后重新启用。";Save(false);Draw();
+            var r=State.command.routes.First(v=>v.id==pendingRoute);string error=CommandRules.ReplaceRouteMember(State,r,pendingSlot,pendingMember);
+            if(error!=""){modal="";toast=error;Draw();return;}
+            modal="";toast="岗位已交接，链条暂停；检查今晚预测后重新启用。";Save(false);Draw();
         }
         void DrawRouteReplacement()
         {
-            var r=State.command.routes.First(v=>v.id==pendingRoute);var p=CommandModal("更换岗位会放弃旧链条积压",420);
-            Label(p,"将换入："+CommandName(pendingMember)+"\n待接 "+r.waiting+"份 + 中继 "+r.atRelay+"份将清空，链条暂停。\n如果只是安排休息，可以取消后暂停此线，保留积压。",28,105,844,180,22);
-            Button("RouteReplaceCancel",p,"取消 · 保留岗位与情报",28,325,404,52,()=>{modal="";Draw();});
-            Button("RouteReplaceConfirm",p,"确认更换并放弃积压",450,325,422,52,ApplyRouteReplacement);
+            var r=State.command.routes.First(v=>v.id==pendingRoute);var p=CommandModal("交接岗位 / 核对情报去向",460);
+            Label(p,"新任"+new[]{"内线","接头人","交通员"}[pendingSlot]+"："+CommandName(pendingMember),28,102,844,34,23,Gold);
+            Label(p,CommandRules.RouteReplacementLoss(State,r,pendingSlot),28,160,844,112,21).name="RouteReplacementConsequences";
+            Label(p,"交接不推进时间。换岗后本线暂停，由你检查并重新启用。",28,288,844,50,18,Muted);
+            Button("RouteReplaceCancel",p,"取消 · 保持原岗位",28,378,404,52,()=>{modal="";Draw();});
+            Button("RouteReplaceConfirm",p,"确认交接",450,378,422,52,ApplyRouteReplacement);
         }
         void DrawRaidEvent()
         {

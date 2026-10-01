@@ -101,7 +101,11 @@ namespace Minglu
             if(task.actor>=0||CommandRules.ReservedMoney(State)!=0||commandTab!=0||modal!="")throw new Exception("Task revocation did not release budget or return to the task window");
             yield return SmokeReturnToMap();yield return Click("CommandDistrict_"+task.district);yield return RequireMapDeskBlocked();
             yield return Click("DistrictTask_"+task.id);yield return Click("MissionBack");
-            if(commandTab!=3||modal!="")throw new Exception("Map task did not return to its map origin");
+            if(commandTab!=3||modal!="districtDetails"||selectedDistrict!=task.district)throw new Exception("District task did not preserve its district dossier and selection");
+            yield return Click("DistrictTask_"+task.id);yield return Click("CommandAuthorize");
+            if(task.actor<0||commandTab!=3||modal!="districtDetails"||selectedDistrict!=task.district)throw new Exception("District task sign-off did not return to its source dossier");
+            yield return Click("DistrictTask_"+task.id);yield return Click("CommandCancel_"+task.id);yield return Click("MissionBack");
+            if(task.actor>=0||CommandRules.ReservedMoney(State)!=0||commandTab!=3||modal!="districtDetails")throw new Exception("District task withdrawal lost its return context or retained budget");
             yield return SmokeOpenBusiness(2);yield return Click("CommandAgent_3");yield return Click("CommandPeopleDetails");
             int policy=CommandRules.Person(State,3).policy;yield return Click("LifePolicy_1");yield return Click("LifePolicy_"+policy);yield return Click("MemberDetailsClose");
             if(commandTab!=2||modal!=""||selectedAgent!=3)throw new Exception("Person dossier lost its roster selection");
@@ -125,9 +129,21 @@ namespace Minglu
             string saved=JsonUtility.ToJson(State);int originalAgent=selectedAgent,originalTask=commandTask;
             try
             {
+                var opening=State.command.tasks.First(t=>t.operation==0&&CommandRules.CanStaffTask(State,t));
+                if(NextCommandStep().task<0||!NextCommandStep().label.Contains("第一项"))throw MapDeskFailure("Opening guidance did not offer an executable first task");
+                opening.actor=State.agents.First(a=>CommandRules.TaskError(State,a.id,opening)=="").id;
+                if(!NextCommandStep().ready||!CommandNext().Contains("第二夜"))throw MapDeskFailure("First authorization did not guide the player to their first result");
+                State=JsonUtility.FromJson<RunState>(saved);State.turn=2;
+                var optionalRoute=State.command.routes[0];optionalRoute.source=0;optionalRoute.liaison=1;optionalRoute.courier=2;optionalRoute.enabled=true;
+                foreach(var task in State.command.tasks){task.deadline=8;task.level=1;task.required=1;task.profession="";}
+                State.command.tasks[0].actor=3;Draw();yield return null;yield return new WaitForEndOfFrame();
+                if(!NextCommandStep().ready||!CommandNext().Contains("可选待办")||ProducerButton("CommandEnd").colors.normalColor!=Accent)throw MapDeskFailure("Optional work still forces every member to take a task");
+                Capture(Path.ChangeExtension(path,"optional-orders.png"));
+                State=JsonUtility.FromJson<RunState>(saved);State.turn=2;
                 // A two-stage task on its final possible start night must beat routine setup.
                 foreach(var t in State.command.tasks){t.deadline=8;t.stepsRequired=1;}
-                var deadline=State.command.tasks[1];deadline.deadline=State.turn+1;deadline.stepsRequired=2;
+                var deadline=State.command.tasks.First(t=>CommandRules.CanStaffTask(State,t));deadline.deadline=State.turn+1;deadline.stepsRequired=2;
+                if(!CommandRules.TaskUrgent(State,deadline)||!CommandRules.TaskTimingText(State,deadline).Contains("今夜必须"))throw MapDeskFailure("Shared timing did not account for remaining stages");
                 Draw();yield return null;yield return new WaitForEndOfFrame();
                 if(!ProducerButton("CommandNextAction").GetComponentInChildren<Text>().text.Contains("限期"))throw MapDeskFailure("Deadline guidance did not identify the last viable starting night");
                 if(ProducerButton("CommandNextAction").colors.normalColor!=Accent||ProducerButton("CommandEnd").colors.normalColor==Accent)throw MapDeskFailure("Deadline action is not the single primary map control");
@@ -143,7 +159,7 @@ namespace Minglu
                 if(modal!="memberDetails"||selectedAgent!=watched.id)throw MapDeskFailure("Exposure advice did not open the affected person's policy controls");
                 yield return SmokeReturnToMap();
 
-                State=JsonUtility.FromJson<RunState>(saved);
+                State=JsonUtility.FromJson<RunState>(saved);State.turn=2;
                 foreach(var person in State.command.people)person.institution=0;
                 State.command.tasks.Clear();
                 State.command.tasks.Add(new CommandTask{id=50,operation=4,target=0,actor=0,title="已安排的机构任职",deadline=5});
@@ -154,17 +170,36 @@ namespace Minglu
                 if(modal!="commandConfirm")throw MapDeskFailure("Authorized employment did not lead to review before execution");
                 yield return SmokeReturnToMap();
 
-                State=JsonUtility.FromJson<RunState>(saved);var route=State.command.routes[0];route.source=0;route.liaison=1;route.courier=2;route.enabled=true;
+                State=JsonUtility.FromJson<RunState>(saved);State.turn=2;var route=State.command.routes[0];route.source=0;route.liaison=1;route.courier=2;route.enabled=true;
+                CommandRules.Person(State,0).institution=1;
                 foreach(var t in State.command.tasks){t.stepsRequired=2;t.deadline=State.turn;}
                 Draw();yield return Click("CommandNextAction");
                 if(modal!="commandConfirm")throw MapDeskFailure("Impossible deadlines caused an endless assignment recommendation");
                 yield return SmokeReturnToMap();
+                var investigation=State.command.tasks[0];investigation.deadline=State.turn+2;investigation.reconnaissance=true;investigation.actor=0;
+                if(CommandRules.TaskAttemptsNeeded(investigation)!=3||!TaskOrderText(investigation).Contains("已安排调查"))throw MapDeskFailure("Investigation timing/order state lost its extra night");
+                string before=JsonUtility.ToJson(State);CommandRules.CanStaffTask(State,investigation);
+                if(before!=JsonUtility.ToJson(State))throw MapDeskFailure("Staff availability query mutated state");
+                foreach(var task in State.command.tasks){task.actor=-1;task.reconnaissance=false;task.deadline=8;}
+                foreach(var person in State.command.people)person.policy=1;
+                if(State.command.tasks.Any(t=>CommandRules.CanStaffTask(State,t))||!NextCommandStep().ready)throw MapDeskFailure("Unavailable crew caused an endless task or chain recommendation");
+                Draw();yield return null;yield return new WaitForEndOfFrame();Capture(Path.ChangeExtension(path,"unavailable-guidance.png"));
                 foreach(var person in State.command.people)person.institution=0;
                 foreach(var agent in State.agents)agent.condition=Condition.Lost;
                 State.command.tasks.Clear();Draw();yield return Click("CommandNextAction");
                 if(modal!="commandConfirm")throw MapDeskFailure("No active members crashed the next-action guidance");
-                if(State.turn!=1||State.money!=JsonUtility.FromJson<RunState>(saved).money)throw MapDeskFailure("Guidance navigation advanced time or spent resources");
-                Debug.Log("MINGLU_GUIDANCE_UI_SUCCESS: deadline stages, rescue, specific member policy, authorized appointment, impossible deadlines, no active members, navigation only");
+                if(State.turn!=2||State.money!=JsonUtility.FromJson<RunState>(saved).money)throw MapDeskFailure("Guidance navigation advanced time or spent resources");
+                State.command.notices.Add(new CommandNotice{title="普通报告",body="第一条消息",tab=4});
+                State.command.notices.Add(new CommandNotice{title="成员生活",body="第二条消息",tab=2});Draw();
+                yield return Click("CommandNoticeDismiss");
+                if(State.command.notices.Count!=0||commandTab!=3||modal!="")throw MapDeskFailure("Reading the bulletin did not dismiss all notices directly to the map");
+                State=JsonUtility.FromJson<RunState>(saved);commandTab=3;modal="";
+                var rescueNoticeTask=State.command.tasks[0];rescueNoticeTask.operation=2;rescueNoticeTask.target=1;
+                State.command.notices.Add(new CommandNotice{title="日常报告",body="普通情况",tab=4});
+                State.command.notices.Add(new CommandNotice{title="救援急报",body="成员需要营救",tab=0,task=rescueNoticeTask.id,actor=1});Draw();
+                yield return Click("CommandNoticeOpen");
+                if(State.command.notices.Count!=0||modal!="missionPlan"||commandTask!=rescueNoticeTask.id)throw MapDeskFailure("Grouped bulletin lost the urgent rescue destination");
+                Debug.Log("MINGLU_GUIDANCE_UI_SUCCESS: first task/result pacing, shared stage/investigation timing, rescue, policy, appointment, unavailable crew, grouped notices, navigation only");
             }
             finally{State=JsonUtility.FromJson<RunState>(saved);selectedAgent=originalAgent;commandTask=originalTask;commandTab=3;modal="";Draw();}
         }
@@ -182,6 +217,7 @@ namespace Minglu
             yield return SmokeSaveLoad();t=State.command.tasks.First(x=>x.id==t.id);
             if(!t.reconnaissance||t.actor!=0)throw new Exception("Saved reconnaissance order lost");
             yield return Click("CommandEnd");yield return Click("CommandExecute");
+            if(commandTab!=3||modal!="")throw new Exception("Night execution did not retain the map beneath the bulletin");
             if(!t.reconComplete||t.actor!=-1||t.status!=0)throw new Exception("Investigation did not yield a delegatable target");
             Capture(Path.ChangeExtension(path,"recon-result.png"));
             while(State.command.notices.Count>0)yield return Click("CommandNoticeDismiss");

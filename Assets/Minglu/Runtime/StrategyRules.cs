@@ -72,7 +72,7 @@ namespace Minglu
         {
             EnsureStrategy(s);var a=Agent(s,id);if(a.condition!=Condition.Active)return;var p=Person(s,id);a.condition=Condition.Captured;p.capturedTurn=s.turn;p.resisted=0;
             WithdrawAssignments(s,id,a.name+"被捕");
-            foreach(var r in s.command.routes.Where(r=>new[]{r.source,r.liaison,r.courier}.Contains(id))){r.enabled=false;r.last=a.name+"被捕，此线暂停；积压继续计时，请替换岗位或营救。";}
+            DisruptRoutes(s,id,a.name+"被捕，此线暂停");
             int remaining=s.config.Value("turns")-s.turn;
             if(remaining<=0){Log(s,a.name+"在最后一夜被捕；本轮行动窗口已结束，没有可执行的后续营救。" );return;}
             int stages=Math.Min(2,remaining);
@@ -132,13 +132,22 @@ namespace Minglu
         public static string NightWarnings(RunState s)
         {
             var rows=new List<string>();
-            foreach(var t in s.command.tasks.Where(t=>t.status==0&&t.deadline==s.turn))rows.Add("今夜截止："+t.title+(t.actor<0?"（尚未授权）":""));
-            foreach(var r in s.command.routes.Where(r=>r.enabled))
+            foreach(var t in s.command.tasks.Where(t=>t.status==0&&(TaskUrgent(s,t)||!TaskCanFinish(s,t))))
+                rows.Add(TaskTimingText(s,t)+"："+t.title+(t.actor<0?"（尚未安排）":"（已安排"+(t.reconnaissance?"调查":"执行")+"）"));
+            foreach(var r in s.command.routes)
             {
-                var conflict=s.command.tasks.Where(t=>t.status==0&&t.actor>=0&&new[]{r.source,r.liaison,r.courier}.Contains(t.actor)).Select(t=>Agent(s,t.actor).name).Distinct().ToArray();
-                if(conflict.Length>0)rows.Add("链"+(r.id+1)+"岗位等待："+string.Join("、",conflict)+"优先执行任务");
-                string error=RouteError(s,r);if(error!="")rows.Add("链"+(r.id+1)+"暂停："+error);
-                foreach(int id in new[]{r.source,r.liaison,r.courier}.Where(id=>id>=0).Distinct()){string unavailable=Availability(s,id);if(unavailable!="")rows.Add(Agent(s,id).name+"岗位等待："+unavailable);}
+                if(r.enabled)
+                {
+                    string error=RouteError(s,r);
+                    if(error!="")rows.Add("链"+(r.id+1)+"暂停："+error);
+                    else
+                    {
+                        var working=Enumerable.Range(0,3).Where(slot=>RouteSlotHasWork(s,r,slot)).Select(slot=>new[]{r.source,r.liaison,r.courier}[slot]).Distinct().ToArray();
+                        var conflict=s.command.tasks.Where(t=>t.status==0&&t.actor>=0&&working.Contains(t.actor)).Select(t=>Agent(s,t.actor).name).Distinct().ToArray();
+                        if(conflict.Length>0)rows.Add("链"+(r.id+1)+"岗位等待："+string.Join("、",conflict)+"优先执行任务");
+                        foreach(int id in working){string unavailable=Availability(s,id);if(unavailable!="")rows.Add(Agent(s,id).name+"岗位等待："+unavailable);}
+                    }
+                }
                 if(r.age>=5&&r.waiting+r.atRelay>0)rows.Add("链"+(r.id+1)+"积压即将失效，请检查接头与外送岗位");
             }
             foreach(var a in s.agents.Where(a=>a.condition==Condition.Active&&a.exposure>=s.command.strategy.config.warning))rows.Add(a.name+"暴露"+a.exposure+(Person(s,a.id).policy==1||Person(s,a.id).leaveUntil>=s.turn?"：休养已安排，本夜预计下降10"+(a.exposure-10>=s.command.strategy.config.capture?"；休养后仍达到捕获阈值，已被预警者仍有被捕风险":""):"：建议换岗休养"));

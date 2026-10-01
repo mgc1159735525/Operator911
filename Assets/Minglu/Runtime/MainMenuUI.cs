@@ -144,7 +144,7 @@ namespace Minglu
                 var p=Rect("HomePanel",root,694,66,810,742);
                 if(homePage=="new"||homePage=="replace")
                 {
-                    DrawHomeHeading(p,"新局登记",newCampaign?"组织首脑 / 二十夜行动":"快速试玩 / 八夜行动");
+                    DrawHomeHeading(p,"新局登记",(newCampaign?"二十夜行动":"八夜短局")+" · "+CommandRules.NewRunGoalText(newCampaign?20:8,newDifficulty));
                     Label(p,"难度",0,163,128,32,20,Muted);
                     for(int i=0;i<3;i++){int n=i;Button("Difficulty_"+i,p,RunLifecycle.DifficultyName(i),150+i*205,155,193,44,()=>{newDifficulty=n;Draw();},true,newDifficulty==i);}
                     Label(p,"开局方案",0,242,138,32,20,Muted);
@@ -156,7 +156,8 @@ namespace Minglu
                     var placeholder=Label(field,"留空随机",12,7,365,31,18,Muted);input.placeholder=placeholder;placeholder.gameObject.SetActive(string.IsNullOrEmpty(seedText));
                     HomeTextButton("RandomSeed",p,"重新随机",564,369,194,44,()=>{seedText="";Draw();});
                     HomeTextButton("CrisisToggle",p,newCrisis?"危机开局    开 / 一名成员临时离岗":"危机开局    关 / 全员归队",0,449,758,42,()=>{newCrisis=!newCrisis;Draw();});
-                    HomeTextButton("CampaignToggle",p,newCampaign?"行动时限    二十夜 / 组织首脑":"行动时限    八夜 / 快速试玩",0,499,758,42,()=>{newCampaign=!newCampaign;Draw();});
+                    HomeTextButton("CampaignToggle",p,newCampaign?"行动时限    二十夜 / 完整经营":"行动时限    八夜 / 短局挑战",0,499,758,42,()=>{newCampaign=!newCampaign;Draw();});
+                    Label(p,newDifficulty==0?"初探保留更多容错；首夜先完成一项授权，次夜按指引建立传递链。":"目标由难度与时限决定；随机种子改变人员和机会，不改变通关配额。",0,546,758,23,15,Muted);
                     Box("HomeSubmitRule",p,0,574,758,1,Line);
                     HomeTextButton("HomeBack",p,"返回",0,604,170,49,BackHome);
                     Button("BeginRun",p,"开始行动",439,604,319,49,BeginConfiguredRun,true,true);

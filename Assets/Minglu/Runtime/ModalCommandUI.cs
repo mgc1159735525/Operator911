@@ -3,7 +3,7 @@ namespace Minglu
 {
     public partial class CityGameUI
     {
-        int taskReturnTab,detailRouteId;
+        int taskReturnTab,detailRouteId,taskReturnAgent=-1;
         string taskReturnModal="";
         string CommandPageName(int tab){return new[]{"任务簿","联络网","人事档案","城区地图","值夜报告","地方事务"}[UnityEngine.Mathf.Clamp(tab,0,5)];}
         void OpenCommandTask(int id,bool recommend=false)
@@ -12,24 +12,28 @@ namespace Minglu
             var task=State.command.tasks.FirstOrDefault(t=>t.id==id&&t.status==0);
             if(task!=null&&recommend&&task.actor<0)
             {
-                var candidate=State.agents.Where(a=>CommandRules.TaskError(State,a.id,task)=="").OrderByDescending(a=>CommandRules.TaskDice(State,a,task)).ThenBy(a=>CommandRole(a.id)=="机动成员"?0:1).FirstOrDefault();
-                if(candidate!=null){selectedAgent=candidate.id;toast="已推荐"+candidate.name+"；查看成功率与岗位冲突后签发。";}
+                var candidate=AssignmentCandidates(task).FirstOrDefault(a=>CommandRules.TaskError(State,a.id,task)=="");
+                if(candidate!=null){selectedAgent=candidate.id;toast="供参考："+candidate.name+"。"+AssignmentReason(candidate,task)+"；仍需你签发。";}
                 else toast="暂时没有满足要求的成员。可在任务中比较各人的阻碍原因。";
             }
             Draw();
         }
-        void CloseTaskDialog(bool restoreDetails=true){modal=restoreDetails?taskReturnModal:"";commandTab=UnityEngine.Mathf.Clamp(taskReturnTab,0,5);}
+        void CloseTaskDialog(bool restoreDetails=true)
+        {
+            modal=restoreDetails?taskReturnModal:"";commandTab=UnityEngine.Mathf.Clamp(taskReturnTab,0,5);
+            if(modal=="memberDetails"&&State.agents.Any(a=>a.id==taskReturnAgent))selectedAgent=taskReturnAgent;
+        }
         string CompactRouteStatus(CommandRoute route)
         {
             string error=CommandRules.RouteError(State,route);if(error!="")return error;
             if(route.waiting+route.atRelay>0&&route.age>=5)return "积压即将失效，请优先恢复传递。";
             if(!route.enabled)return "尚未启用；暂停中的积压仍继续计时。";
             if(State.command.pauseUntil>=State.turn)return "本夜整线暂停：撤离或隐蔽休整。";
-            int[] ids={route.source,route.liaison,route.courier};
+            int[] ids=Enumerable.Range(0,3).Where(slot=>RouteSlotWorksTonight(route,slot)).Select(slot=>new[]{route.source,route.liaison,route.courier}[slot]).ToArray();
             int unavailable=ids.Count(id=>CommandRules.Availability(State,id)!="");
             if(unavailable>0)return unavailable+" 个岗位需休养或离岗，链条将在该处等待。";
             int busy=ids.Count(id=>State.command.tasks.Any(t=>t.status==0&&t.actor==id));
-            return busy>0?busy+" 个岗位被任务占用，本夜传递受影响。":"岗位自动执行；本夜情况可展开查看。";
+            return busy>0?busy+" 个今晚待办岗位被任务占用，传递将等待。":RouteForecast(route);
         }
         // Call before the generic Escape handling in CityGameUI.Update.
         bool HandleCommandModalEscape()
@@ -38,6 +42,7 @@ namespace Minglu
             if(modal=="missionPlan"){CloseTaskDialog();Draw();return true;}
             if(modal=="compareCandidates"){modal="missionPlan";Draw();return true;}
             if(modal=="institutionPicker"){modal="memberDetails";Draw();return true;}
+            if(modal=="recruitment"){modal="";commandTab=2;Draw();return true;}
             if(modal=="commandHelp"){modal="menu";Draw();return true;}
             if(modal=="commandSettings"){modal="menu";Draw();return true;}
             if(modal==""&&commandTab!=3){OpenCommandPage(3);return true;}
@@ -47,17 +52,23 @@ namespace Minglu
         {
             var route=State.command.routes.FirstOrDefault(r=>r.id==detailRouteId);
             if(route==null){modal="";return;}
-            var p=CommandModal("联络链 "+(route.id+1)+" / 运行状况",600);
-            Label(p,route.source<0?"尚未指定情报来源":CommandRules.Employment(CommandRules.Person(State,route.source)),28,100,844,29,20,Muted);
-            Label(p,"内线："+CommandName(route.source)+" → 接头："+CommandName(route.liaison)+" → 外送："+CommandName(route.courier),28,148,844,28,18);
-            string[] labels={"待接","中继","已送达"};int[] values={route.waiting,route.atRelay,route.delivered};
-            for(int i=0;i<3;i++){Label(p,labels[i],28+i*284,202,272,22,14,Muted);Label(p,values[i]+" 份",28+i*284,235,272,40,28,i==2?Teal:TextColor);}
-            Rule(p,28,298,844);
-            Label(p,RouteForecast(route),28,322,844,61,18,CommandRules.RouteError(State,route)==""?TextColor:Red);
-            var content=Scroll(p,"RouteHistory_"+route.id,28,401,844,82,82);
-            var history=Label(content,"最近情况："+route.last+"\n任务优先占用成员；更换岗位清空积压，暂停保留积压并继续计时。",0,0,810,82,16,Muted);
-            float h=UnityEngine.Mathf.Max(82,history.preferredHeight+8);history.rectTransform.sizeDelta=new UnityEngine.Vector2(810,h);content.sizeDelta=new UnityEngine.Vector2(content.sizeDelta.x,h);
-            Button("RouteDetailsClose",p,"返回联络网",28,520,276,48,()=>{modal="";Draw();});
+            var p=CommandModal("联络链 "+(route.id+1)+" / 逐夜传递",780);
+            Label(p,route.source<0?"尚未指定情报来源":CommandRules.Employment(CommandRules.Person(State,route.source)),28,94,844,28,20,Muted);
+            Label(p,"内线产出 → 下一夜接头 → 再下一夜外送",28,139,844,31,24,Gold);
+            Label(p,"每环独立判定；同一份情报一夜只前进一环，失败或离岗会等待。",28,180,844,29,18,Muted);
+            int[] ids={route.source,route.liaison,route.courier};string[] roles={"内线 / 产出","接头人 / 中继","交通员 / 外送"};
+            for(int i=0;i<3;i++)
+            {
+                int y=226+i*97;Rule(p,28,y,844);
+                Label(p,roles[i]+"  "+CommandName(ids[i]),28,y+13,844,27,21,Gold);
+                Label(p,"今晚："+RouteStepForecast(route,i),28,y+51,844,36,18,Muted).name="RouteStepForecast_"+i;
+            }
+            Label(p,"待接 "+route.waiting+" 份     中继 "+route.atRelay+" 份     已送达 "+route.delivered+" 份",28,536,844,29,21,TextColor);
+            Label(p,"积压已计时 "+route.age+" 夜；连续7夜未送达将失效。正常交接保留情报，换岗后需重新启用。",28,576,844,44,17,route.age>=5?Red:Muted);
+            var content=Scroll(p,"RouteHistory_"+route.id,28,630,844,58,58);
+            var history=Label(content,"上夜情况："+route.last,0,0,810,58,18,Muted);
+            float h=UnityEngine.Mathf.Max(58,history.preferredHeight+8);history.rectTransform.sizeDelta=new UnityEngine.Vector2(810,h);content.sizeDelta=new UnityEngine.Vector2(content.sizeDelta.x,h);
+            Button("RouteDetailsClose",p,"返回联络网",28,707,276,48,()=>{modal="";Draw();});
         }
         void DrawStrategyDetails()
         {
