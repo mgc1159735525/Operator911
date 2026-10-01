@@ -35,12 +35,12 @@ namespace Minglu
             Button("CommandOverview",root,"阶段目标  ›",10,706,160,42,()=>{modal="commandOverview";Draw();});
             var desk=Rect("CommandMapDesk",root,194,92,1380,684);DrawCommandMap(desk);
             Box("DeskFooter",root,0,790,1600,110,Panel);Rule(root,0,790,1600,Gold);
-            int pending=State.command.tasks.Count(t=>t.status==0&&t.actor<0);
-            Label(root,"今夜待办  "+pending,24,805,156,26,18,Gold);
-            Label(root,CommandNext(),200,803,812,42,16,TextColor);
+            var step=NextCommandStep();
+            Label(root,step.ready?"等待你的指示":"当前重点",24,805,156,26,18,Gold);
+            Label(root,step.message,200,803,812,48,16,TextColor);
             Label(root,toast,200,854,812,30,13,Muted);
-            Button("CommandNextAction",root,"处理下一项  ›",1040,817,232,48,GoNextCommand);
-            Button("CommandEnd",root,"结束今夜  →",1292,817,282,48,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0);
+            Button("CommandNextAction",root,step.label,1040,817,232,48,GoNextCommand,step.enabled,!step.ready);
+            Button("CommandEnd",root,"结束今夜  →",1292,817,282,48,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,step.ready);
         }
         void DossierHeading(UnityEngine.Transform panel,string title,float width=900)
         {

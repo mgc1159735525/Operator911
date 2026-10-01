@@ -82,6 +82,7 @@ namespace Minglu
             RequireMapDesk();
             foreach(string name in new[]{"Save","Load","CommandHome","CommandGuide","CommandSettings","CommandAuthorize","LifePolicy_1"})if(ProducerButton(name)!=null)throw new Exception("Map desk still exposes secondary control: "+name);
             int turn=State.turn,money=State.money,intel=State.intelligence;Capture(Path.ChangeExtension(path,"map-desk.png"));
+            yield return DeskGuidanceSmoke(path);
             foreach(int page in new[]{0,1,2,4,5})
             {
                 yield return SmokeOpenBusiness(page);yield return RequireMapDeskBlocked();
@@ -118,6 +119,54 @@ namespace Minglu
             RequireMapDesk();if(State.turn!=turn||State.money!=money||State.intelligence!=intel||State.command.tasks.Any(t=>t.actor>=0))throw new Exception("Navigation or revocation changed time, resources or assignments");
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",ProfilePath+".tmp",smokeSave,smokeSave+".bak",smokeSave+".tmp"})if(File.Exists(file))File.Delete(file);
             Debug.Log("MINGLU_MAP_DESK_UI_SUCCESS: persistent map, five business dialogs, raycast isolation, task authorize/revoke, detail return context, settings/save/load/guide/title/continue, unchanged time/resources");
+        }
+        IEnumerator DeskGuidanceSmoke(string path)
+        {
+            string saved=JsonUtility.ToJson(State);int originalAgent=selectedAgent,originalTask=commandTask;
+            try
+            {
+                // A two-stage task on its final possible start night must beat routine setup.
+                foreach(var t in State.command.tasks){t.deadline=8;t.stepsRequired=1;}
+                var deadline=State.command.tasks[1];deadline.deadline=State.turn+1;deadline.stepsRequired=2;
+                Draw();yield return null;yield return new WaitForEndOfFrame();
+                if(!ProducerButton("CommandNextAction").GetComponentInChildren<Text>().text.Contains("限期"))throw MapDeskFailure("Deadline guidance did not identify the last viable starting night");
+                if(ProducerButton("CommandNextAction").colors.normalColor!=Accent||ProducerButton("CommandEnd").colors.normalColor==Accent)throw MapDeskFailure("Deadline action is not the single primary map control");
+                Capture(Path.ChangeExtension(path,"deadline-guidance.png"));yield return Click("CommandNextAction");
+                if(modal!="missionPlan"||commandTask!=deadline.id)throw MapDeskFailure("Visible deadline advice opened another destination");
+                yield return SmokeReturnToMap();
+
+                deadline.operation=2;Draw();yield return Click("CommandNextAction");
+                if(modal!="missionPlan"||commandTask!=deadline.id)throw MapDeskFailure("Rescue advice did not open its task");
+                yield return SmokeReturnToMap();deadline.operation=0;deadline.deadline=8;
+                var watched=State.agents[2];watched.exposure=State.command.strategy.config.warning;
+                Draw();yield return Click("CommandNextAction");
+                if(modal!="memberDetails"||selectedAgent!=watched.id)throw MapDeskFailure("Exposure advice did not open the affected person's policy controls");
+                yield return SmokeReturnToMap();
+
+                State=JsonUtility.FromJson<RunState>(saved);
+                foreach(var person in State.command.people)person.institution=0;
+                State.command.tasks.Clear();
+                State.command.tasks.Add(new CommandTask{id=50,operation=4,target=0,actor=0,title="已安排的机构任职",deadline=5});
+                Draw();yield return null;yield return new WaitForEndOfFrame();
+                if(!NextCommandStep().ready||!CommandNext().Contains("无需重复"))throw MapDeskFailure("Already authorized employment trapped the next-action guidance");
+                if(ProducerButton("CommandEnd").colors.normalColor!=Accent||ProducerButton("CommandNextAction").colors.normalColor==Accent)throw MapDeskFailure("Ready-to-execute map did not move emphasis to ending the night");
+                Capture(Path.ChangeExtension(path,"appointment-guidance.png"));yield return Click("CommandNextAction");
+                if(modal!="commandConfirm")throw MapDeskFailure("Authorized employment did not lead to review before execution");
+                yield return SmokeReturnToMap();
+
+                State=JsonUtility.FromJson<RunState>(saved);var route=State.command.routes[0];route.source=0;route.liaison=1;route.courier=2;route.enabled=true;
+                foreach(var t in State.command.tasks){t.stepsRequired=2;t.deadline=State.turn;}
+                Draw();yield return Click("CommandNextAction");
+                if(modal!="commandConfirm")throw MapDeskFailure("Impossible deadlines caused an endless assignment recommendation");
+                yield return SmokeReturnToMap();
+                foreach(var person in State.command.people)person.institution=0;
+                foreach(var agent in State.agents)agent.condition=Condition.Lost;
+                State.command.tasks.Clear();Draw();yield return Click("CommandNextAction");
+                if(modal!="commandConfirm")throw MapDeskFailure("No active members crashed the next-action guidance");
+                if(State.turn!=1||State.money!=JsonUtility.FromJson<RunState>(saved).money)throw MapDeskFailure("Guidance navigation advanced time or spent resources");
+                Debug.Log("MINGLU_GUIDANCE_UI_SUCCESS: deadline stages, rescue, specific member policy, authorized appointment, impossible deadlines, no active members, navigation only");
+            }
+            finally{State=JsonUtility.FromJson<RunState>(saved);selectedAgent=originalAgent;commandTask=originalTask;commandTab=3;modal="";Draw();}
         }
         IEnumerator ReconDeskSmoke(string path)
         {

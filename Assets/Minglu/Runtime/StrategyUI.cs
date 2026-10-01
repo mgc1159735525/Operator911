@@ -31,15 +31,9 @@ namespace Minglu
         }
         void GoNextCommand()
         {
-            var urgent=State.command.tasks.Where(t=>t.status==0&&t.actor<0).OrderBy(t=>t.operation==2?0:1).ThenBy(t=>t.deadline).FirstOrDefault();
-            var watched=State.agents.FirstOrDefault(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning);
-            if(watched!=null){commandTab=2;selectedAgent=watched.id;}
-            else if(urgent!=null&&urgent.operation==2){FocusCommandTask(urgent.id);}
-            else if(!HasActiveInsider()){var job=State.command.tasks.FirstOrDefault(t=>t.operation==4&&t.status==0);if(job!=null){FocusCommandTask(job.id);selectedAgent=job.target;}else{commandTab=2;selectedAgent=State.agents.First(a=>a.condition==Condition.Active).id;}}
-            else if(!State.command.routes.Any(r=>r.enabled)||State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))commandTab=1;
-            else if(State.command.people.Any(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id)))){commandTab=2;selectedAgent=State.command.people.First(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id))).id;}
-            else if(urgent!=null){FocusCommandTask(urgent.id);}
-            else modal="commandConfirm";
+            var step=NextCommandStep();if(!step.enabled)return;
+            if(step.task>=0)FocusCommandTask(step.task);
+            else{commandTab=step.page;modal=step.dialog;if(step.actor>=0)selectedAgent=step.actor;}
             Draw();
         }
         void DrawCandidateComparison()

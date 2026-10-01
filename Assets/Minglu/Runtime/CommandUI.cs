@@ -12,18 +12,53 @@ namespace Minglu
             return route==null?"机动成员":route.source==id?"潜伏内线":route.liaison==id?"接头联络":"交通外送";
         }
         string CommandName(int id){return id<0?"未指定":CommandRules.Agent(State,id).name;}
-        string CommandNext()
+        sealed class CommandStep
         {
-            if(State.command.eventKind!=0)return "先处理突发事件，组织正等待你的决定。";
-            if(State.agents.Any(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning))return "有人被重点追查：前往人事档案安排生活优先，并检查链条替补。";
-            if(State.command.tasks.Any(t=>t.status==0&&t.operation==2&&t.actor<0))return "有人被捕：优先比较救援人选，按任务阶段逐夜推进，留意截止夜。";
-            if(!HasActiveInsider())return "缺少机构内线：在人事档案建立任职身份，再配置传递链。";
-            if(!State.command.routes.Any(r=>r.enabled))return "打开联络网，选择机构内线、接头人与交通员，再启用链条。";
-            if(State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))return "联络链有失效岗位，请替换成员并恢复联系。";
-            if(State.command.people.Any(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id))))return "有人生活事务积压：在人事档案安排生活优先，或替换链条岗位。";
-            if(State.command.tasks.Any(t=>t.status==0&&t.actor<0))return "还有待授权事项：比较人员与方案；也可留待后续，链条会自动执行。";
-            return "任务已授权。检查岗位冲突后推进一夜，成员会自行执行并提交报告。";
+            public string message,label,dialog="";
+            public int page=3,actor=-1,task=-1;
+            public bool ready,enabled=true;
         }
+        CommandStep TaskStep(CommandTask task,string reason,string label)
+        {
+            return new CommandStep{message="「"+task.title+"」"+reason,label=label,task=task.id};
+        }
+        // The visible advice and its destination must come from the same decision.
+        CommandStep NextCommandStep()
+        {
+            if(State.ended)return new CommandStep{message="本局已结束，可在结局回看每夜报告。",label="本局已结束",enabled=false};
+            if(State.command.eventKind!=0)return new CommandStep{message="先处理眼前的突发事件，组织正等待你的决定。",label="等待事件决定",enabled=false};
+            var pending=State.command.tasks.Where(t=>t.status==0&&t.actor<0).OrderBy(t=>t.deadline).ToList();
+            // Do not send the player back to an action whose remaining stages no longer fit.
+            var feasible=pending.Where(t=>Mathf.Max(1,t.stepsRequired-t.stepsDone)<=Mathf.Min(t.deadline,State.config.Value("turns"))-State.turn+1).ToList();
+            var rescue=feasible.FirstOrDefault(t=>t.operation==2);
+            if(rescue!=null)return TaskStep(rescue,"：救援尚待授权，先比较人选。","安排救援  ›");
+            var watched=State.agents.Where(a=>NeedsAttention(a)&&a.exposure>=State.command.strategy.config.warning).OrderByDescending(a=>a.exposure).FirstOrDefault();
+            if(watched!=null)return new CommandStep{message=watched.name+"被重点追查：安排生活优先，并检查原岗位替补。",label="安排成员休养  ›",actor=watched.id,page=2,dialog="memberDetails"};
+            var lastChance=feasible.FirstOrDefault(t=>Mathf.Max(1,t.stepsRequired-t.stepsDone)>=Mathf.Min(t.deadline,State.config.Value("turns"))-State.turn+1);
+            if(lastChance!=null)return TaskStep(lastChance,"：剩余夜数刚好够完成阶段，今夜应决定是否执行。","处理限期任务  ›");
+            bool insider=HasActiveInsider();
+            var appointment=State.command.tasks.FirstOrDefault(t=>t.operation==4&&t.status==0&&t.actor>=0);
+            if(!insider&&appointment==null)
+            {
+                var job=feasible.FirstOrDefault(t=>t.operation==4);
+                if(job!=null)return TaskStep(job,"：任职仍待授权，完成后才能接入情报链。","安排机构任职  ›");
+                var member=State.agents.FirstOrDefault(a=>a.condition==Condition.Active);
+                if(member!=null)return new CommandStep{message="缺少机构内线：为成员建立敌方机构任职，再配置传递链。",label="建立机构任职  ›",page=2,actor=member.id,dialog="memberDetails"};
+            }
+            if(insider)
+            {
+                if(State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)!=""))return new CommandStep{message="联络链有失效岗位：替换成员，检查接头与外送是否能继续。",label="修复联络链  ›",page=1};
+                if(!State.command.routes.Any(r=>r.enabled))return new CommandStep{message="配置机构内线 → 接头人 → 交通员；启用后由成员逐夜自动传递。",label="配置联络网  ›",page=1};
+            }
+            var neglected=State.command.people.FirstOrDefault(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id)));
+            if(neglected!=null)return new CommandStep{message=CommandName(neglected.id)+"的家事积压：安排轮休，再决定是否替换链条岗位。",label="处理成员家事  ›",page=2,actor=neglected.id,dialog="memberDetails"};
+            if(feasible.Count>0)return TaskStep(feasible[0],"待授权：比较人选与方案，决定今夜是否执行。","安排待办任务  ›");
+            string message=!insider&&appointment!=null?"机构任职已签发：推进一夜等待执行结果，无需重复安排任职。":State.command.tasks.Any(t=>t.status==0&&t.actor>=0)?"今夜任务已签发；核对岗位冲突后，由成员自行执行。":"暂无可推进的待授权任务；成员继续链条工作、日常生活与休养。";
+            if(!State.agents.Any(a=>a.condition==Condition.Active))message="当前没有在岗成员；核对组织状态后推进结算。";
+            if(pending.Count>feasible.Count)message+=" 部分事项剩余夜数不足。";
+            return new CommandStep{message=message,label="核对今夜安排  ›",dialog="commandConfirm",ready=true};
+        }
+        string CommandNext(){return NextCommandStep().message;}
         void DrawCommandGame()
         {
             CommandRules.EnsureStrategy(State);

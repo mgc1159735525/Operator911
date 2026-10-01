@@ -47,8 +47,9 @@ namespace Minglu
             }
             if(name=="CommandEnd"||name=="CommandNextAction")
             {
-                bool setup=State!=null&&State.command!=null&&State.turn==1&&!State.ended&&!State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)=="");
-                return name=="CommandNextAction"?setup:!setup;
+                if(State==null||State.command==null)return false;
+                var step=NextCommandStep();
+                return step.enabled&&(name=="CommandNextAction"?!step.ready:step.ready);
             }
             return new[]{"CommandEnd","CommandExecute","CommandAuthorize","MissionAuthorize","HomeContinue","HomeNew","BeginRun","ConfirmNewRun","RouteReplaceConfirm","LookApply","LookRandomFromSettings","LookPopupConfirm"}.Contains(name);
         }
