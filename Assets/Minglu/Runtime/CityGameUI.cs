@@ -26,7 +26,7 @@ namespace Minglu
         uint nextSeed = 911;
         string smokeSave;
         string SavePath { get { return smokeSave ?? Path.Combine(Application.persistentDataPath,"minglu-run-v14.json"); } }
-        static readonly Color Ink = Hex("1D2321"), Panel = Hex("29302C"), Line = Hex("495047"), Gold = Hex("E4D9BD"), TextColor = Hex("E7E3D7"), Muted = Hex("ACB0A0"), Red = Hex("DE8B73"), Teal = Hex("BDCAAF");
+        static readonly Color Ink = Hex("20282D"), Panel = Hex("2D373C"), Line = Hex("4C5558"), Gold = Hex("D2B57F"), TextColor = Hex("EEE8DA"), Muted = Hex("B2B6B2"), Red = Hex("E39A86"), Teal = Hex("A8C0B1");
 
         void Start()
         {

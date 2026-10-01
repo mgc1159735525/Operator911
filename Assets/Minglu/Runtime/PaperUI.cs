@@ -6,7 +6,7 @@ namespace Minglu
 {
     public partial class CityGameUI
     {
-        static readonly Color Paper=Hex("E6DFCF"),PaperInk=Hex("282A27"),PaperMuted=Hex("5D6157"),Accent=Hex("943F32"),PaperLine=Hex("C4BEAF"),PaperInset=Hex("DCD5C5");
+        static readonly Color Paper=Hex("ECE5D5"),PaperInk=Hex("303536"),PaperMuted=Hex("626760"),Accent=Hex("934F3C"),PaperLine=Hex("C8BDA5"),PaperInset=Hex("E0D7C4");
         Font titleFont;
         sealed class PrintButtonArt
         {
@@ -92,14 +92,16 @@ namespace Minglu
             var colors=b.colors;colors.normalColor=normal;colors.highlightedColor=submit?Hex("AD5141"):paper?Hex("D1C9B6"):Hex("3D403A");colors.pressedColor=submit?Hex("753329"):paper?Hex("C6BEAB"):Hex("45483F");colors.selectedColor=normal;colors.disabledColor=paper?Hex("DFD9CD"):Hex("242622");colors.fadeDuration=.1f;b.colors=colors;
             // Directory links, portrait choices and map pins keep their existing understated styles.
             // Map pins also receive a dynamic urgent tint from DrawCommandMap.
-            bool artwork=!choice&&!quiet&&!photo&&!name.StartsWith("CommandDistrict_")&&UseButtonArt(b,submit?"primary":paper?"paper":"dark",selected);
+            // Flat dossier controls: state is conveyed by fill, a fine border
+            // and typography, rather than embossed raster button textures.
+            bool artwork=false;
             if(artwork&&submit&&enabled)foreground=Hex("FFF6E8");
             if(artwork&&!enabled)foreground=submit?Hex("DED6C5"):paper?Hex("625F57"):Hex("A3A294");
             bool left=nav||name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
-            var label=Label(r,text,left?14:8,0,w-(left?26:16),h,nav?19:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
+            var label=Label(r,text,nav?42:left?14:8,0,w-(nav?48:left?26:16),h,nav?17:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
             if(choice)
             {
-                if(nav&&selected){var mark=Box("SelectionMark",r,0,7,3,h-14,Red);mark.GetComponent<Image>().raycastTarget=false;}
+                if(nav&&selected){var mark=Box("SelectionMark",r,0,7,3,h-14,Gold);mark.GetComponent<Image>().raycastTarget=false;}
                 if(!nav&&selected)Rule(r,9,h-1,w-18,paper?Accent:Gold);
                 if(selected&&enabled)label.color=paper?Accent:Gold;
             }
@@ -107,9 +109,9 @@ namespace Minglu
             {
                 if(selected){Border(r,0,0,w,h,paper?Accent:Gold);}
             }
-            else if(!quiet&&!submit&&!artwork)
+            else if(!quiet&&!artwork)
             {
-                Rule(r,0,h-1,w,paper?Hex("B7AF9D"):Hex("64665A"));
+                Border(r,0,0,w,h,submit?Hex("B87658"):paper?PaperLine:Line);
             }
             var outline=r.gameObject.AddComponent<Outline>();outline.effectColor=paper?Accent:Gold;outline.effectDistance=new Vector2(1,-1);outline.enabled=false;r.gameObject.AddComponent<UIFocusOutline>();
             // Set the first visible frame directly: a full redraw must not fade every surface from white.

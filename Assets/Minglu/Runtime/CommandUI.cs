@@ -27,25 +27,7 @@ namespace Minglu
         void DrawCommandGame()
         {
             CommandRules.EnsureStrategy(State);
-            Label(root,"明路 · 地下",32,28,228,35,25,TextColor);
-            Label(root,"新京地区  /  机密",32,76,228,22,14,Muted);
-            Label(root,"第 "+State.turn.ToString("00")+" 夜",286,28,234,35,25,TextColor);
-            Label(root,"行动期限  "+State.config.Value("turns")+" 夜",286,76,234,22,14,Muted);
-            Label(root,"行动成果",548,29,155,22,14,Muted);Label(root,State.progress.ToString("00"),548,58,155,32,22,TextColor);
-            Label(root,"可用情报",720,29,155,22,14,Muted);Label(root,(State.intelligence-CommandRules.ReservedIntel(State))+" 份",720,58,155,32,22,TextColor);
-            Label(root,"可用经费",893,29,230,22,14,Muted);Label(root,(State.money-CommandRules.ReservedMoney(State))+" 银两",893,58,230,32,22,TextColor);
-            Label(root,"追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"   ·   民心 "+State.command.strategy.hearts,1160,37,258,26,15,State.command.strategy.trace>=State.command.strategy.config.raid-15?Red:Muted);
-            Button("CommandMenu",root,"设置",1440,29,128,42,()=>{modal="menu";Draw();});
-            Rule(root,32,108,1536);
-            string[] tabs={"任务簿","联络网","人事档案","城区地图","值夜报告","地方事务"};
-            for(int i=0;i<tabs.Length;i++){int n=i;Button("CommandTab_"+i,root,tabs[i],32,132+i*47,228,39,()=>OpenCommandPage(n),true,commandTab==i);}
-            DrawNoirBrief();
-            var panel=Rect("CommandMapDesk",root,286,122,1282,700);
-            DrawCommandMap(panel);
-            Rule(root,32,847,1536);
-            Label(root,toast,32,862,958,30,15,Muted);
-            Button("CommandNextAction",root,"处理下一项  ›",1010,855,230,37,GoNextCommand);
-            Button("CommandEnd",root,"结束今夜",1260,855,308,37,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0);
+            DrawDossierDesk();
             if(State.command.eventKind!=0)DrawCommandEvent();
             else if(State.ended){if(modal=="endingReview")DrawEndingReview();else DrawCommandEnding();}
             else if(State.command.notices!=null&&State.command.notices.Count>0)DrawCommandNotice();
@@ -162,22 +144,29 @@ namespace Minglu
             float aspect=map!=null?(float)map.width/map.height:1.5f;
             float mapWidth=Mathf.Min(width,height*aspect),mapHeight=mapWidth/aspect,x=(width-mapWidth)/2,y=(height-mapHeight)/2;
             Box("MapMat",panel,0,0,width,height,Ink);
-            var raw=Rect("CommandMap",panel,x,y,mapWidth,mapHeight).gameObject.AddComponent<UnityEngine.UI.RawImage>();raw.texture=map;raw.color=new Color(.78f,.78f,.78f);raw.raycastTarget=false;
+            var raw=Rect("CommandMap",panel,x,y,mapWidth,mapHeight).gameObject.AddComponent<UnityEngine.UI.RawImage>();raw.texture=map;raw.color=new Color(.86f,.84f,.79f);raw.raycastTarget=false;
+            Border(panel,x-1,y-1,mapWidth+2,mapHeight+2,Line);
             foreach(var d in State.config.districts)
             {
                 var tasks=State.command.tasks.Where(t=>t.status==0&&t.district==d.id).ToList();
                 bool urgent=tasks.Any(t=>t.deadline<=State.turn&&t.actor<0);
-                string status="待派 "+tasks.Count(t=>t.actor<0)+" · 已派 "+tasks.Count(t=>t.actor>=0);
-                var pin=Button("CommandDistrict_"+d.id,panel,(urgent?"急 · ":"")+d.name+"\n"+status,x+d.x*(mapWidth-188)+10,y+d.y*(mapHeight-133)+25,168,56,()=>{selectedDistrict=d.id;modal="districtDetails";Draw();},true,d.id==selectedDistrict);
+                int pending=tasks.Count(t=>t.actor<0);
+                string status=urgent?"今夜截止":pending>0?pending+" 项待办":tasks.Count>0?"执行中":"";
+                var pin=Button("CommandDistrict_"+d.id,panel,d.name,x+d.x*(mapWidth-188)+10,y+d.y*(mapHeight-133)+25,168,38,()=>{selectedDistrict=d.id;modal="districtDetails";Draw();},true,d.id==selectedDistrict);
+                if(status!="")
+                {
+                    var tag=Box("MapTaskTag",pin.transform,25,39,118,24,urgent?Accent:Ink);tag.GetComponent<UnityEngine.UI.Image>().raycastTarget=false;
+                    Label(tag,status,2,1,114,22,12,urgent?Paper:Gold,UnityEngine.TextAnchor.MiddleCenter);
+                }
                 if(urgent){var colors=pin.colors;colors.normalColor=Accent;colors.highlightedColor=Hex("AD5141");colors.pressedColor=Hex("753329");colors.selectedColor=Accent;pin.colors=colors;pin.image.CrossFadeColor(Accent,0,true,true);pin.GetComponentInChildren<UnityEngine.UI.Text>().color=Paper;}
-                if(d.id==selectedDistrict){Border(pin.transform,-3,-3,174,62,Paper);Border(pin.transform,-4,-4,176,64,PaperInk);}
+                if(d.id==selectedDistrict)Border(pin.transform,-2,-2,172,42,Gold);
             }
-            Box("MapNote",panel,x+16,y+mapHeight-58,mapWidth-32,42,Ink);Label(panel,"点选城区打开当地档案 · 朱红标记为今夜截止事项",x+28,y+mapHeight-49,mapWidth-56,26,16,Gold);
+            Box("MapNote",panel,x+16,y+mapHeight-44,442,28,Ink);Label(panel,"城区档案  /  点选地名查看  ·  红色表示今夜截止",x+28,y+mapHeight-40,420,22,13,Muted);
         }
         void DrawCommandReport(Transform panel){DrawNightReport(panel);}
         Transform CommandModal(string title,float height=600)
         {
-            var shade=Box("CommandShade",root,0,0,1600,900,new Color(0,0,0,.76f));Box("DialogShadow",shade,359,(900-height)/2+10,900,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);Box("CaseRibbon",p,28,0,64,5,Accent);Label(p,title,28,24,840,45,30,Gold);Rule(p,28,73,844);return p;
+            var shade=Box("CommandShade",root,0,0,1600,900,new Color(.04f,.06f,.07f,.78f));Box("DialogShadow",shade,359,(900-height)/2+10,900,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);DossierHeading(p,title);return p;
         }
         void DrawCommandConfirm()
         {
