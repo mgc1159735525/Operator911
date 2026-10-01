@@ -8,19 +8,20 @@ namespace Minglu
         void DrawStrategy(Transform panel)
         {
             var x=State.command.strategy;var c=x.config;
-            Label(panel,"地区经营 / 安全与盟友",20,14,570,34,24,Gold);
-            Button("StrategyDetails",panel,"查看安全规则  ›",608,14,190,34,()=>{modal="strategyDetails";Draw();});
-            Label(panel,"据点："+State.config.District(x.baseDistrict).name+"  ·  追查 "+x.trace+" / "+c.raid+"触发撤离  ·  民心 "+x.hearts,20,57,798,30,19,x.trace>=c.raid-15?Red:Teal);
-            Label(panel,x.trace>=c.raid-15?"据点接近暴露。优先轮休，并为转移预留经费。":"选择盟友发起委托，完成后获得长期支援。",20,101,798,39,18,x.trace>=c.raid-15?Red:Muted);
+            Label(panel,"地方事务",28,20,554,42,32,Gold);
+            Button("StrategyDetails",panel,"安全规则  ›",618,28,192,32,()=>{modal="strategyDetails";Draw();});
+            Label(panel,"据点："+State.config.District(x.baseDistrict).name+" · 追查 "+x.trace+" / "+c.raid+"触发撤离 · 民心 "+x.hearts,28,80,782,26,17,x.trace>=c.raid-15?Red:TextColor);
+            Label(panel,x.trace>=c.raid-15?"据点接近暴露，优先轮休并为转移预留经费。":"选择盟友发起委托，完成后获得长期支援。",28,124,782,27,16,x.trace>=c.raid-15?Red:Muted);
             for(int i=0;i<4;i++)
             {
-                int id=i,y=171+i*72;Label(panel,CommandRules.Factions[i]+" · 信任 "+x.alliances[i]+" / "+c.allianceThreshold,20,y,470,26,20,Gold);
-                Label(panel,(x.alliances[i]>=c.allianceThreshold?"已生效：":"达标后：")+CommandRules.AllianceEffects[i],20,y+29,470,25,16,Teal);
+                int id=i,y=182+i*72;Label(panel,CommandRules.Factions[i]+" · 信任 "+x.alliances[i]+" / "+c.allianceThreshold,28,y,460,26,20,Gold);
+                Label(panel,(x.alliances[i]>=c.allianceThreshold?"已生效：":"达标后：")+CommandRules.AllianceEffects[i],28,y+34,460,24,16,Muted);
                 bool pending=State.command.tasks.Any(t=>t.status==0&&t.operation==1&&t.target==id);
-                Button("AllianceTask_"+i,panel,pending?"查看进行中的委托":x.alliances[i]>=100?"信任已满 · 收益持续":"发起联络 · 2次成功",516,y+7,282,43,()=>OpenCivicTask(id),pending||x.alliances[i]<100);
+                Button("AllianceTask_"+i,panel,pending?"查看委托  ›":x.alliances[i]>=100?"信任已满":"发起联络 · 2次成功",516,y+9,294,40,()=>OpenCivicTask(id),pending||x.alliances[i]<100);
             }
-            Button("CommunityTask",panel,"安排街坊互助 · 民心+10 / 追查−8",20,480,778,44,()=>OpenCivicTask(-1));
-            Label(panel,"发起委托不花钱、不推进时间。到任务页选择负责人；每阶段可换人，完成全部阶段才获奖励。",20,535,790,45,16,Muted);
+            Rule(panel,28,476,782);
+            Button("CommunityTask",panel,"街坊互助 · 民心+10 / 追查−8",28,492,782,40,()=>OpenCivicTask(-1));
+            Label(panel,"发起仅创建待办；签发后预留资源，结束今夜执行。",28,548,782,24,15,Muted);
         }
         void OpenCivicTask(int faction)
         {
@@ -44,18 +45,21 @@ namespace Minglu
         void DrawCandidateComparison()
         {
             var t=State.command.tasks.FirstOrDefault(v=>v.id==commandTask&&v.status==0);if(t==null){modal="";return;}
-            var p=CommandModal("比较负责人 / "+t.title,730);
-            Label(p,"优先展示可用成员，再按成功率排序；高成功率不一定值得占用接头岗位。",28,78,844,46,18,Muted);
+            var p=CommandModal("比较负责人 / "+t.title,706);
+            Label(p,"按可用性与成功率排序；同时留意已有岗位。",28,96,844,26,17,Muted);
             var people=State.agents.OrderBy(a=>CommandRules.TaskError(State,a.id,t)==""?0:1).ThenByDescending(a=>CommandRules.TaskDice(State,a,t)).ToList();
-            var list=Scroll(p,"CandidateList",28,138,844,480,people.Count*110);
+            var list=Scroll(p,"CandidateList",28,146,844,440,people.Count*110);
             for(int i=0;i<people.Count;i++)
             {
                 var a=people[i];string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t),y=i*110;
-                Label(list,a.name+" · "+CommandRules.Person(State,a.id).profession+" Lv."+CommandRules.Person(State,a.id).level+" · "+dice+"骰 / "+(DispatchRules.Probability(dice,t.required)*100).ToString("0.#")+"%",10,y,600,32,20,Gold);
-                Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用运行中的链条岗位":"可用 · "+CommandRole(a.id)+"，授权后本夜该岗位等待",10,y+38,598,58,17,error==""?Teal:Red);
-                Button("CompareSelect_"+a.id,list,"选此人",635,y+18,160,46,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
+                Label(list,a.name+" · "+CommandRules.Person(State,a.id).profession+" "+CommandRules.Person(State,a.id).level+"级",0,y+6,488,30,21,Gold);
+                Label(list,(DispatchRules.Probability(dice,t.required)*100).ToString("0.#")+"%",512,y+6,130,32,24,TextColor);
+                Label(list,dice+" 骰 / 需 "+t.required+" 成功",512,y+46,130,22,14,Muted);
+                Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用联络岗位":"可用 · "+CommandRole(a.id)+"，本夜该岗位等待",0,y+50,488,45,16,error==""?Muted:Red);
+                Button("CompareSelect_"+a.id,list,"选此人",668,y+21,144,40,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
+                Rule(list,0,y+104,812);
             }
-            Button("CompareBack",p,"返回任务 · 不更改授权",28,652,844,48,()=>{modal="missionPlan";Draw();});
+            Button("CompareBack",p,"返回任务",28,626,276,48,()=>{modal="missionPlan";Draw();});
         }
         void RequestRouteReplacement(CommandRoute r,int slot)
         {
@@ -80,7 +84,7 @@ namespace Minglu
         {
             var x=State.command.strategy;var p=CommandModal("据点追查 / 决定撤离方式",590);
             Label(p,State.config.District(x.baseDistrict).name+"据点 · 追查 "+x.trace,28,95,844,35,24,Gold);
-            Label(p,"敌方持续蹲守，组织等待撤离指示。两种方式都会转移据点、追查−45、今夜链条暂停。已授权任务仍会执行。",28,145,844,105,22);
+            Label(p,"敌方持续蹲守，组织等待撤离指示。\n两种方式都会转移据点、追查−45，并暂停今夜链条。\n已授权任务仍会执行。",28,145,844,105,22);
             int lost=State.command.routes.Sum(r=>r.atRelay),free=State.money-CommandRules.ReservedMoney(State);
             Label(p,"有序转移：支出"+x.config.relocateCost+"银两，保留全部情报。\n销毁撤离：不花钱，放弃中继情报"+lost+"份，内线待接情报保留。\n可用经费 "+free+"（已扣除任务预留）。",28,270,844,135,21,Teal);
             ActionTicket("CommandEventSafe",p,"有序转移",x.config.relocateCost+" 银两",28,480,404,64,()=>{toast=CommandRules.ResolveRaid(State,true);Save(false);Draw();},free>=x.config.relocateCost);

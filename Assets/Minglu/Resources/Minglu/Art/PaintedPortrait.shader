@@ -33,8 +33,9 @@ Shader "Minglu/PaintedPortrait"
    struct output {float4 vertex:SV_POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;float4 world:TEXCOORD1;};
    sampler2D _MainTex,_BodyTex;float4 _MainTex_TexelSize;
    fixed4 _Color,_Complexion,_ClothShadow,_ClothLight,_HairShadow,_HairLight;
-   float4 _ClipRect,_AtlasRect,_LayerRect,_BodyRect,_FeatureCols,_EyeFar,_EyeNear,_BrowFar,_BrowNear,_Nose,_Mouth,_EarFar,_EarNear;
-   float _LayerMode,_EarOption,_BackHair,_CapStrayCut;
+   float4 _ClipRect,_AtlasRect,_LayerRect,_DrawRect,_BodyRect,_FeatureCols,_EyeFar,_EyeNear,_BrowFar,_BrowNear,_Nose,_Mouth,_EarFar,_EarNear;
+   float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
+   float _LayerMode,_EarOption,_BackHair,_CapStrayCut,_OutfitLeftTrim;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 optionShape(float option,float2 one,float2 two,float2 three)
    {return option<.5?float2(1,1):option<1.5?one:option<2.5?two:three;}
@@ -45,10 +46,31 @@ Shader "Minglu/PaintedPortrait"
     float2 transformed=delta/size;transformed.y+=delta.x*tilt;
     return (transformed-delta)*weight;
    }
+   float3 hairAnchor(float2 p,float4 anchor)
+   {
+    float2 d=(p-anchor.xy)*float2(1,1.5);
+    float r=dot(d,d);float weight=1/(r+.0000001);
+    return float3(anchor.zw*weight,weight);
+   }
+   float2 hairSample(float2 p)
+   {
+    float influence=1-smoothstep(_CrownAdjust.y-.02,_CrownAdjust.y+.03,p.y);
+    p=lerp(p,_CrownAdjust.xy+(p-_CrownAdjust.xy)/_CrownAdjust.z,influence);
+    float3 blend=hairAnchor(p,_HairAnchor0)+hairAnchor(p,_HairAnchor1)+hairAnchor(p,_HairAnchor2)+hairAnchor(p,_HairAnchor3);
+    return (p-blend.xy/blend.z-_LayerRect.xy)/_LayerRect.zw;
+   }
+   float2 beardSample(float2 p)
+   {
+    float t=saturate((p.y-_BeardMouth.y)/(_BeardChin.y-_BeardMouth.y));
+    float center=lerp(_BeardMouth.x,_BeardChin.x,t),sourceCenter=lerp(_BeardMouth.z,_BeardChin.z,t);
+    float sy=p.y<_BeardMouth.y?_BeardMouth.w+(p.y-_BeardMouth.y)/_BeardScales.z:p.y>_BeardChin.y?_BeardChin.w+(p.y-_BeardChin.y)/_BeardScales.w:lerp(_BeardMouth.w,_BeardChin.w,t);
+    float sx=lerp(p.x<center?_BeardScales.x:_BeardScales.y,.57,t);
+    return float2(sourceCenter+(p.x-center)/sx,sy);
+   }
    fixed4 frag(output i):SV_Target
    {
     float2 local=float2((i.uv.x-_AtlasRect.x)/_AtlasRect.z,1-(i.uv.y-_AtlasRect.y)/_AtlasRect.w);
-    float2 p=_LayerRect.xy+local*_LayerRect.zw;
+    float2 p=_DrawRect.xy+local*_DrawRect.zw;
     float2 q=p;
     if(_LayerMode<.5)
     {
@@ -67,11 +89,13 @@ Shader "Minglu/PaintedPortrait"
      // Beard and lip share the same local deformation and full-canvas frame.
      q+=morph(p,_Mouth,optionShape(_FeatureCols.w,float2(.85,1),float2(1.13,1),float2(1,1.19)),0);
     }
-    q=(q-_LayerRect.xy)/_LayerRect.zw;
+    float2 featurePoint=q;
+    q=_LayerMode>.5&&_LayerMode<1.5?hairSample(q):_LayerMode>2.5?beardSample(q):(q-_LayerRect.xy)/_LayerRect.zw;
+    float sourceInside=step(0,q.x)*step(q.x,1)*step(0,q.y)*step(q.y,1);
     float2 uv=float2(_AtlasRect.x+q.x*_AtlasRect.z,_AtlasRect.y+(1-q.y)*_AtlasRect.w);
     // Bilinear sampling must never borrow pixels from the neighbouring person.
     uv=clamp(uv,_AtlasRect.xy+_MainTex_TexelSize.xy*.75,_AtlasRect.xy+_AtlasRect.zw-_MainTex_TexelSize.xy*.75);
-    fixed4 c=tex2D(_MainTex,uv);
+    fixed4 c=tex2D(_MainTex,uv);c.a*=sourceInside;
     if(_LayerMode<.5)
     {
      // The base painting includes its connected neck and an under-robe. Above
@@ -87,6 +111,10 @@ Shader "Minglu/PaintedPortrait"
      float luminance=dot(c.rgb,float3(.299,.587,.114));
      if(_LayerMode>1.5&&_LayerMode<2.5)
      {
+      // These two garments inherit a detached 2-3 pixel line from the
+      // preceding atlas column. The fade ends inside the transparent gap,
+      // before the authored shoulder, so it cannot narrow the body.
+      c.a*=lerp(1,smoothstep(.0128,.0160,q.x),_OutfitLeftTrim);
       c.rgb=lerp(_ClothShadow.rgb,_ClothLight.rgb,saturate(luminance*1.45));
       // Clothing is composited around the original painted skin boundary. It
       // cannot grow a pointed collar through the chin or replace the neck.
@@ -99,7 +127,7 @@ Shader "Minglu/PaintedPortrait"
       float skinProtection=max(1-smoothstep(.49,.51,p.y),neckPigment)*(1-smoothstep(.775,.805,p.y));
       c.a*=1-body.a*skinProtection;
      }
-     else c.rgb=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.65));
+     else c.rgb=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.42));
     }
     if(_LayerMode>.5&&_LayerMode<1.5)
     {
@@ -109,8 +137,19 @@ Shader "Minglu/PaintedPortrait"
      c.a*=_BackHair>.5?(1-front)/max(.001,1-c.a*front):front;
      // A few pixels from the adjacent loose-hair cell overlap the cap cell's
      // otherwise empty lower-left margin. Exclude that margin, not the cap.
-     float stray=(1-smoothstep(.060,.090,local.x))*smoothstep(.64,.69,local.y);
+     float stray=(1-smoothstep(.060,.090,q.x))*smoothstep(.64,.69,q.y);
      c.a*=1-_CapStrayCut*stray;
+     // Preserve the painted opening of the near ear. Ear edits and age no
+     // longer leave an opaque lock across the concha after hair registration.
+     float ear=1-smoothstep(.45,1,length((p-_EarNear.xy)/(_EarNear.zw*float2(.58,.65))));
+     c.a*=1-ear;
+    }
+    if(_LayerMode>2.5)
+    {
+     // The opening follows the same inverse lip edit as the base painting.
+     // A beard may touch the lip edge but must not paint over the lip itself.
+     float lip=1-smoothstep(.65,1,length((featurePoint-_Mouth.xy)/float2(.058,.010)));
+     c.a*=1-lip;
     }
     c*=i.color;
     #ifdef UNITY_UI_CLIP_RECT

@@ -66,19 +66,24 @@ namespace Minglu
         }
         bool QuietControl(string name)
         {
+            if(name.EndsWith("Back")||name.EndsWith("Close")||name.EndsWith("Cancel"))return true;
+            if(name.StartsWith("RouteDetails_")||name.StartsWith("LookRandomLock_")||name=="LookRandom"||name=="LookPresets"||name=="LookRandomSettings"||name=="LookLock"||name=="LookLockAll"||name=="LookUnlockAll"||name=="LookZoom"||name=="LookCompare"||name=="LookOptionPrevious"||name=="LookOptionNext")return true;
+            if(name=="CommandChiefAppearance"||name=="CommandPeopleDetails"||name=="CommandPeopleAppearance"||name=="CommandEditLook"||name=="CommandEmployment"||name=="DistrictOpen"||name=="StrategyDetails"||name=="LookPopupKeep"||name=="LookSaveSlot")return true;
             if(name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes")return true;
             return name=="Save"||name=="Load"||name=="CommandHome"||name=="CommandMenu"||name=="CommandHelp"||name=="CommandPortrait"||name=="CommandNextAction"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name=="LookClose"||name=="LookUndo"||name=="LookRedo"||name=="LookReset"||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_")||name.StartsWith("CommandTask_")||name.StartsWith("BriefTask_")||name.StartsWith("RosterVacancy_");
         }
         bool ChoiceControl(string name)
         {
-            return name.StartsWith("CommandTab_")||name.StartsWith("TaskFilter_")||name.StartsWith("LookGroup_")||name.StartsWith("LookCategory_")||name.StartsWith("MissionPlan_")||name.StartsWith("LifePolicy_")||name.StartsWith("Difficulty_")||name.StartsWith("Doctrine_")||name=="LookMale"||name=="LookFemale"||name=="ReportSummary"||name=="ReportAll";
+            return name.StartsWith("CommandTab_")||name.StartsWith("TaskFilter_")||name.StartsWith("LookGroup_")||name.StartsWith("LookCategory_")||name.StartsWith("MissionPlan_")||name.StartsWith("LifePolicy_")||name.StartsWith("Difficulty_")||name.StartsWith("Doctrine_")||name=="LookMale"||name=="LookFemale"||name=="ReportSummary"||name=="ReportAll"||name=="MissionIntel";
         }
         Button PrintButton(string name,Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled,bool selected)
         {
             bool paper=PaperSurface(parent),nav=name.StartsWith("CommandTab_"),choice=ChoiceControl(name),quiet=QuietControl(name),photo=name.StartsWith("LookOption_")||name.StartsWith("LookSlot_")||name.StartsWith("CommandAgent_");
             bool submit=RedAction(name);
+            if(submit)quiet=false;
             Color ground=paper?Paper:Ink,foreground=paper?PaperInk:TextColor;
             Color normal=submit?Accent:selected&&!choice?paper?PaperInset:Hex("3B3B34"):quiet||choice?ground:paper?PaperInset:Panel;
+            if(quiet&&!selected)foreground=paper?PaperMuted:Muted;
             if(submit)foreground=Paper;
             if(!enabled)foreground=paper?Hex("89867D"):Hex("85867D");
             var r=Rect(name,parent,x,y,w,h);var im=r.gameObject.AddComponent<Image>();im.color=Color.white;
@@ -91,11 +96,11 @@ namespace Minglu
             if(artwork&&submit&&enabled)foreground=Hex("FFF6E8");
             if(artwork&&!enabled)foreground=submit?Hex("DED6C5"):paper?Hex("625F57"):Hex("A3A294");
             bool left=nav||name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
-            var label=Label(r,text,left?14:8,0,w-(left?26:16),h,nav?21:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
+            var label=Label(r,text,left?14:8,0,w-(left?26:16),h,nav?19:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
             if(choice)
             {
                 if(nav&&selected){var mark=Box("SelectionMark",r,0,7,3,h-14,Red);mark.GetComponent<Image>().raycastTarget=false;}
-                if(!nav)Rule(r,9,h-1,w-18,selected?(paper?Accent:Gold):(paper?PaperLine:Line));
+                if(!nav&&selected)Rule(r,9,h-1,w-18,paper?Accent:Gold);
                 if(selected&&enabled)label.color=paper?Accent:Gold;
             }
             else if(photo)

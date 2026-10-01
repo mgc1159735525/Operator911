@@ -28,7 +28,7 @@ namespace Minglu
             if(bodyText.preferredHeight>bodyText.rectTransform.rect.height||longBody.content.rect.height<=longBody.viewport.rect.height)throw new Exception("Long task body was clipped instead of scrollable");
             longBody.verticalNormalizedPosition=0;Canvas.ForceUpdateCanvases();Capture(Path.ChangeExtension(path,"long-task.png"));
             task.body=originalBody;Draw();yield return null;
-            yield return Click("CommandCompare_"+task.id);yield return Click("CompareBack");
+            yield return Click("CommandCompare_"+task.id);Capture(Path.ChangeExtension(path,"candidates.png"));yield return Click("CompareBack");
             if(modal!="missionPlan")throw new Exception("Candidate cancellation lost the task context");
             yield return Click("MissionPlan_1");
             if(task.actor>=0||CommandRules.ReservedMoney(State)!=0)throw new Exception("Plan preview reserved resources or authorized work");
@@ -62,7 +62,7 @@ namespace Minglu
             yield return Click("CommandEmployment");
             if(!HandleCommandModalEscape()||modal!="memberDetails"||selectedAgent!=3)throw new Exception("Employment task Escape lost the applicant dossier");
             yield return Click("MemberDetailsClose");
-            yield return Click("CommandTab_4");
+            yield return Click("CommandTab_4");Capture(Path.ChangeExtension(path,"report.png"));
             CommandRules.Notice(State,new CommandNotice{title="查看任务检查",body="打开任务后仍有另一条通知。",tab=0,task=task.id});
             CommandRules.Notice(State,new CommandNotice{title="后续通知检查",body="确认此条不能丢弃已经选择的任务。",tab=4});Draw();yield return null;
             yield return Click("CommandNoticeOpen");yield return Click("CommandNoticeDismiss");

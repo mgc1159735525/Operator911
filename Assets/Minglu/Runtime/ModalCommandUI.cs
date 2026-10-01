@@ -45,21 +45,25 @@ namespace Minglu
             var route=State.command.routes.FirstOrDefault(r=>r.id==detailRouteId);
             if(route==null){modal="";return;}
             var p=CommandModal("联络链 "+(route.id+1)+" / 运行状况",600);
-            Label(p,route.source<0?"尚未指定情报来源":CommandRules.Employment(CommandRules.Person(State,route.source)),28,96,844,36,25,Gold);
-            Label(p,"内线："+CommandName(route.source)+" → 接头："+CommandName(route.liaison)+" → 外送："+CommandName(route.courier),28,147,844,33,20);
-            Label(p,"待接 "+route.waiting+" 份  →  中继 "+route.atRelay+" 份  →  已送达 "+route.delivered+" 份",28,205,844,40,25,Teal);
-            Label(p,RouteForecast(route),28,272,844,78,21,Muted);
-            Label(p,"最近情况："+route.last+"\n传递至少跨三夜。任务优先占用成员；更换岗位会清空积压，暂停则保留积压并继续计时。",28,366,844,117,19,Muted);
-            Button("RouteDetailsClose",p,"返回联络网",28,519,844,48,()=>{modal="";Draw();});
+            Label(p,route.source<0?"尚未指定情报来源":CommandRules.Employment(CommandRules.Person(State,route.source)),28,100,844,29,20,Muted);
+            Label(p,"内线："+CommandName(route.source)+" → 接头："+CommandName(route.liaison)+" → 外送："+CommandName(route.courier),28,148,844,28,18);
+            string[] labels={"待接","中继","已送达"};int[] values={route.waiting,route.atRelay,route.delivered};
+            for(int i=0;i<3;i++){Label(p,labels[i],28+i*284,202,272,22,14,Muted);Label(p,values[i]+" 份",28+i*284,235,272,40,28,i==2?Teal:TextColor);}
+            Rule(p,28,298,844);
+            Label(p,RouteForecast(route),28,322,844,61,18,CommandRules.RouteError(State,route)==""?TextColor:Red);
+            var content=Scroll(p,"RouteHistory_"+route.id,28,401,844,82,82);
+            var history=Label(content,"最近情况："+route.last+"\n任务优先占用成员；更换岗位清空积压，暂停保留积压并继续计时。",0,0,810,82,16,Muted);
+            float h=UnityEngine.Mathf.Max(82,history.preferredHeight+8);history.rectTransform.sizeDelta=new UnityEngine.Vector2(810,h);content.sizeDelta=new UnityEngine.Vector2(content.sizeDelta.x,h);
+            Button("RouteDetailsClose",p,"返回联络网",28,520,276,48,()=>{modal="";Draw();});
         }
         void DrawStrategyDetails()
         {
             var x=State.command.strategy;var c=x.config;var p=CommandModal("地区安全 / 追查与潜伏",590);
-            Label(p,"当前追查 "+x.trace+" / "+c.raid+"   ·   民心 "+x.hearts,28,97,844,38,26,Gold);
+            Label(p,"当前追查 "+x.trace+" / "+c.raid+"   ·   民心 "+x.hearts,28,100,844,31,21,x.trace>=c.raid-15?Red:TextColor);
             var content=Scroll(p,"StrategyRules",28,159,844,307,307);
-            var text=Label(content,"组织安全\n地下行动累积追查；达到阈值后需要决定撤离方式。全员休整每夜减少5追查，民心达到60时每夜再减少2。\n\n成员风险\n暴露达到"+c.warning+"先预警；达到"+c.capture+"，且下一夜仍未脱险，成员才会被捕。可在档案安排生活优先，并替换联络链岗位。\n\n委托规则\n发起委托不花钱、不推进时间。需要到任务弹窗安排负责人；多阶段委托可换人，全部完成后才取得收益。",0,0,810,307,21,Muted);
+            var text=Label(content,"组织安全\n地下行动累积追查；达到阈值后需要决定撤离方式。全员休整每夜减少5追查，民心达到60时每夜再减少2。\n\n成员风险\n暴露达到"+c.warning+"先预警；达到"+c.capture+"，且下一夜仍未脱险，成员才会被捕。可在档案安排生活优先，并替换联络链岗位。\n\n委托规则\n发起委托不花钱、不推进时间。需要到任务弹窗安排负责人；多阶段委托可换人，全部完成后才取得收益。",0,0,810,307,18,Muted);
             float h=UnityEngine.Mathf.Max(307,text.preferredHeight+12);text.rectTransform.sizeDelta=new UnityEngine.Vector2(810,h);content.sizeDelta=new UnityEngine.Vector2(content.sizeDelta.x,h);
-            Button("StrategyDetailsClose",p,"返回地方事务",28,507,844,48,()=>{modal="";Draw();});
+            Button("StrategyDetailsClose",p,"返回地方事务",28,510,276,48,()=>{modal="";Draw();});
         }
     }
 }

@@ -28,9 +28,10 @@ namespace Minglu
         void PaintedLayer(Transform parent,Appearance look,Texture2D atlas,UnityEngine.Rect cell,UnityEngine.Rect placement,PaintedPortraitLayer mode,Color tint,bool backHair=false)
         {
             var registration=mode==PaintedPortraitLayer.Hair?PaintedPortraitLayout.HairRect(look):mode==PaintedPortraitLayer.Outfit?PaintedPortraitLayout.OutfitRect(look):mode==PaintedPortraitLayer.Beard?PaintedPortraitLayout.BeardRect(look):new UnityEngine.Rect(0,0,1,1);
-            var registered=PaintedPortraitLayout.Register(placement,registration);
+            var draw=PaintedPortraitLayout.DrawRect(look,mode);
+            var registered=PaintedPortraitLayout.Register(placement,draw);
             var layer=Rect("Painted"+mode+(backHair?"Back":""),parent,registered.x,registered.y,registered.width,registered.height).gameObject.AddComponent<PaintedPortraitGraphic>();
-            layer.color=tint;layer.Configure(atlas,paintedBases,cell,registration,look,mode,backHair);
+            layer.color=tint;layer.Configure(atlas,paintedBases,cell,registration,draw,look,mode,backHair);
         }
     }
 }

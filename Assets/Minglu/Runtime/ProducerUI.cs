@@ -91,19 +91,19 @@ namespace Minglu
         {
             int latest=State.journal.Where(r=>r.Contains("组织执行报告")).Select(JournalNight).DefaultIfEmpty(0).Max();
             int night=reportNight<0?latest:Mathf.Clamp(reportNight,1,Mathf.Max(1,latest));
-            Label(panel,latest==0?"执行报告 / 尚未推进第一夜":"执行报告 / 第 "+night+" 夜",20,15,560,34,25,Gold);
-            Button("ReportPrevious",panel,"上一夜",592,16,99,34,()=>{reportNight=Mathf.Max(1,night-1);scrollPositions.Remove("CommandReport");Draw();},night>1);
-            Button("ReportNext",panel,"下一夜",703,16,99,34,()=>{reportNight=Mathf.Min(latest,night+1);Draw();},night<latest);
+            Label(panel,latest==0?"值夜报告":"值夜报告 / 第 "+night+" 夜",28,20,552,42,32,Gold);
+            Button("ReportPrevious",panel,"上一夜",600,24,99,34,()=>{reportNight=Mathf.Max(1,night-1);scrollPositions.Remove("CommandReport");Draw();},night>1);
+            Button("ReportNext",panel,"下一夜",711,24,99,34,()=>{reportNight=Mathf.Min(latest,night+1);Draw();},night<latest);
             var rows=ReportRows(night,true);
             int finished=rows.Count(r=>r.Contains("完成「")),expired=rows.Count(r=>r.Contains("任务到期：")),delivered=rows.Count(r=>r.Contains("情报链")&&r.Contains("送达1份"));
-            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,20,66,782,28,19,Teal);
-            Button("ReportSummary",panel,"结果与原因",20,105,376,34,()=>{reportAll=false;Draw();},true,!reportAll);
-            Button("ReportAll",panel,"展开全部判定",409,105,393,34,()=>{reportAll=true;Draw();},true,reportAll);
+            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,28,76,782,24,16,Muted);
+            Button("ReportSummary",panel,"结果与原因",28,116,384,34,()=>{reportAll=false;Draw();},true,!reportAll);
+            Button("ReportAll",panel,"展开全部判定",426,116,384,34,()=>{reportAll=true;Draw();},true,reportAll);
             if(!reportAll)rows=ReportRows(night,false);
-            if(rows.Count==0)rows.Add("本夜暂无结算结果。先建立传递链、授权任务，再推进一夜。链条从产出到送达至少跨三次结算。");
-            var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,20,157,797,408,Mathf.Max(410,rows.Count*65));float y=0;
-            foreach(var row in rows){var text=Label(content,row,0,y,770,50,18,row.Contains("未成")||row.Contains("暂停")||row.Contains("到期")?Red:TextColor);float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(770,h);y+=h+8;}
-            content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(408,y));
+            if(rows.Count==0)rows.Add("还没有执行报告。先建立联络网、签发任务，再结束今夜。\n情报生产、接头与外送至少跨三次结算。");
+            var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,28,174,782,376,Mathf.Max(378,rows.Count*65));float y=0;
+            foreach(var row in rows){var text=Label(content,row,0,y,756,50,18,row.Contains("未成")||row.Contains("暂停")||row.Contains("到期")?Red:TextColor);float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(756,h);y+=h+8;}
+            content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(376,y));
         }
         void DrawEndingReview()
         {

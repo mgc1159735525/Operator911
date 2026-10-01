@@ -9,13 +9,16 @@ namespace Minglu.EditorTools
     {
         static int checks;
         static void Check(bool ok,string label){if(!ok)throw new Exception("Command: "+label);checks++;}
-        static RunState Fresh(uint seed=911){var c=CampaignRules.Load();var s=RunLifecycle.Create(CampaignRules.BuildConfig(ConfigStore.Load(),c),seed,1,0,false);CommandRules.Initialize(s);return s;}
+        static RunState Fresh(uint seed=911,int doctrine=0){var c=CampaignRules.Load();var s=RunLifecycle.Create(CampaignRules.BuildConfig(ConfigStore.Load(),c),seed,1,doctrine,false);CommandRules.Initialize(s);return s;}
         static void Configure(RunState s){var r=s.command.routes[0];r.source=0;r.liaison=1;r.courier=2;r.enabled=true;}
         [MenuItem("Minglu/验证组织首脑模式")]
         public static void Verify()
         {
             checks=0;var s=Fresh();Check(s.agents.Count==6&&s.agents.All(a=>a.appearance.enabled),"All crew generated");
             var same=Fresh();Check(JsonUtility.ToJson(s.command)==JsonUtility.ToJson(same.command),"Same seed reproduces life, tasks, looks");
+            var early=Fresh(911,1);
+            Check(early.money==s.money+12&&early.agents.All(a=>a.exposure==10),"Early liaison doctrine grants its displayed funding and exposure tradeoff");
+            Check(early.intelligence==0&&early.command.delivered==0&&early.command.routes.All(r=>r.waiting==0&&r.atRelay==0),"Doctrine cannot bypass institution intelligence delivery");
             Check(Fresh(912).agents[0].name!=s.agents[0].name||Fresh(912).agents[0].intel!=s.agents[0].intel,"Seeds vary");
             Check(s.agents.Select(a=>a.name).Distinct().Count()==6&&s.agents.Select(a=>a.appearance.sex).Distinct().Count()==2,"Unique names and both sexes");
             Check(DispatchRules.Probability(5,2)>DispatchRules.Probability(3,2),"More ability dice improves chance");

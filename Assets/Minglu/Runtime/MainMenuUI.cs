@@ -106,8 +106,8 @@ namespace Minglu
             Box("HomeVeil",root,0,0,1600,900,new Color(.045f,.05f,.05f,.36f));
             Box("HomeReadingShade",root,0,0,630,900,new Color(.055f,.06f,.06f,.83f));
             Label(root,"新京 / 地区工作档案",98,69,452,26,16,Muted);
-            Label(root,"明路 · 地下",94,122,540,84,60,Gold);
-            Label(root,"人员安排 · 情报传递 · 行动授权",98,223,470,32,18,Muted);
+            Label(root,"明路 · 地下",98,122,540,84,homePage=="main"?56:30,homePage=="main"?Gold:TextColor);
+            Label(root,"人员安排 · 情报传递 · 行动授权",98,223,470,32,16,Muted);
             Box("HomeTitleRule",root,98,284,408,1,Line);
             Label(root,"单人回合制策略",98,815,408,25,15,Muted);
             if(homePage=="main")
@@ -130,17 +130,17 @@ namespace Minglu
                 HomeTextButton("HomeSettings",root,"设置",98,609,408,42,OpenSettings);
                 HomeTextButton("HomeHelp",root,"玩法与操作",98,661,408,42,()=>{homePage="help";Draw();});
                 HomeTextButton("HomeQuit",root,"退出游戏",98,713,408,42,QuitGame);
-                Label(root,"当前档案",1000,524,460,28,16,Muted);
-                Label(root,saved==null?"未立卷":"第 "+saved.turn+" 夜",994,567,468,79,53,Gold);
-                var status=Label(root,description,1000,665,460,100,19,TextColor);
+                Label(root,"当前档案",1040,656,424,26,14,Muted);
+                Label(root,saved==null?"未立卷":"第 "+saved.turn+" 夜",1040,692,424,42,28,TextColor);
+                var status=Label(root,description,1040,750,424,85,16,Muted);
                 status.verticalOverflow=VerticalWrapMode.Truncate;
             }
             else
             {
                 string section=homePage=="new"||homePage=="replace"?"新局登记":homePage=="settings"?"声音与显示":homePage=="archive"?"历次行动":"指挥手册";
-                Label(root,section,98,337,408,48,29,Gold);
+                Label(root,section,98,337,408,36,21,TextColor);
                 string detail=homePage=="new"||homePage=="replace"?"选择行动时限与开局条件。\n人员、任务与事件随种子生成。":homePage=="settings"?"设置立即生效。\n返回后继续当前安排。":homePage=="archive"?"已结束的行动保存在此。\n成员与资源不跨局继承。":"你担任地区负责人。\n安排人事与目标，由成员执行。";
-                Label(root,detail,98,406,408,113,21,Muted);
+                Label(root,detail,98,394,408,113,18,Muted);
                 var p=Rect("HomePanel",root,694,66,810,742);
                 if(homePage=="new"||homePage=="replace")
                 {
@@ -149,7 +149,7 @@ namespace Minglu
                     for(int i=0;i<3;i++){int n=i;Button("Difficulty_"+i,p,RunLifecycle.DifficultyName(i),150+i*205,155,193,44,()=>{newDifficulty=n;Draw();},true,newDifficulty==i);}
                     Label(p,"开局方案",0,242,138,32,20,Muted);
                     for(int i=0;i<3;i++){int n=i;Button("Doctrine_"+i,p,RunLifecycle.DoctrineName(i),150+i*205,234,193,44,()=>{newDoctrine=n;Draw();},true,newDoctrine==i);}
-                    Label(p,newDoctrine==0?"按默认资源与人员状态开始。":newDoctrine==1?"情报 +2；全体可行动成员初始暴露 10。":"初始压力 −8；全体可行动成员体力 85。",150,297,603,64,18,Muted);
+                    Label(p,newDoctrine==0?"按默认资源与人员状态开始。":newDoctrine==1?"追加联络经费 12 银两；全员初始暴露 10。情报仍须经机构内线传递送达。":"初始压力 −8；全体可行动成员体力 85。",150,297,603,64,18,Muted);
                     Label(p,"随机种子",0,377,138,32,20,Muted);
                     var field=Box("Seed",p,150,369,389,44,new Color(.08f,.09f,.09f,1));var input=field.gameObject.AddComponent<InputField>();
                     var text=Label(field,seedText,12,7,365,31,20);input.textComponent=text;input.text=seedText;input.characterLimit=10;input.contentType=InputField.ContentType.IntegerNumber;input.onValueChanged.AddListener(v=>seedText=v);

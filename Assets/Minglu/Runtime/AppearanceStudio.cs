@@ -16,17 +16,19 @@ namespace Minglu
         void ChangeLook(Action change)
         {
             var before=AppearanceRules.Copy(lookDraft);change();lookDraft=AppearanceRules.AsRealistic(lookDraft);lookDraft.enabled=true;if(lookDraft.sex==1)lookDraft.parts[6]=0;
-            if(JsonUtility.ToJson(before)!=JsonUtility.ToJson(lookDraft)){lookUndo.Push(before);lookRedo.Clear();}
-            lookCompare=false;lookOptionPage=LookIndex(lookCategory)/4;lookNotice="预览已更新，应用后生效。";Draw();
+            bool changed=JsonUtility.ToJson(before)!=JsonUtility.ToJson(lookDraft);
+            if(changed){lookUndo.Push(before);lookRedo.Clear();}
+            lookCompare=false;lookOptionPage=LookIndex(lookCategory)/4;lookNotice=changed?"预览已更新，应用后生效。":"外观未改变。保留的部件不会参与随机。";Draw();
         }
         void UndoLook(bool redo)
         {
             var from=redo?lookRedo:lookUndo;var to=redo?lookUndo:lookRedo;if(from.Count==0)return;
-            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookOptionPage=LookIndex(lookCategory)/4;lookCompare=false;Draw();
+            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookOptionPage=LookIndex(lookCategory)/4;lookCompare=false;lookNotice=redo?"已重做，应用后生效。":"已撤销，应用后生效。";Draw();
         }
         void RandomizeLook()
         {
-            ChangeLook(()=>{var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex);for(int n=0;n<13;n++)if(lookLocks[n])next.parts[n]=old.parts[n];if(lookLocks[13])next.ears=old.ears;lookDraft=next;});
+            if(LookEditableCategories().All(category=>lookLocks[category])){lookNotice="已保留全部部件，外观未改变。";Draw();return;}
+            ChangeLook(()=>{var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex);for(int n=0;n<13;n++)if(n==8||lookLocks[n])next.parts[n]=old.parts[n];if(lookLocks[13])next.ears=old.ears;lookDraft=next;});
         }
         void RequestCloseAppearance()
         {
@@ -36,54 +38,58 @@ namespace Minglu
         void DrawAppearanceOverlay()
         {
             var shade=Box("AppearanceShade",root,0,0,1600,900,new Color(0,0,0,.85f));
-            var p=Box("AppearanceStudio",shade,240,48,1120,804,Paper);SurfaceTheme(p,true);DrawAppearance(p);
+            var p=Box("AppearanceStudio",shade,240,30,1120,840,Paper);SurfaceTheme(p,true);DrawAppearance(p);
         }
         void SelectLookCategory(int category){lookCategory=category;lookOptionPage=LookIndex(category)/4;Draw();}
         void DrawAppearance(Transform p)
         {
             string who=lookTarget<0?"地区负责人":State.agents.First(x=>x.id==lookTarget).name;
-            Label(p,"人物绘卷",30,21,280,43,30,Gold);Label(p,who,247,30,245,30,19,Muted);
-            Button("LookMale",p,"男性",770,26,91,38,()=>ChangeLook(()=>{lookDraft.sex=0;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==0);
-            Button("LookFemale",p,"女性",870,26,91,38,()=>ChangeLook(()=>{lookDraft.sex=1;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==1);
-            Button("LookClose",p,"关闭",996,26,94,38,RequestCloseAppearance);Rule(p,30,81,1060);
-            var preview=Box("StudioPreview",p,30,107,350,482,PaperInset);
-            DrawRealisticLook(preview,lookCompare?lookOriginal:lookDraft,0,0,350,482,Color.white,lookZoom);
-            Label(p,lookCompare?"原貌对照":"绘制立绘 · 当前预览",30,601,350,28,18,Gold,TextAnchor.MiddleCenter);
-            Button("LookZoom",p,lookZoom?"查看半身":"查看面容",30,645,169,40,()=>{lookZoom=!lookZoom;Draw();});
-            Button("LookCompare",p,lookCompare?"返回预览":"对照原貌",211,645,169,40,()=>{lookCompare=!lookCompare;Draw();});
-            Button("LookUndo",p,"撤销",30,696,109,36,()=>UndoLook(false),lookUndo.Count>0);
-            Button("LookRedo",p,"重做",150,696,109,36,()=>UndoLook(true),lookRedo.Count>0);
-            Button("LookReset",p,"还原",270,696,110,36,()=>ChangeLook(()=>lookDraft=AppearanceRules.Copy(lookOriginal)),LookDirty());
+            Label(p,"人物绘卷",32,24,360,38,27,Gold);
+            Label(p,who+"  /  外观不影响能力",32,68,440,26,15,Muted);
+            Button("LookMale",p,"男性",836,30,82,34,()=>ChangeLook(()=>{lookDraft.sex=0;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==0);
+            Button("LookFemale",p,"女性",926,30,82,34,()=>ChangeLook(()=>{lookDraft.sex=1;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==1);
+            Button("LookClose",p,"关闭",1016,30,72,34,RequestCloseAppearance);
+            var preview=Box("StudioPreview",p,32,112,344,516,PaperInset);
+            DrawRealisticLook(preview,lookCompare?lookOriginal:lookDraft,0,0,344,516,Color.white,lookZoom);
+            Label(p,lookCompare?"原貌对照":"当前形象",32,638,344,24,15,Muted,TextAnchor.MiddleCenter);
+            Button("LookZoom",p,lookZoom?"查看半身":"查看面容",32,674,164,36,()=>{lookZoom=!lookZoom;Draw();});
+            Button("LookCompare",p,lookCompare?"返回预览":"对照原貌",212,674,164,36,()=>{lookCompare=!lookCompare;Draw();});
+            Button("LookUndo",p,"撤销",32,718,104,32,()=>UndoLook(false),lookUndo.Count>0);
+            Button("LookRedo",p,"重做",152,718,104,32,()=>UndoLook(true),lookRedo.Count>0);
+            Button("LookReset",p,"还原",272,718,104,32,()=>ChangeLook(()=>lookDraft=AppearanceRules.Copy(lookOriginal)),LookDirty());
             string[] groups={"形貌","五官","设色"};
-            for(int i=0;i<3;i++){int g=i;Button("LookGroup_"+i,p,groups[i],420+i*227,107,215,42,()=>{lookGroup=g;SelectLookCategory(g==0?0:g==1?2:10);},true,lookGroup==i);}
+            for(int i=0;i<3;i++){int g=i;Button("LookGroup_"+i,p,groups[i],424+i*226,112,212,40,()=>{lookGroup=g;SelectLookCategory(g==0?0:g==1?2:10);},true,lookGroup==i);}
             int[] categories=lookGroup==0?new[]{0,1,7}:lookGroup==1?(lookDraft.sex==0?new[]{2,3,4,5,13,6}:new[]{2,3,4,5,13}):new[]{10,12,11,9};
-            for(int i=0;i<categories.Length;i++){int category=categories[i];Button("LookCategory_"+category,p,LookCategoryName(category)+(lookLocks[category]?" · 锁":""),420+i%3*227,168+i/3*43,215,35,()=>SelectLookCategory(category),true,lookCategory==category);}
+            for(int i=0;i<categories.Length;i++){int category=categories[i];Button("LookCategory_"+category,p,LookCategoryName(category)+(lookLocks[category]?" · 锁":""),424+i%3*226,176+i/3*44,212,34,()=>SelectLookCategory(category),true,lookCategory==category);}
             var options=LookOptions(lookCategory);
-            Label(p,LookCategoryName(lookCategory)+" / "+options[LookIndex(lookCategory)],420,270,442,32,21,Gold);
-            Button("LookLock",p,lookLocks[lookCategory]?"已锁定此项":"锁定此项",905,265,181,36,()=>{lookLocks[lookCategory]=!lookLocks[lookCategory];Draw();},true,lookLocks[lookCategory]);
+            Label(p,LookCategoryName(lookCategory)+" / "+options[LookIndex(lookCategory)],424,278,466,32,21,Gold);
+            Button("LookLock",p,lookLocks[lookCategory]?"已锁定":"随机时保留",920,276,168,36,()=>{lookLocks[lookCategory]=!lookLocks[lookCategory];Draw();},true,lookLocks[lookCategory]);
             int pages=(options.Length+3)/4;lookOptionPage=Mathf.Clamp(lookOptionPage,0,pages-1);
             for(int cell=0;cell<4;cell++)
             {
                 int option=lookOptionPage*4+cell;if(option>=options.Length)break;
-                var b=Button("LookOption_"+option,p,"",420+cell%2*341,318+cell/2*137,325,125,()=>ChangeLook(()=>SetLookOption(lookCategory,option)),true,LookIndex(lookCategory)==option);
+                var b=Button("LookOption_"+option,p,"",424+cell%2*342,332+cell/2*136,322,120,()=>ChangeLook(()=>SetLookOption(lookCategory,option)),true,LookIndex(lookCategory)==option);
                 var sample=AppearanceRules.Copy(lookDraft);if(lookCategory==13)sample.ears=option;else sample.parts[lookCategory]=option;
-                DrawRealisticLook(b.transform,sample,7,7,79,111,Color.white,lookCategory!=7);
-                Label(b.transform,options[option],103,42,207,36,20,LookIndex(lookCategory)==option?Red:TextColor);
+                bool feature=(lookCategory>=2&&lookCategory<=6)||lookCategory==13;
+                DrawRealisticLook(b.transform,sample,12,12,64,96,Color.white,feature);
+                Label(b.transform,options[option],96,35,210,32,18,LookIndex(lookCategory)==option?Red:TextColor);
+                if(LookIndex(lookCategory)==option)Label(b.transform,"当前选择",96,76,210,23,13,Muted);
             }
             if(pages>1)
             {
-                Button("LookOptionPrevious",p,"上一页",420,594,110,36,()=>{lookOptionPage--;Draw();},lookOptionPage>0);
-                Label(p,(lookOptionPage+1)+" / "+pages+"    共 "+options.Length+" 款",544,597,418,30,17,Muted,TextAnchor.MiddleCenter);
-                Button("LookOptionNext",p,"下一页",976,594,110,36,()=>{lookOptionPage++;Draw();},lookOptionPage<pages-1);
+                Button("LookOptionPrevious",p,"上一页",424,606,110,32,()=>{lookOptionPage--;Draw();},lookOptionPage>0);
+                Label(p,(lookOptionPage+1)+" / "+pages+"  ·  "+options.Length+" 款",546,608,410,28,14,Muted,TextAnchor.MiddleCenter);
+                Button("LookOptionNext",p,"下一页",978,606,110,32,()=>{lookOptionPage++;Draw();},lookOptionPage<pages-1);
             }
-            Button("LookRandom",p,"随机形象",420,645,215,40,RandomizeLook);
-            Button("LookPresets",p,"收藏预设",647,645,215,40,()=>{lookPopup="presets";Draw();});
+            Rule(p,424,658,664);
+            Button("LookRandom",p,"随机形象",424,674,208,36,RandomizeLook);
+            Button("LookPresets",p,"收藏预设",648,674,208,36,()=>{lookPopup="presets";Draw();});
             int locked=LookEditableCategories().Count(n=>lookLocks[n]);
-            Button("LookRandomSettings",p,"随机设定"+(locked>0?" · 锁定 "+locked:""),874,645,212,40,()=>{lookPopup="random";Draw();});
-            if(!string.IsNullOrEmpty(lookNotice))Label(p,lookNotice,420,699,666,28,16,Muted);
-            Rule(p,30,743,1060);
-            Button("LookCancel",p,"取消",420,756,215,38,RequestCloseAppearance);
-            Button("LookApply",p,lookCompare?"先返回预览":atTitle?"保存为开局外观":"应用并保存",647,756,439,38,CommitAppearance,!lookCompare,true);
+            Button("LookRandomSettings",p,"随机设定"+(locked>0?" · 保留 "+locked:""),872,674,216,36,()=>{lookPopup="random";Draw();});
+            Label(p,string.IsNullOrEmpty(lookNotice)?"点选右侧部件，在左侧查看完整搭配。":lookNotice,424,722,664,24,14,Muted);
+            Rule(p,32,768,1056);
+            Button("LookCancel",p,"取消",704,780,112,44,RequestCloseAppearance);
+            Button("LookApply",p,lookCompare?"先返回预览":atTitle?"保存为开局外观":"应用并保存",840,780,248,44,CommitAppearance,!lookCompare,true);
             if(lookPopup!="")DrawLookPopup();
         }
         void DrawLookPopup()

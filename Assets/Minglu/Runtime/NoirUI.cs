@@ -33,12 +33,29 @@ namespace Minglu
         }
         bool RedAction(string name)
         {
-            return new[]{"CommandEnd","CommandExecute","CommandAuthorize","MissionAuthorize","HomeContinue","HomeNew","BeginRun","ConfirmNewRun","RouteReplaceConfirm","LookApply","CommandEventRisk"}.Contains(name);
+            if(name=="LookLoadSlot"||name=="LookSaveSlot")
+            {
+                bool occupied=profile.lookSlots!=null&&profile.lookSlots.Length>lookSlot&&profile.lookSlots[lookSlot]!=null;
+                return name=="LookLoadSlot"?occupied:!occupied;
+            }
+            if(name=="CommandEventSafe"||name=="CommandEventRisk")
+            {
+                int kind=State.command.eventKind;
+                int cost=kind==4?State.command.strategy.config.relocateCost:kind==1?6:kind==2?10:0;
+                bool affordable=State.money-CommandRules.ReservedMoney(State)>=cost;
+                return name=="CommandEventSafe"?affordable:!affordable;
+            }
+            if(name=="CommandEnd"||name=="CommandNextAction")
+            {
+                bool setup=State!=null&&State.command!=null&&State.turn==1&&!State.ended&&!State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)=="");
+                return name=="CommandNextAction"?setup:!setup;
+            }
+            return new[]{"CommandEnd","CommandExecute","CommandAuthorize","MissionAuthorize","HomeContinue","HomeNew","BeginRun","ConfirmNewRun","RouteReplaceConfirm","LookApply","LookRandomFromSettings","LookPopupConfirm"}.Contains(name);
         }
         void DrawNoirRoster()
         {
             Rule(root,32,710,1536);
-            Label(root,"人员名册",32,720,240,24,17,Gold);
+            Label(root,"人员名册",32,720,240,24,15,Muted);
             Label(root,State.agents.Count+" / "+State.command.config.capacity+" 人",262,721,160,24,14,Muted);
             Button("CommandPortrait",root,"编辑外观",1450,716,118,30,()=>OpenAppearance(selectedAgent));
             float cell=1536f/Mathf.Max(8,State.agents.Count);
@@ -47,7 +64,7 @@ namespace Minglu
                 var a=State.agents[i];var person=CommandRules.Person(State,a.id);
                 var card=Button("CommandAgent_"+a.id,root,"",32+i*cell,748,cell-8,89,()=>{selectedAgent=a.id;Draw();},true,a.id==selectedAgent);
                 Portrait(card.transform,a,5,5,50,77);
-                Label(card.transform,a.name,65,4,cell-76,25,18,Gold);
+                Label(card.transform,a.name,65,4,cell-76,25,17,a.id==selectedAgent?Gold:TextColor);
                 Label(card.transform,person.profession+" · "+person.level+"级",65,31,cell-76,22,14,Muted);
                 Label(card.transform,MemberStatus(a),65,55,cell-76,22,13,a.condition==Condition.Active?Teal:Red);
                 Bar(card.transform,65,83,cell-80,a.stamina,100,Teal);
@@ -61,15 +78,15 @@ namespace Minglu
         {
             var p=Rect("DispatchBrief",root,32,436,228,267);
             Rule(p,0,0,228);
-            Label(p,"当前目标",0,17,220,23,14,Muted);Label(p,GateProgress(),0,48,222,71,18,Gold);
+            Label(p,"阶段目标",0,20,220,23,14,Muted);Label(p,GateProgress(),0,52,222,71,17,TextColor);
             var t=State.command.tasks.Where(v=>v.status==0).OrderBy(v=>v.operation==2?0:1).ThenBy(v=>v.actor<0?0:1).ThenBy(v=>v.deadline).FirstOrDefault();
             if(t!=null)
             {
                 var card=Button("BriefTask_"+t.id,p,"",0,130,228,57,()=>{FocusCommandTask(t.id);Draw();});
                 Label(card.transform,t.deadline<=State.turn?"今夜截止":t.actor>=0?"已签发":"待签发",0,0,222,21,13,t.deadline<=State.turn?Red:Muted);
-                Label(card.transform,t.title+"  ›",0,27,222,28,18,Gold);
+                Label(card.transform,t.title+"  ›",0,27,222,28,16,TextColor);
             }
-            Label(p,State.turn<=3?OpeningChecklist():CommandNext(),0,201,224,65,14,Muted);
+            // Detailed next-step guidance lives with the current page, not in a second competing paragraph.
         }
     }
 }

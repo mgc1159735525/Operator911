@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,11 +18,77 @@ namespace Minglu.EditorTools
             var importer=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture)) as TextureImporter;
             Check(importer!=null&&!importer.mipmapEnabled&&importer.npotScale==TextureImporterNPOTScale.None,"atlas resampling enabled: "+name);
         }
+        static Texture2D ReadAtlas(string name)
+        {
+            var texture=new Texture2D(2,2,TextureFormat.RGBA32,false);
+            Check(texture.LoadImage(File.ReadAllBytes("Assets/Minglu/Resources/Minglu/Art/Painted/"+name+".png")),"cannot inspect "+name);
+            return texture;
+        }
+        static float Alpha(Texture2D texture,Rect cell,Vector2 point)
+        {
+            if(point.x<0||point.x>1||point.y<0||point.y>1)return 0;
+            return texture.GetPixelBilinear(cell.x+point.x*cell.width,cell.y+(1-point.y)*cell.height).a;
+        }
+        static void VerifyRegistration()
+        {
+            var hair=ReadAtlas("hair-overlays");var body=ReadAtlas("portrait-bases");var outfit=ReadAtlas("outfit-overlays");
+            try
+            {
+                for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)
+                {
+                    var look=AppearanceRules.Randomize(17,sex);look.parts[0]=face;var feature=PaintedPortraitLayout.Landmarks(look);
+                    var mouth=new Vector2(feature.mouth.x,feature.mouth.y);
+                    Check(Alpha(body,PaintedPortraitLayout.Base(look),mouth)>.90f,"mouth registration falls outside actual painted face");
+                    Check(Alpha(body,PaintedPortraitLayout.Base(look),feature.chin)>.90f,"chin registration falls outside actual painted face");
+                    Check(feature.chin.x>mouth.x+.02f&&feature.chin.y>mouth.y+.05f,"three-quarter mouth/chin separation lost");
+                    for(int h=0;h<4;h++)
+                    {
+                        look.parts[1]=h;var bounds=PaintedPortraitLayout.HairCanvas(look);
+                        for(int anchor=0;anchor<4;anchor++)
+                        {
+                            var source=PaintedPortraitLayout.HairSource(look,anchor);
+                            var expected=new Vector2((source.x-bounds.x)/bounds.width,(source.y-bounds.y)/bounds.height);
+                            var actual=PaintedPortraitLayout.HairSamplingPoint(look,PaintedPortraitLayout.HairTarget(look,anchor));
+                            Check(Vector2.Distance(actual,expected)<.001f,"hair anatomical anchor misses source registration");
+                        }
+                        var opening=PaintedPortraitLayout.HairSamplingPoint(look,new Vector2(feature.earNear.x,feature.earNear.y));
+                        Check(Alpha(hair,PaintedPortraitLayout.Hair(look),opening)<.20f,"registered ear opening contains opaque hair pixels");
+                    }
+                    if(sex==0)for(int beard=1;beard<4;beard++)
+                    {
+                        look.parts[6]=beard;
+                        var atMouth=PaintedPortraitLayout.BeardSamplingPoint(look,mouth);
+                        var atChin=PaintedPortraitLayout.BeardSamplingPoint(look,feature.chin);
+                        Check(Vector2.Distance(atMouth,new Vector2(.400f,.382f))<.0001f,"beard mouth anchor drift");
+                        Check(Vector2.Distance(atChin,new Vector2(.394f,.510f))<.0001f,"beard chin anchor drift");
+                        float last=-10;
+                        for(int sample=0;sample<=40;sample++)
+                        {
+                            float y=mouth.y-.06f+sample*.008f;var q=PaintedPortraitLayout.BeardSamplingPoint(look,new Vector2(mouth.x,y));
+                            Check(q.y>last,"beard folds between lips and jaw");last=q.y;
+                        }
+                    }
+                }
+                Check(PaintedPortraitLayout.FullCrop.xMin<=-.112f&&PaintedPortraitLayout.FullCrop.xMax>=1.158f,"full framing crops authored shoulders");
+                for(int sex=0;sex<2;sex++)foreach(int clothing in new[]{1,5})
+                {
+                    var look=AppearanceRules.Randomize(17,sex);look.parts[7]=clothing;var cell=PaintedPortraitLayout.Outfit(look);
+                    var sliver=new Vector2(.0015f,.65f);var gap=new Vector2(.014f,.65f);var shoulder=new Vector2(.04f,.65f);
+                    Check(Alpha(outfit,cell,sliver)>.10f,"expected detached atlas sliver moved; recheck the source crop");
+                    Check(Alpha(outfit,cell,gap)<.10f,"garment trim no longer falls in the transparent gap");
+                    Check(Alpha(outfit,cell,shoulder)>.90f,"expected garment shoulder moved");
+                    Check(PaintedPortraitLayout.OutfitEdgeAlpha(look,sliver)==0&&PaintedPortraitLayout.OutfitEdgeAlpha(look,shoulder)==1,"garment edge trim removes a shoulder or retains a sliver");
+                }
+                Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 painted mouth/chin samples, 256 hair bindings, 64 actual transparent ear openings, 24 separate lip/jaw bindings; visual sheets still required");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);UnityEngine.Object.DestroyImmediate(outfit);}
+        }
         public static void Verify()
         {
             CheckAtlas("portrait-bases",4,4);CheckAtlas("hair-overlays",4,2);CheckAtlas("outfit-overlays",4,4,1);CheckAtlas("beard-overlays",3,1);
             var shader=Resources.Load<Shader>("Minglu/Art/PaintedPortrait");
             Check(shader!=null&&!ShaderUtil.ShaderHasError(shader),"shader compilation");
+            VerifyRegistration();
             int combinations=0;
             for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int hair=0;hair<4;hair++)for(int outfit=0;outfit<8;outfit++)
             {

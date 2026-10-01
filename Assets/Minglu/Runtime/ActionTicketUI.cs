@@ -17,6 +17,11 @@ namespace Minglu
             var line=Box("ActionCostDivider",button.transform,w-costWidth-20,10,1,h-20,PaperSurface(parent)?PaperLine:Line);
             line.GetComponent<Image>().raycastTarget=false;
             var amount=Label(button.transform,cost,w-costWidth-8,0,costWidth-8,h,16,enabled?TextColor:titleLabel.color,TextAnchor.MiddleRight);
+            if(RedAction(name))
+            {
+                amount.color=titleLabel.color;
+                var divider=titleLabel.color;divider.a=.35f;line.GetComponent<Image>().color=divider;
+            }
             amount.name="ActionCost";return button;
         }
     }

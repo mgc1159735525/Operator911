@@ -20,7 +20,10 @@ namespace Minglu
             s.courierEnabled=false;s.organizationEnabled=false;s.cityEnabled=false;s.dispatchEnabled=false;s.storyEnabled=false;s.campaignEnabled=false;
             s.pendingEvent="";s.agents.Clear();s.config.agents.Clear();s.config.missions.Clear();s.config.events.Clear();s.journal.Clear();s.money=60+(1-s.difficulty)*12;s.progress=0;s.intelligence=0;s.pressure=10+s.difficulty*5;s.turn=1;s.ended=false;
             for(int i=0;i<s.command.config.startingCrew;i++)AddPerson(s);
-            if(s.doctrine==1)foreach(var a in s.agents)a.exposure=10;
+            // The command game starts without delivered intelligence. The old
+            // +2 intelligence perk was discarded by this initialization, leaving
+            // only its exposure penalty; fund the early liaison work instead.
+            if(s.doctrine==1){s.money+=12;foreach(var a in s.agents)a.exposure=10;}
             if(s.doctrine==2){s.pressure=Math.Max(0,s.pressure-8);foreach(var a in s.agents)a.stamina=85;}
             if(crisis){Person(s,s.agents[0].id).leaveUntil=2;s.pressure+=10;}
             EnsureStrategy(s);

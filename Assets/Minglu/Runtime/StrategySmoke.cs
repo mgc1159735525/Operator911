@@ -11,8 +11,14 @@ namespace Minglu
             yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");Capture(Path.ChangeExtension(path,"dispatch.png"));yield return Click("CommandTab_0");State.command.config.eventChance=0;
             yield return Click("CommandMenu");Capture(Path.ChangeExtension(path,"menu.png"));yield return Click("CommandGuide");Capture(Path.ChangeExtension(path,"guide.png"));yield return Click("CommandGuideBack");
             yield return Click("TaskFilter_2");if(root.Find("CommandCenter").GetComponentsInChildren<UnityEngine.UI.Button>().Any(b=>b.name.StartsWith("CommandTask_")))throw new Exception("Authorized filter shows unassigned tasks");yield return Click("TaskFilter_0");Capture(Path.ChangeExtension(path,"tasks.png"));
+            // Three opening tasks now fit without scrolling. Exercise reset
+            // against a genuinely overflowing task list instead of assuming it.
+            int fixtureId=State.command.tasks.Max(t=>t.id)+1;
+            var scrollFixtures=Enumerable.Range(0,3).Select(i=>{var fixture=UnityEngine.JsonUtility.FromJson<CommandTask>(UnityEngine.JsonUtility.ToJson(State.command.tasks[0]));fixture.id=fixtureId+i;return fixture;}).ToList();
+            State.command.tasks.AddRange(scrollFixtures);Draw();yield return null;
             var taskScroll=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CommandTasks");taskScroll.verticalNormalizedPosition=0;
             yield return Click("TaskFilter_1");taskScroll=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CommandTasks");if(taskScroll.verticalNormalizedPosition<.99f)throw new Exception("Task filter did not reset scroll position");yield return Click("TaskFilter_0");
+            foreach(var fixture in scrollFixtures)State.command.tasks.Remove(fixture);Draw();yield return null;
             yield return Click("TaskFilter_2");CommandRules.Notice(State,new CommandNotice{title="定位检查",body="从通知定位未授权任务",tab=0,task=State.command.tasks[0].id});Draw();yield return null;yield return Click("CommandNoticeOpen");
             if(taskFilter!=0||commandTask!=State.command.tasks[0].id)throw new Exception("Notice target hidden by filter");
             yield return Click("MissionBack");Save(false);Load();if(commandTask!=-1||taskFilter!=0)throw new Exception("Stale task selection survived load");
@@ -22,6 +28,10 @@ namespace Minglu
             yield return Click("CommandTab_5");Capture(Path.ChangeExtension(path,"strategy.png"));
             yield return Click("AllianceTask_0");var task=State.command.tasks.Last();if(task.operation!=1)throw new Exception("Alliance UI did not create task");
             yield return Click("CommandCompare_"+task.id);Capture(Path.ChangeExtension(path,"compare.png"));
+            var comparison=root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().First(s=>s.name=="CandidateList");
+            var choice=(UnityEngine.RectTransform)root.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="CompareSelect_3").transform;
+            float overflow=comparison.content.rect.height-comparison.viewport.rect.height;
+            if(overflow>0)comparison.verticalNormalizedPosition=1-UnityEngine.Mathf.Clamp01((-choice.anchoredPosition.y+choice.rect.height*.5f-comparison.viewport.rect.height*.5f)/overflow);
             yield return Click("CompareSelect_3");Capture(Path.ChangeExtension(path,"plan.png"));yield return Click("CommandAuthorize");
             if(task.actor!=3)throw new Exception("Comparison authorized wrong actor");
             yield return Click("CommandTab_1");for(int i=0;i<3;i++){yield return Click("CommandAgent_"+i);yield return Click("RouteSlot_0_"+i);yield return Click("RouteCandidate_"+i);}yield return Click("RouteEnable_0");
