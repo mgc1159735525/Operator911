@@ -19,8 +19,8 @@ namespace Minglu
                 Label(frame,"绘制立绘资源缺失",4,4,w-8,h-8,Mathf.Min(15,Mathf.RoundToInt(w/7)),Red,TextAnchor.MiddleCenter);return;
             }
             var placement=PaintedPortraitLayout.Placement(w,h,headOnly||w<115);
-            PaintedLayer(frame,look,paintedBases,PaintedPortraitLayout.Base(look),placement,PaintedPortraitLayer.Base,tint);
             PaintedLayer(frame,look,paintedHair,PaintedPortraitLayout.Hair(look),placement,PaintedPortraitLayer.Hair,tint,true);
+            PaintedLayer(frame,look,paintedBases,PaintedPortraitLayout.Base(look),placement,PaintedPortraitLayer.Base,tint);
             PaintedLayer(frame,look,paintedOutfits,PaintedPortraitLayout.Outfit(look),placement,PaintedPortraitLayer.Outfit,tint);
             PaintedLayer(frame,look,paintedHair,PaintedPortraitLayout.Hair(look),placement,PaintedPortraitLayer.Hair,tint);
             if(look.sex==0&&look.parts[6]>0)PaintedLayer(frame,look,paintedBeards,PaintedPortraitLayout.Beard(look),placement,PaintedPortraitLayer.Beard,tint);

@@ -16,15 +16,18 @@ namespace Minglu
 
         void RequireProducerNight(int night)
         {
-            if(!root.GetComponentsInChildren<Text>().Any(t=>t.text=="执行报告 / 第 "+night+" 夜"))
-                throw new Exception("Producer report did not show requested night "+night);
+            var titles=root.GetComponentsInChildren<Text>().Where(t=>t.text.StartsWith("值夜报告")).Select(t=>t.text).ToArray();
+            var reports=root.GetComponentsInChildren<ScrollRect>().Where(s=>s.name.StartsWith("CommandReport_")).Select(s=>s.name).ToArray();
+            if(!titles.Contains("值夜报告 / 第 "+night+" 夜")||!reports.Contains("CommandReport_"+night+"_"+reportAll))
+                throw new Exception("Producer report did not show requested night "+night+"; titles="+string.Join(" | ",titles)+"; content="+string.Join(" | ",reports)+"; selectedNight="+reportNight+"; modal="+modal+"; tab="+commandTab);
         }
 
         IEnumerator ProducerSmoke(string path)
         {
             if(string.IsNullOrEmpty(smokeSave))throw new Exception("Producer smoke requires an isolated smoke save");
             yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");
-            if(State.command==null||commandTab!=1)throw new Exception("First run did not open the chain setup page");
+            if(State.command==null||commandTab!=3)throw new Exception("First run did not open the city map");
+            yield return SmokeOpenBusiness(1);
             State.command.config.eventChance=0;
             var route=State.command.routes[0];
 
@@ -53,7 +56,7 @@ namespace Minglu
             if(new[]{route.source,route.liaison,route.courier}.Distinct().Count()!=3)throw new Exception("Picker produced duplicate chain roles");
             yield return Click("RouteEnable_0");
             if(!route.enabled)throw new Exception("Configured chain did not enable");
-            yield return Click("CommandEnd");yield return Click("CommandExecute");
+            yield return SmokeReturnToMap();yield return Click("CommandEnd");yield return Click("CommandExecute");
             if(State.turn!=2)throw new Exception("First-night confirmation did not advance exactly one night");
             yield return DrainCommandNotices(path);
 
@@ -73,7 +76,7 @@ namespace Minglu
             State.journal.Add("[3] 情报链1：交通员岗位暂停：优先执行已授权任务");
             State.journal.Add("[3] 任务到期：街坊急事，压力+3；不会直接锁死全部主线。");
             reportNight=-1;reportAll=false;Draw();yield return null;
-            yield return Click("CommandTab_4");RequireProducerNight(3);
+            yield return SmokeOpenBusiness(4);RequireProducerNight(3);
             yield return Click("ReportSummary");
             var summary=ReportRows(3,false);
             if(!summary.Any(r=>r.Contains("第三夜营救")&&r.Contains("未成")&&r.Contains("额外暴露+4")))throw new Exception("Night summary hid a failed roll and its consequences");
@@ -92,7 +95,7 @@ namespace Minglu
             Capture(Path.ChangeExtension(path,"report.png"));
 
             // The chief editor must be reachable in the live game and preserve the caller when applying.
-            yield return Click("CommandOverview");yield return Click("CommandChiefAppearance");
+            yield return SmokeReturnToMap();yield return Click("CommandOverview");yield return Click("CommandChiefAppearance");
             if(lookTarget!=-1||modal!="appearance")throw new Exception("Chief appearance control opened a teammate instead");
             yield return Click("LookGroup_1");yield return Click("LookCategory_4");
             string original=JsonUtility.ToJson(lookDraft);
@@ -108,7 +111,7 @@ namespace Minglu
             if(modal!="commandOverview"||JsonUtility.ToJson(State.chiefLook)!=edited)throw new Exception("Chief apply lost the overview return location or edited appearance");
             if(JsonUtility.ToJson(PrototypeSave.Read(SavePath).chiefLook)!=edited)throw new Exception("Chief appearance was not persisted by apply");
             Capture(Path.ChangeExtension(path,"chief-overview.png"));
-            yield return Click("OverviewClose");yield return Click("Save");yield return Click("Load");
+            yield return Click("OverviewClose");yield return SmokeSaveLoad();
             if(JsonUtility.ToJson(State.chiefLook)!=edited)throw new Exception("Saved chief appearance changed after reload");
 
             // An ended campaign remains inspectable without changing its outcome or advancing time.

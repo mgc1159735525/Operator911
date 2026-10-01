@@ -20,26 +20,31 @@ namespace Minglu
         // Measured separately for all sixteen paintings. The second row of
         // each sex is 6-11 source pixels higher; one age offset was insufficient.
         static readonly Vector2[,] NearEyes={
-            {new Vector2(.456f,.333f),new Vector2(.445f,.334f),new Vector2(.417f,.335f),new Vector2(.409f,.335f),new Vector2(.456f,.316f),new Vector2(.446f,.311f),new Vector2(.421f,.312f),new Vector2(.414f,.315f)},
-            {new Vector2(.454f,.309f),new Vector2(.446f,.309f),new Vector2(.424f,.312f),new Vector2(.416f,.311f),new Vector2(.450f,.294f),new Vector2(.437f,.293f),new Vector2(.424f,.293f),new Vector2(.421f,.302f)}};
+            {new Vector2(0.504f,0.336f),new Vector2(0.496f,0.336f),new Vector2(0.480f,0.339f),new Vector2(0.473f,0.336f),new Vector2(0.508f,0.315f),new Vector2(0.508f,0.310f),new Vector2(0.477f,0.312f),new Vector2(0.469f,0.315f)},
+            {new Vector2(0.504f,0.312f),new Vector2(0.504f,0.312f),new Vector2(0.477f,0.312f),new Vector2(0.465f,0.312f),new Vector2(0.500f,0.299f),new Vector2(0.496f,0.299f),new Vector2(0.477f,0.299f),new Vector2(0.465f,0.307f)}};
         static readonly Vector2[,] FarEyes={
-            {new Vector2(.291f,.345f),new Vector2(.274f,.345f),new Vector2(.256f,.348f),new Vector2(.239f,.347f),new Vector2(.287f,.330f),new Vector2(.274f,.327f),new Vector2(.255f,.327f),new Vector2(.246f,.327f)},
-            {new Vector2(.288f,.322f),new Vector2(.272f,.322f),new Vector2(.253f,.325f),new Vector2(.243f,.322f),new Vector2(.286f,.312f),new Vector2(.271f,.311f),new Vector2(.255f,.307f),new Vector2(.251f,.314f)}};
+            {new Vector2(0.312f,0.346f),new Vector2(0.297f,0.344f),new Vector2(0.293f,0.349f),new Vector2(0.273f,0.346f),new Vector2(0.312f,0.331f),new Vector2(0.309f,0.328f),new Vector2(0.285f,0.328f),new Vector2(0.277f,0.328f)},
+            {new Vector2(0.316f,0.320f),new Vector2(0.309f,0.320f),new Vector2(0.285f,0.323f),new Vector2(0.270f,0.323f),new Vector2(0.312f,0.312f),new Vector2(0.301f,0.310f),new Vector2(0.277f,0.307f),new Vector2(0.270f,0.315f)}};
         static readonly Vector2[,] Noses={
-            {new Vector2(.312f,.424f),new Vector2(.298f,.423f),new Vector2(.276f,.426f),new Vector2(.262f,.427f),new Vector2(.303f,.407f),new Vector2(.296f,.402f),new Vector2(.275f,.404f),new Vector2(.260f,.410f)},
-            {new Vector2(.314f,.399f),new Vector2(.305f,.402f),new Vector2(.279f,.401f),new Vector2(.268f,.403f),new Vector2(.305f,.387f),new Vector2(.301f,.387f),new Vector2(.283f,.383f),new Vector2(.274f,.388f)}};
+            {new Vector2(0.352f,0.427f),new Vector2(0.340f,0.424f),new Vector2(0.332f,0.427f),new Vector2(0.324f,0.427f),new Vector2(0.352f,0.406f),new Vector2(0.352f,0.404f),new Vector2(0.328f,0.406f),new Vector2(0.309f,0.409f)},
+            {new Vector2(0.355f,0.401f),new Vector2(0.355f,0.404f),new Vector2(0.320f,0.401f),new Vector2(0.312f,0.406f),new Vector2(0.340f,0.391f),new Vector2(0.348f,0.393f),new Vector2(0.320f,0.388f),new Vector2(0.305f,0.391f)}};
         static readonly Vector2[,] Mouths={
-            {new Vector2(.375f,.489f),new Vector2(.365f,.489f),new Vector2(.345f,.489f),new Vector2(.333f,.492f),new Vector2(.376f,.471f),new Vector2(.360f,.466f),new Vector2(.344f,.471f),new Vector2(.342f,.473f)},
-            {new Vector2(.382f,.468f),new Vector2(.363f,.468f),new Vector2(.351f,.471f),new Vector2(.341f,.471f),new Vector2(.380f,.453f),new Vector2(.363f,.453f),new Vector2(.350f,.453f),new Vector2(.350f,.463f)}};
+            {new Vector2(0.414f,0.492f),new Vector2(0.402f,0.492f),new Vector2(0.398f,0.492f),new Vector2(0.387f,0.495f),new Vector2(0.418f,0.474f),new Vector2(0.410f,0.469f),new Vector2(0.391f,0.474f),new Vector2(0.387f,0.477f)},
+            {new Vector2(0.426f,0.474f),new Vector2(0.410f,0.471f),new Vector2(0.398f,0.474f),new Vector2(0.383f,0.477f),new Vector2(0.418f,0.458f),new Vector2(0.410f,0.458f),new Vector2(0.395f,0.458f),new Vector2(0.383f,0.469f)}};
         static readonly Vector2[,] Chins={
-            {new Vector2(.420f,.564f),new Vector2(.411f,.566f),new Vector2(.394f,.566f),new Vector2(.380f,.566f),new Vector2(.425f,.548f),new Vector2(.415f,.546f),new Vector2(.395f,.548f),new Vector2(.386f,.551f)},
-            {new Vector2(.422f,.553f),new Vector2(.411f,.553f),new Vector2(.395f,.556f),new Vector2(.382f,.555f),new Vector2(.427f,.540f),new Vector2(.412f,.540f),new Vector2(.397f,.541f),new Vector2(.389f,.550f)}};
+            {new Vector2(0.457f,0.568f),new Vector2(0.441f,0.568f),new Vector2(0.441f,0.568f),new Vector2(0.430f,0.565f),new Vector2(0.461f,0.549f),new Vector2(0.461f,0.549f),new Vector2(0.434f,0.552f),new Vector2(0.426f,0.555f)},
+            {new Vector2(0.457f,0.555f),new Vector2(0.465f,0.552f),new Vector2(0.441f,0.557f),new Vector2(0.426f,0.557f),new Vector2(0.465f,0.542f),new Vector2(0.457f,0.544f),new Vector2(0.438f,0.544f),new Vector2(0.422f,0.552f)}};
         static readonly Vector2[,] Ears={
-            {new Vector2(.746f,.382f),new Vector2(.734f,.383f),new Vector2(.716f,.386f),new Vector2(.701f,.384f),new Vector2(.746f,.363f),new Vector2(.734f,.365f),new Vector2(.716f,.367f),new Vector2(.699f,.365f)},
-            {new Vector2(.743f,.359f),new Vector2(.732f,.360f),new Vector2(.717f,.365f),new Vector2(.700f,.366f),new Vector2(.740f,.343f),new Vector2(.724f,.345f),new Vector2(.710f,.352f),new Vector2(.697f,.353f)}};
+            {new Vector2(0.758f,0.383f),new Vector2(0.742f,0.383f),new Vector2(0.730f,0.383f),new Vector2(0.719f,0.380f),new Vector2(0.762f,0.359f),new Vector2(0.754f,0.365f),new Vector2(0.730f,0.367f),new Vector2(0.719f,0.362f)},
+            {new Vector2(0.762f,0.357f),new Vector2(0.754f,0.359f),new Vector2(0.742f,0.362f),new Vector2(0.719f,0.365f),new Vector2(0.754f,0.344f),new Vector2(0.746f,0.344f),new Vector2(0.730f,0.349f),new Vector2(0.711f,0.352f)}};
         static readonly Vector2[,] Skulls={
-            {new Vector2(.545f,.107f),new Vector2(.537f,.106f),new Vector2(.513f,.108f),new Vector2(.504f,.111f),new Vector2(.541f,.088f),new Vector2(.529f,.086f),new Vector2(.511f,.087f),new Vector2(.498f,.089f)},
-            {new Vector2(.541f,.084f),new Vector2(.536f,.084f),new Vector2(.508f,.086f),new Vector2(.506f,.086f),new Vector2(.536f,.073f),new Vector2(.524f,.073f),new Vector2(.508f,.075f),new Vector2(.508f,.078f)}};
+            {new Vector2(0.531f,0.102f),new Vector2(0.512f,0.102f),new Vector2(0.496f,0.102f),new Vector2(0.496f,0.104f),new Vector2(0.531f,0.083f),new Vector2(0.520f,0.081f),new Vector2(0.504f,0.081f),new Vector2(0.488f,0.083f)},
+            {new Vector2(0.535f,0.076f),new Vector2(0.535f,0.076f),new Vector2(0.508f,0.078f),new Vector2(0.508f,0.078f),new Vector2(0.531f,0.065f),new Vector2(0.527f,0.065f),new Vector2(0.504f,0.068f),new Vector2(0.500f,0.070f)}};
+        // Neck roots remain in the authored shoulder pose when the face turns.
+        // Independently matched at the painted nape and lower throat.
+        static readonly Vector4[,] NeckGuides={
+            {new Vector4(0.4200f,0.5666f,0.7382f,0.3846f),new Vector4(0.3993f,0.5608f,0.7223f,0.3830f),new Vector4(0.3862f,0.5608f,0.7082f,0.3886f),new Vector4(0.3761f,0.5712f,0.6893f,0.3866f),new Vector4(0.4250f,0.5532f,0.7421f,0.3630f),new Vector4(0.4189f,0.5512f,0.7145f,0.3754f),new Vector4(0.3833f,0.5428f,0.6965f,0.3696f),new Vector4(0.3743f,0.5484f,0.6951f,0.3624f)},
+            {new Vector4(0.4259f,0.5504f,0.7430f,0.3564f),new Vector4(0.4188f,0.5582f,0.7359f,0.3574f),new Vector4(0.3950f,0.5586f,0.7131f,0.3650f),new Vector4(0.3781f,0.5550f,0.6961f,0.3660f),new Vector4(0.4309f,0.5452f,0.7400f,0.3430f),new Vector4(0.4159f,0.5426f,0.7162f,0.3476f),new Vector4(0.3970f,0.5410f,0.7100f,0.3520f),new Vector4(0.3773f,0.5448f,0.6931f,0.3504f)}};
         public static Features Landmarks(Appearance look)
         {
             int s=look.sex,f=look.parts[0];var near=NearEyes[s,f];var far=FarEyes[s,f];var mouth=Mouths[s,f];var ear=Ears[s,f];
@@ -86,6 +91,52 @@ namespace Minglu
         }
         public static Rect BeardRect(Appearance look){return new Rect(0,0,1,1);}
         public static Rect OutfitRect(Appearance look){return new Rect(-.112f,look.sex==0?.424f:.416f,1.27f,1.27f*2f/3);}
+        // Every generated garment has its own collar height. Bind the far tip,
+        // nape tip and opening bottom; a shared rectangle alone cannot do this.
+        static readonly Vector2[,] CollarSources={
+            {new Vector2(.410f,.156f),new Vector2(.697f,.140f),new Vector2(.454f,.408f)},
+            {new Vector2(.420f,.162f),new Vector2(.703f,.137f),new Vector2(.462f,.357f)},
+            {new Vector2(.415f,.162f),new Vector2(.690f,.134f),new Vector2(.447f,.389f)},
+            {new Vector2(.412f,.159f),new Vector2(.680f,.134f),new Vector2(.447f,.382f)},
+            {new Vector2(.410f,.077f),new Vector2(.691f,.042f),new Vector2(.460f,.291f)},
+            {new Vector2(.414f,.077f),new Vector2(.684f,.045f),new Vector2(.481f,.272f)},
+            {new Vector2(.411f,.083f),new Vector2(.687f,.048f),new Vector2(.454f,.297f)},
+            {new Vector2(.412f,.083f),new Vector2(.680f,.048f),new Vector2(.454f,.307f)},
+            {new Vector2(.433f,.083f),new Vector2(.680f,.058f),new Vector2(.475f,.304f)},
+            {new Vector2(.429f,.067f),new Vector2(.671f,.048f),new Vector2(.481f,.220f)},
+            {new Vector2(.421f,.083f),new Vector2(.677f,.058f),new Vector2(.458f,.294f)},
+            {new Vector2(.433f,.077f),new Vector2(.696f,.048f),new Vector2(.463f,.304f)},
+            {new Vector2(.420f,.025f),new Vector2(.672f,.006f),new Vector2(.478f,.239f)},
+            {new Vector2(.411f,.029f),new Vector2(.675f,.016f),new Vector2(.484f,.213f)},
+            {new Vector2(.419f,.029f),new Vector2(.687f,.010f),new Vector2(.473f,.274f)},
+            {new Vector2(.413f,.029f),new Vector2(.673f,.013f),new Vector2(.473f,.271f)}};
+        public static Vector2 CollarSource(Appearance look,int anchor){return CollarSources[look.sex*8+look.parts[7],anchor];}
+        public static Vector2 CollarTarget(Appearance look,int anchor)
+        {
+            var neck=NeckGuides[look.sex,look.parts[0]];var front=new Vector2(neck.x,neck.y);
+            if(anchor==0)return front+new Vector2(-.015f,.025f);
+            if(anchor==1)return new Vector2(neck.z+.010f,neck.w+.165f);
+            // Standing collar and scarf close higher than a crossed robe.
+            float depth=look.parts[7]==1?.090f:look.parts[7]==2||look.parts[7]==5?.125f:.175f;
+            return front+new Vector2(.045f,depth);
+        }
+        public static Vector4 CollarBinding(Appearance look,int anchor)
+        {
+            var source=CollarSource(look,anchor);var rect=OutfitRect(look);var target=CollarTarget(look,anchor);
+            return new Vector4(target.x,target.y,target.x-rect.x-source.x*rect.width,target.y-rect.y-source.y*rect.height);
+        }
+        public static Vector2 OutfitSamplingPoint(Appearance look,Vector2 p)
+        {
+            Vector2 delta=Vector2.zero;float total=0;
+            for(int i=0;i<6;i++)
+            {
+                var b=i<3?CollarBinding(look,i):i==3?new Vector4(.03f,.90f,0,0):i==4?new Vector4(.98f,.90f,0,0):new Vector4(.50f,1.18f,0,0);
+                var d=p-new Vector2(b.x,b.y);d.y*=1.5f;float weight=1/(d.sqrMagnitude+.0000001f);
+                delta+=new Vector2(b.z,b.w)*weight;total+=weight;
+            }
+            var rect=OutfitRect(look);var source=p-delta/total;
+            return new Vector2((source.x-rect.x)/rect.width,(source.y-rect.y)/rect.height);
+        }
         public static Rect Register(Rect frame,Rect registration)
         {return new Rect(frame.x+frame.width*registration.x,frame.y+frame.height*registration.y,frame.width*registration.width,frame.height*registration.height);}
         public static Rect DrawRect(Appearance look,PaintedPortraitLayer layer)
@@ -126,10 +177,14 @@ namespace Minglu
             var p=HairTarget(look,0);float amount=look.parts[1]==0?(look.sex==0?.89f:.84f):look.sex==0&&look.parts[1]==3?.90f:1;
             return new Vector4(p.x,p.y,amount,0);
         }
+        public static float FarScalpPad(Appearance look){return look.sex==0&&look.parts[1]<2?.032f:0;}
         static float Smooth(float a,float b,float v){float t=Mathf.Clamp01((v-a)/(b-a));return t*t*(3-2*t);}
         public static Vector2 HairSamplingPoint(Appearance look,Vector2 p)
         {
             var crown=CrownAdjustment(look);var center=new Vector2(crown.x,crown.y);
+            var f=Landmarks(look);
+            float scalp=(1-Smooth(f.eyeFar.x+.055f,f.eyeNear.x-.015f,p.x))*(1-Smooth(f.browFar.y-.055f,f.browFar.y-.010f,p.y))*Smooth(crown.y-.035f,crown.y+.035f,p.y);
+            p.x+=scalp*FarScalpPad(look);
             float influence=1-Smooth(crown.y-.02f,crown.y+.03f,p.y);
             p=Vector2.Lerp(p,center+(p-center)/crown.z,influence);
             Vector2 delta=Vector2.zero;float total=0;

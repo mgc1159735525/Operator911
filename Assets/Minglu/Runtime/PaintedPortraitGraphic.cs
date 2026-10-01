@@ -18,7 +18,9 @@ namespace Minglu
             owned.SetVector("_LayerRect",new Vector4(registration.x,registration.y,registration.width,registration.height));
             owned.SetVector("_DrawRect",new Vector4(draw.x,draw.y,draw.width,draw.height));
             for(int i=0;i<4;i++)owned.SetVector("_HairAnchor"+i,PaintedPortraitLayout.HairBinding(look,i));
+            for(int i=0;i<3;i++)owned.SetVector("_CollarAnchor"+i,PaintedPortraitLayout.CollarBinding(look,i));
             owned.SetVector("_CrownAdjust",PaintedPortraitLayout.CrownAdjustment(look));
+            owned.SetFloat("_FarScalpPad",PaintedPortraitLayout.FarScalpPad(look));
             owned.SetVector("_BeardMouth",PaintedPortraitLayout.BeardMouth(look));
             owned.SetVector("_BeardChin",PaintedPortraitLayout.BeardChin(look));
             owned.SetVector("_BeardScales",PaintedPortraitLayout.BeardScales(look));
@@ -30,6 +32,7 @@ namespace Minglu
             owned.SetVector("_FeatureCols",new Vector4(look.parts[2],look.parts[3],look.parts[4],look.parts[5]));
             owned.SetFloat("_EarOption",look.ears);
             var landmarks=PaintedPortraitLayout.Landmarks(look);
+            owned.SetVector("_Jaw",new Vector4(landmarks.chin.x,landmarks.chin.y,landmarks.earNear.x,landmarks.earNear.y));
             owned.SetVector("_EyeFar",landmarks.eyeFar);owned.SetVector("_EyeNear",landmarks.eyeNear);
             owned.SetVector("_BrowFar",landmarks.browFar);owned.SetVector("_BrowNear",landmarks.browNear);
             owned.SetVector("_Nose",landmarks.nose);owned.SetVector("_Mouth",landmarks.mouth);

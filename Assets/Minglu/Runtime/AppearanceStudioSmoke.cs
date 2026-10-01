@@ -90,13 +90,13 @@ namespace Minglu
             yield return Click("LookRandom");yield return Click("LookPresets");yield return Click("LookLoadSlot");if(JsonUtility.ToJson(lookDraft)!=JsonUtility.ToJson(profile.lookSlots[0]))throw new Exception("Preset roundtrip changed look");
             yield return Click("LookApply");yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");if(State.chiefLook.sex!=1)throw new Exception("Chief appearance not used");
             Capture(Path.ChangeExtension(path,"compact.png"));yield return Click("CommandOverview");Capture(Path.ChangeExtension(path,"overview.png"));yield return Click("OverviewClose");
-            yield return Click("CommandMemberOpen");Capture(Path.ChangeExtension(path,"member.png"));yield return Click("CommandEditLook");string original=JsonUtility.ToJson(State.agents.Find(a=>a.id==lookTarget).appearance);yield return Click("LookRandom");yield return Click("LookCancel");
+            yield return SmokeOpenBusiness(2);yield return Click("CommandPeopleDetails");Capture(Path.ChangeExtension(path,"member.png"));yield return Click("CommandEditLook");string original=JsonUtility.ToJson(State.agents.Find(a=>a.id==lookTarget).appearance);yield return Click("LookRandom");yield return Click("LookCancel");
             if(lookPopup!="discard")throw new Exception("Dirty preview closed without warning");CheckStudioPanel("LookPopup");yield return RequireStudioPopupBlocksEditor();Capture(Path.ChangeExtension(path,"discard.png"));
             string unsaved=JsonUtility.ToJson(lookDraft);yield return Click("LookPopupKeep");
             if(lookPopup!=""||JsonUtility.ToJson(lookDraft)!=unsaved||JsonUtility.ToJson(State.agents.Find(a=>a.id==lookTarget).appearance)!=original)throw new Exception("Keep editing lost draft or changed the actor");
             yield return Click("LookCancel");yield return Click("LookPopupConfirm");
             if(modal!="memberDetails"||JsonUtility.ToJson(State.agents.Find(a=>a.id==lookTarget).appearance)!=original)throw new Exception("Discard mutated actor or lost return location");
-            yield return Click("MemberDetailsClose");yield return Click("Save");yield return Click("Load");
+            yield return Click("MemberDetailsClose");yield return SmokeSaveLoad();
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",ProfilePath+".tmp",smokeSave,smokeSave+".bak",smokeSave+".tmp"})if(File.Exists(file))File.Delete(file);
             Debug.Log("MINGLU_STUDIO_UI_SUCCESS: home/new-run/full-portrait captures, panel bounds and text, popup raycast isolation, four-choice pagination, random settings, locked random, undo/redo, gender/beard, zoom, comparison, preset confirmation/persistence, chief apply, keep/discard and save/load");
         }

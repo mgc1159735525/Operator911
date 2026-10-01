@@ -40,7 +40,23 @@ namespace Minglu.EditorTools
                     var mouth=new Vector2(feature.mouth.x,feature.mouth.y);
                     Check(Alpha(body,PaintedPortraitLayout.Base(look),mouth)>.90f,"mouth registration falls outside actual painted face");
                     Check(Alpha(body,PaintedPortraitLayout.Base(look),feature.chin)>.90f,"chin registration falls outside actual painted face");
+                    Check(Alpha(body,PaintedPortraitLayout.Base(look),feature.chin+new Vector2(.060f,.085f))>.90f,"continuous painted neck missing under the garment opening");
                     Check(feature.chin.x>mouth.x+.02f&&feature.chin.y>mouth.y+.05f,"three-quarter mouth/chin separation lost");
+                    for(int clothing=0;clothing<8;clothing++)
+                    {
+                        look.parts[7]=clothing;
+                        for(int anchor=0;anchor<3;anchor++)
+                            Check(Vector2.Distance(PaintedPortraitLayout.OutfitSamplingPoint(look,PaintedPortraitLayout.CollarTarget(look,anchor)),PaintedPortraitLayout.CollarSource(look,anchor))<.001f,"garment collar misses its anatomical binding");
+                        // A valid set of anchor points can still fold the fabric
+                        // between them. Check the local sampling orientation.
+                        for(int x=0;x<=8;x++)for(int y=0;y<=8;y++)
+                        {
+                            var p=new Vector2(.30f+x*.07f,.52f+y*.045f);var q=PaintedPortraitLayout.OutfitSamplingPoint(look,p);
+                            var dx=PaintedPortraitLayout.OutfitSamplingPoint(look,p+new Vector2(.001f,0))-q;
+                            var dy=PaintedPortraitLayout.OutfitSamplingPoint(look,p+new Vector2(0,.001f))-q;
+                            Check(dx.x*dy.y-dx.y*dy.x>0,"collar registration folds the garment");
+                        }
+                    }
                     for(int h=0;h<4;h++)
                     {
                         look.parts[1]=h;var bounds=PaintedPortraitLayout.HairCanvas(look);
@@ -79,7 +95,7 @@ namespace Minglu.EditorTools
                     Check(Alpha(outfit,cell,shoulder)>.90f,"expected garment shoulder moved");
                     Check(PaintedPortraitLayout.OutfitEdgeAlpha(look,sliver)==0&&PaintedPortraitLayout.OutfitEdgeAlpha(look,shoulder)==1,"garment edge trim removes a shoulder or retains a sliver");
                 }
-                Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 painted mouth/chin samples, 256 hair bindings, 64 actual transparent ear openings, 24 separate lip/jaw bindings; visual sheets still required");
+                Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 continuous necks, 384 collar bindings without fabric folds, 256 hair bindings, 64 actual transparent ear openings, 24 separate lip/jaw bindings; visual sheets still required");
             }
             finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);UnityEngine.Object.DestroyImmediate(outfit);}
         }

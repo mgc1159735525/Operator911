@@ -76,7 +76,7 @@ namespace Minglu
         }
         void DrawNoirBrief()
         {
-            var p=Rect("DispatchBrief",root,32,436,228,267);
+            var p=Rect("DispatchBrief",root,32,436,228,386);
             Rule(p,0,0,228);
             Label(p,"阶段目标",0,20,220,23,14,Muted);Label(p,GateProgress(),0,52,222,71,17,TextColor);
             var t=State.command.tasks.Where(v=>v.status==0).OrderBy(v=>v.operation==2?0:1).ThenBy(v=>v.actor<0?0:1).ThenBy(v=>v.deadline).FirstOrDefault();
@@ -86,7 +86,9 @@ namespace Minglu
                 Label(card.transform,t.deadline<=State.turn?"今夜截止":t.actor>=0?"已签发":"待签发",0,0,222,21,13,t.deadline<=State.turn?Red:Muted);
                 Label(card.transform,t.title+"  ›",0,27,222,28,16,TextColor);
             }
-            // Detailed next-step guidance lives with the current page, not in a second competing paragraph.
+            Button("CommandOverview",p,"组织概况  ›",-14,210,242,32,()=>{modal="commandOverview";Draw();});
+            Label(p,"下一步",0,264,228,22,14,Muted);
+            Label(p,CommandNext(),0,296,228,90,14,Muted);
         }
     }
 }

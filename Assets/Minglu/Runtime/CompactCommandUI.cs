@@ -19,7 +19,7 @@ namespace Minglu
             Label(p,member.policy==1?"优先恢复与处理家事；本夜不执行任务，链条岗位暂停。":member.policy==2?"空闲时主动发现地方事务；仍需你的授权，不直接产出情报。":"兼顾表身份工作与休养；空闲时恢复状态，积累身份经验。",28,542,844,52,17,Muted);
             Button("CommandEmployment",p,CommandRules.HasInstitution(member)?"已任职 · 可担任情报链内线":"建立机构任职 / 查看任职任务  ›",28,621,548,45,OpenEmployment,!CommandRules.HasInstitution(member));
             Button("CommandEditLook",p,"编辑人物外观  ›",596,621,276,45,()=>OpenAppearance(a.id));
-            Button("MemberDetailsClose",p,"返回指挥",28,720,276,48,()=>{modal="";Draw();});
+            Button("MemberDetailsClose",p,"返回"+CommandPageName(commandTab),28,720,276,48,()=>{modal="";Draw();});
         }
         void DrawCommandOverview()
         {
@@ -32,7 +32,7 @@ namespace Minglu
             Label(p,"完成任务 "+State.command.completed+" / 送达情报 "+State.command.delivered+"\n在岗身份2级以上 "+State.command.people.Count(x=>x.level>=2&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人 / 3级以上 "+State.command.people.Count(x=>x.level>=3&&CommandRules.Agent(State,x.id).condition==Condition.Active)+"人",236,236,636,62,18);
             Label(p,"银两：可用 "+(State.money-CommandRules.ReservedMoney(State))+" / 已预留 "+CommandRules.ReservedMoney(State)+"\n情报：可用 "+(State.intelligence-CommandRules.ReservedIntel(State))+" / 已预留 "+CommandRules.ReservedIntel(State)+"\n压力 "+State.pressure+" / 追查 "+State.command.strategy.trace+" / 民心 "+State.command.strategy.hearts,236,334,636,93,18,Muted);
             Label(p,"可用资源已扣除任务预留。撤回任务可释放预算；空闲成员自动恢复状态并积累身份经验。",28,494,844,62,17,Muted);
-            Button("OverviewClose",p,"返回指挥",28,610,276,48,()=>{modal="";Draw();});
+            Button("OverviewClose",p,"返回"+CommandPageName(commandTab),28,610,276,48,()=>{modal="";Draw();});
         }
     }
 }

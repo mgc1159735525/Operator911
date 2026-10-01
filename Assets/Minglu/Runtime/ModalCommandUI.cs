@@ -38,6 +38,9 @@ namespace Minglu
             if(modal=="missionPlan"){CloseTaskDialog();Draw();return true;}
             if(modal=="compareCandidates"){modal="missionPlan";Draw();return true;}
             if(modal=="institutionPicker"){modal="memberDetails";Draw();return true;}
+            if(modal=="commandHelp"){modal="menu";Draw();return true;}
+            if(modal=="commandSettings"){modal="menu";Draw();return true;}
+            if(modal==""&&commandTab!=3){OpenCommandPage(3);return true;}
             return false;
         }
         void DrawRouteDetails()
