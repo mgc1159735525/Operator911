@@ -46,18 +46,21 @@ namespace Minglu
         {
             var t=State.command.tasks.FirstOrDefault(v=>v.id==commandTask&&v.status==0);if(t==null){modal="";return;}
             var p=CommandModal("比较负责人 / "+t.title,706);
-            Label(p,"按可用性与成功率排序；同时留意已有岗位。",28,96,844,26,17,Muted);
+            Label(p,"当前指令："+(t.reconnaissance?"调查目标 · 使用情报能力":"执行目标 · 使用"+CommandRules.Skills[t.skill])+"。按可用性与成功率排序，留意岗位代价。",28,96,844,38,17,Muted);
             var people=State.agents.OrderBy(a=>CommandRules.TaskError(State,a.id,t)==""?0:1).ThenByDescending(a=>CommandRules.TaskDice(State,a,t)).ToList();
-            var list=Scroll(p,"CandidateList",28,146,844,440,people.Count*110);
+            var list=Scroll(p,"CandidateList",28,146,844,440,people.Count*126);
             for(int i=0;i<people.Count;i++)
             {
-                var a=people[i];string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t),y=i*110;
-                Label(list,a.name+" · "+CommandRules.Person(State,a.id).profession+" "+CommandRules.Person(State,a.id).level+"级",0,y+6,488,30,21,Gold);
-                Label(list,(DispatchRules.Probability(dice,t.required)*100).ToString("0.#")+"%",512,y+6,130,32,24,TextColor);
-                Label(list,dice+" 骰 / 需 "+t.required+" 成功",512,y+46,130,22,14,Muted);
-                Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用联络岗位":"可用 · "+CommandRole(a.id)+"，本夜该岗位等待",0,y+50,488,45,16,error==""?Muted:Red);
+                var a=people[i];string error=CommandRules.TaskError(State,a.id,t);int dice=CommandRules.TaskDice(State,a,t),y=i*126;
+                Portrait(list,a,0,y+6,50,73);
+                Label(list,a.name+" · "+CommandRules.Person(State,a.id).profession+" "+CommandRules.Person(State,a.id).level+"级",66,y+3,424,28,20,Gold);
+                Label(list,"情报 "+a.intel+" / 潜行 "+a.stealth+" / 说服 "+a.persuade+" / 组织 "+a.organize+" · 体力 "+a.stamina,66,y+35,424,24,13,Muted);
+                Label(list,(DispatchRules.Probability(dice,CommandRules.ActionRequired(t))*100).ToString("0.#")+"%",512,y+6,130,32,24,TextColor);
+                Label(list,dice+" 骰 / 需 "+CommandRules.ActionRequired(t)+" 成功",512,y+46,130,22,14,Muted);
+                Label(list,"暴露 "+a.exposure+" → "+UnityEngine.Mathf.Min(100,a.exposure+CommandRules.TaskExposure(State,a,t)),512,y+76,140,22,13,Muted);
+                Label(list,error!=""?error:CommandRole(a.id)=="机动成员"?"可用 · 不占用联络岗位":"可用 · "+CommandRole(a.id)+"，本夜该岗位等待",66,y+65,424,52,15,error==""?Muted:Red);
                 Button("CompareSelect_"+a.id,list,"选此人",668,y+21,144,40,()=>{selectedAgent=a.id;modal="missionPlan";Draw();},error=="");
-                Rule(list,0,y+104,812);
+                Rule(list,0,y+122,812);
             }
             Button("CompareBack",p,"返回任务",28,626,276,48,()=>{modal="missionPlan";Draw();});
         }

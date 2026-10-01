@@ -10,6 +10,36 @@ namespace Minglu.EditorTools
         static int checks;
         static void Check(bool ok,string label){if(!ok)throw new Exception("Mission: "+label);checks++;}
         static RunState Fresh(){var c=CampaignRules.Load();var s=RunLifecycle.Create(CampaignRules.BuildConfig(ConfigStore.Load(),c),911,1,0,false);CommandRules.Initialize(s);s.command.config.eventChance=0;return s;}
+        static void VerifyRecon()
+        {
+            var s=Fresh();var t=s.command.tasks[0];var a=s.agents[0];
+            t.level=4;t.profession="药师";t.required=6;t.skill=1;t.deadline=8;t.reconnaissance=true;
+            a.intel=6;a.stealth=1;s.random=1;
+            Check(CommandRules.ActionSkill(t)==0&&CommandRules.ActionRequired(t)==1,"Recon uses intelligence and one success");
+            Check(CommandRules.Assign(s,a.id,t.id)=="","Analyst may investigate without target execution identity");
+            int progress=s.progress,completed=s.command.completed,intel=s.intelligence,money=s.money;
+            t.plan=1;
+            var saved=JsonUtility.FromJson<RunState>(JsonUtility.ToJson(s));CommandRules.Validate(saved);
+            Check(saved.command.tasks[0].reconnaissance&&CommandRules.ReservedMoney(saved)==4,"Recon order and reservation survive reload");
+            CommandRules.Resolve(s);CommandRules.Resolve(saved);
+            Check(t.reconComplete&&!t.reconnaissance&&t.actor==-1,"Recon result returns target to delegation");
+            Check(t.status==0&&t.stepsDone==0&&s.progress==progress&&s.command.completed==completed&&s.intelligence==intel,"Recon cannot complete stages, grant rewards or bypass intel chain");
+            Check(s.money==money-4&&a.stamina==86,"Recon consumes one worker night and its budget once");
+            Check(JsonUtility.ToJson(s.command)==JsonUtility.ToJson(saved.command)&&s.random==saved.random,"Recon save preserves deterministic execution");
+            t.level=1;t.profession="";t.required=1;t.plan=0;
+            var other=s.agents[1];int prepared=CommandRules.TaskDice(s,other,t),exposure=CommandRules.TaskExposure(s,other,t);
+            t.reconComplete=false;
+            Check(prepared==CommandRules.TaskDice(s,other,t)+1&&exposure==Math.Max(1,CommandRules.TaskExposure(s,other,t)-3),"Target preparation transfers to another executor with matching forecast");
+            t.reconComplete=true;t.reconnaissance=true;
+            Check(CommandRules.Assign(s,other.id,t.id).Contains("已调查"),"Cannot stack completed reconnaissance");
+            t.reconComplete=false;t.deadline=s.turn;
+            Check(CommandRules.Assign(s,other.id,t.id).Contains("剩余夜数"),"Recon cannot consume last executable night");
+            s=Fresh();t=s.command.tasks[0];t.reconnaissance=true;t.deadline=8;t.plan=0;t.intelSupport=false;a=s.agents[0];a.intel=1;s.random=2;
+            // Seed 2 yields a failed first d6; further random draws are irrelevant.
+            Check(CommandRules.Assign(s,a.id,t.id)=="","Failed recon fixture authorizes");
+            CommandRules.Resolve(s);
+            Check(!t.reconComplete&&!t.reconnaissance&&t.actor==-1&&t.status==0&&t.lastResult.Contains("调查未成"),"Failed investigation gives no bonus and remains retryable");
+        }
         public static void Verify()
         {
             checks=0;var s=Fresh();var t=s.command.tasks.First(x=>x.level==1);var a=s.agents[0];
@@ -50,7 +80,7 @@ namespace Minglu.EditorTools
             CommandRules.Resolve(s);CommandRules.Resolve(loaded);Check(s.random==loaded.random&&JsonUtility.ToJson(s.command)==JsonUtility.ToJson(loaded.command),"Mission save preserves deterministic future");
             s=Fresh();s.command.missionRevision=0;s.command.tasks[0].plan=0;s.command.tasks[0].intelSupport=false;CommandRules.Validate(s);Check(s.command.missionRevision==1&&s.command.config.templates.Count==14,"Old mission config migrates");
             var config=JsonUtility.FromJson<CommandConfig>(Resources.Load<TextAsset>("Minglu/Config/command_config").text);config.templates[0].followup=config.templates[0].title;bool rejected=false;try{CommandRules.ValidateConfig(config);}catch{rejected=true;}Check(rejected,"Cyclic followups rejected");
-            File.Delete(file);if(File.Exists(file+".bak"))File.Delete(file+".bak");Debug.Log("MINGLU_MISSION_VERIFY_SUCCESS: "+checks+" mission checks");
+            VerifyRecon();File.Delete(file);if(File.Exists(file+".bak"))File.Delete(file+".bak");Debug.Log("MINGLU_MISSION_VERIFY_SUCCESS: "+checks+" mission checks");
         }
         public static void BatchDeliver(){try{Verify();CommandVerification.Verify();PrototypeTools.BatchBuild();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
     }

@@ -119,5 +119,27 @@ namespace Minglu
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",ProfilePath+".tmp",smokeSave,smokeSave+".bak",smokeSave+".tmp"})if(File.Exists(file))File.Delete(file);
             Debug.Log("MINGLU_MAP_DESK_UI_SUCCESS: persistent map, five business dialogs, raycast isolation, task authorize/revoke, detail return context, settings/save/load/guide/title/continue, unchanged time/resources");
         }
+        IEnumerator ReconDeskSmoke(string path)
+        {
+            if(string.IsNullOrEmpty(smokeSave))throw new Exception("Recon smoke requires isolated saves");
+            yield return Click("HomeNew");seedText="911";yield return Click("BeginRun");State.command.config.eventChance=0;
+            var t=State.command.tasks[0];t.deadline=8;selectedAgent=0;State.agents[0].intel=6;State.random=1;
+            yield return SmokeOpenBusiness(0);yield return Click("CommandTask_"+t.id);yield return Click("MissionModeRecon");
+            if(!t.reconnaissance)throw new Exception("Recon mode button did not switch action");
+            yield return RequireMapDeskBlocked();Capture(Path.ChangeExtension(path,"recon-plan.png"));
+            yield return Click("CommandCompare_"+t.id);Capture(Path.ChangeExtension(path,"recon-candidates.png"));
+            yield return Click("CompareSelect_0");yield return Click("CommandAuthorize");
+            if(t.actor!=0||!t.reconnaissance)throw new Exception("Recon was not authorized");
+            yield return SmokeSaveLoad();t=State.command.tasks.First(x=>x.id==t.id);
+            if(!t.reconnaissance||t.actor!=0)throw new Exception("Saved reconnaissance order lost");
+            yield return Click("CommandEnd");yield return Click("CommandExecute");
+            if(!t.reconComplete||t.actor!=-1||t.status!=0)throw new Exception("Investigation did not yield a delegatable target");
+            Capture(Path.ChangeExtension(path,"recon-result.png"));
+            while(State.command.notices.Count>0)yield return Click("CommandNoticeDismiss");
+            yield return SmokeOpenBusiness(0);yield return Click("CommandTask_"+t.id);
+            if(ProducerButton("MissionModeRecon").interactable)throw new Exception("Completed recon can be repeated");
+            Capture(Path.ChangeExtension(path,"prepared-target.png"));
+            Debug.Log("MINGLU_RECON_UI_SUCCESS: mode, comparison, authorization, save/load, nightly result, persistent target advantage, no repeat investigation");
+        }
     }
 }

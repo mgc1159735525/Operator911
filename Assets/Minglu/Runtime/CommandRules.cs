@@ -76,14 +76,15 @@ namespace Minglu
         {
             string error=Availability(s,actor);if(error!="")return error;
             if(t==null||t.status!=0||t.deadline<s.turn)return "任务已结束";
-            if(t.stepsRequired-t.stepsDone>Math.Min(t.deadline,s.config.Value("turns"))-s.turn+1)return "剩余夜数不足以完成后续阶段；请安排其他任务";
-            if(t.operation==4&&(t.target!=actor||HasInstitution(Person(s,actor))))return "任职任务须由尚无敌方任职身份的指定成员本人执行";
+            if(t.reconnaissance&&t.reconComplete)return "目标已调查，改为执行任务；调查收益不能重复叠加";
+            if(t.stepsRequired-t.stepsDone+(t.reconnaissance?1:0)>Math.Min(t.deadline,s.config.Value("turns"))-s.turn+1)return "剩余夜数不足以完成"+(t.reconnaissance?"调查和后续阶段":"后续阶段")+"；请安排其他任务";
+            if(!t.reconnaissance&&t.operation==4&&(t.target!=actor||HasInstitution(Person(s,actor))))return "任职任务须由尚无敌方任职身份的指定成员本人执行";
             if(t.actor>=0&&t.actor!=actor)return "任务已有负责人";
             if(s.command.tasks.Any(x=>x.status==0&&x.actor==actor&&x.id!=t.id))return "成员已有授权任务";
-            var p=Person(s,actor);if(p.level<t.level)return "表身份需达到"+t.level+"级；日常工作可以提升等级";
-            if(!string.IsNullOrEmpty(t.profession)&&p.profession!=t.profession)return "需要表身份："+t.profession;
+            var p=Person(s,actor);if(!t.reconnaissance&&p.level<t.level)return "表身份需达到"+t.level+"级；日常工作可以提升等级";
+            if(!t.reconnaissance&&!string.IsNullOrEmpty(t.profession)&&p.profession!=t.profession)return "需要表身份："+t.profession;
             string resource=TaskResourceError(s,t);if(resource!="")return resource;
-            if(TaskDice(s,Agent(s,actor),t)<t.required)return "骰子不足，成功率为零；换人、筹备或启用情报支援";
+            if(TaskDice(s,Agent(s,actor),t)<ActionRequired(t))return "骰子不足，成功率为零；换人、筹备或启用情报支援";
             return "";
         }
         public static string Assign(RunState s,int actor,int task)
@@ -160,7 +161,14 @@ namespace Minglu
                 busy.Add(id);var a=Agent(s,id);
                 Log(s,"「"+t.title+"」采用"+Plans[t.plan]+"：扣除"+PlanCost(t)+"银两、"+(t.intelSupport?1:0)+"份情报。" );
                 s.money-=PlanCost(t);if(t.intelSupport)s.intelligence--;
-                bool taskSuccess=Roll(s,a,t.skill,t.required,t.title,t);if(t.plan==2)s.pressure=Math.Min(100,s.pressure+2);
+                bool taskSuccess=Roll(s,a,ActionSkill(t),ActionRequired(t),(t.reconnaissance?"目标调查 · ":"")+t.title,t);if(t.plan==2)s.pressure=Math.Min(100,s.pressure+2);
+                if(t.reconnaissance)
+                {
+                    if(taskSuccess){t.reconComplete=true;t.lastResult+="；目标调查完成：后续执行+1骰、暴露−3；未完成任务阶段，不产出库存情报。";}
+                    else{a.exposure=Math.Min(100,a.exposure+2);s.pressure=Math.Min(100,s.pressure+1);t.lastResult+="；调查未成：额外暴露+2、压力+1；可改为执行或再次调查。";}
+                    Log(s,t.lastResult);Notice(s,new CommandNotice{title=taskSuccess?"目标调查有了结果":"目标调查未能完成",body=a.name+"提交「"+t.title+"」调查报告。\n"+(taskSuccess?"执行该目标时额外+1骰、暴露−3，效果保留至任务结束，可交给另一名成员执行。":"未获得调查优势，本夜投入已消耗；是否再次调查取决于剩余期限。")+"\n任务仍需授权执行，第"+t.deadline+"夜截止。",tab=0,task=t.id});
+                    t.actor=-1;t.reconnaissance=false;continue;
+                }
                 if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);a.skillExperience[t.skill]++;if(a.skillExperience[t.skill]>=4){a.skillExperience[t.skill]=0;if(t.skill==0)a.intel=Math.Min(6,a.intel+1);if(t.skill==1)a.stealth=Math.Min(6,a.stealth+1);if(t.skill==2)a.persuade=Math.Min(6,a.persuade+1);if(t.skill==3)a.organize=Math.Min(6,a.organize+1);}Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
                 else{a.exposure=Math.Min(100,a.exposure+t.failExposure);s.pressure=Math.Min(100,s.pressure+2);t.lastResult+="；未成 · 额外暴露+"+t.failExposure+"、压力+2，期限内可重新授权";Log(s,t.lastResult);}
                 t.actor=-1;

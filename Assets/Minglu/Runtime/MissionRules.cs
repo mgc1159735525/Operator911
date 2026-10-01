@@ -10,8 +10,15 @@ namespace Minglu
         public static int ReservedMoney(RunState s,int except=-1){return s.command.tasks.Where(t=>t.status==0&&t.actor>=0&&t.id!=except).Sum(PlanCost);}
         public static int ReservedIntel(RunState s,int except=-1){return s.command.tasks.Count(t=>t.status==0&&t.actor>=0&&t.id!=except&&t.intelSupport);}
         public static int DistrictPenalty(RunState s,CommandTask t){return t.level<=1?0:Mathf.Clamp(s.config.District(t.district).difficulty,0,1);}
-        public static int TaskDice(RunState s,Agent a,CommandTask t){return Math.Max(1,Dice(s,a,t.skill)+(t.plan==0?0:1)+(t.intelSupport?1:0)-DistrictPenalty(s,t)+AllianceDice(s,t));}
-        public static int TaskExposure(RunState s,Agent a,CommandTask t){return Math.Max(1,(Person(s,a.id).temper=="谨慎"?3:5)+Mathf.Clamp(s.config.District(t.district).risk,0,6)+(t.plan==1?-2:t.plan==2?8:0));}
+        public static int ActionSkill(CommandTask t){return t.reconnaissance?0:t.skill;}
+        public static int ActionRequired(CommandTask t){return t.reconnaissance?1:t.required;}
+        public static int TaskDice(RunState s,Agent a,CommandTask t)
+        {
+            EnsureStrategy(s);
+            int alliance=t.reconnaissance?(s.command.strategy.alliances[2]>=s.command.strategy.config.allianceThreshold?1:0):AllianceDice(s,t);
+            return Math.Max(1,Dice(s,a,ActionSkill(t))+(t.plan==0?0:1)+(t.intelSupport?1:0)-DistrictPenalty(s,t)+alliance+(!t.reconnaissance&&t.reconComplete?1:0));
+        }
+        public static int TaskExposure(RunState s,Agent a,CommandTask t){return Math.Max(1,(Person(s,a.id).temper=="谨慎"?3:5)+Mathf.Clamp(s.config.District(t.district).risk,0,6)+(t.plan==1?-2:t.plan==2?8:0)-(t.reconnaissance?2:t.reconComplete?3:0));}
         public static string TaskReward(CommandTask t){return "成果+"+t.reward+" / 银两+"+t.money+(t.pressureRelief>0?" / 压力−"+t.pressureRelief:"")+OperationReward(t);}
         public static string TaskResourceError(RunState s,CommandTask t)
         {

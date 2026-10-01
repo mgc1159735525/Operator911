@@ -74,7 +74,7 @@ namespace Minglu
         }
         bool ChoiceControl(string name)
         {
-            return name.StartsWith("CommandTab_")||name.StartsWith("TaskFilter_")||name.StartsWith("LookGroup_")||name.StartsWith("LookCategory_")||name.StartsWith("MissionPlan_")||name.StartsWith("LifePolicy_")||name.StartsWith("Difficulty_")||name.StartsWith("Doctrine_")||name=="LookMale"||name=="LookFemale"||name=="ReportSummary"||name=="ReportAll"||name=="MissionIntel";
+            return name.StartsWith("CommandTab_")||name.StartsWith("TaskFilter_")||name.StartsWith("LookGroup_")||name.StartsWith("LookCategory_")||name.StartsWith("MissionPlan_")||name.StartsWith("MissionMode")||name.StartsWith("LifePolicy_")||name.StartsWith("Difficulty_")||name.StartsWith("Doctrine_")||name=="LookMale"||name=="LookFemale"||name=="ReportSummary"||name=="ReportAll"||name=="MissionIntel";
         }
         Button PrintButton(string name,Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled,bool selected)
         {

@@ -17,6 +17,7 @@ namespace Minglu
         public int institution;
         public int plan,intelReward,pressureRelief,failExposure=6;
         public bool intelSupport,followupSpawned;
+        public bool reconnaissance,reconComplete;
         public string lastResult="";
         public int operation,target=-1,stepsRequired=1,stepsDone;
     }

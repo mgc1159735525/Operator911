@@ -67,7 +67,7 @@ namespace Minglu
                 Rule(card,0,121,764);Label(card,(index+1).ToString("00"),0,10,28,28,15,Muted);
                 if(focus){var marker=Box("TaskSelection",card,29,8,2,27,Accent);marker.GetComponent<UnityEngine.UI.Image>().raycastTarget=false;}
                 var title=Label(card,t.title,40,3,526,36,focus?25:21,Gold);title.font=titleFont??font;Label(card,(t.deadline<=State.turn?"今夜截止":"剩 "+(t.deadline-State.turn+1)+" 夜"),606,9,154,25,16,t.deadline<=State.turn?Red:Muted);
-                Label(card,State.config.District(t.district).name+" · "+(t.actor<0?"待签发":CommandName(t.actor)+"执行")+(t.stepsRequired>1?" · 阶段 "+t.stepsDone+"/"+t.stepsRequired:""),40,47,720,25,16,t.actor<0?Muted:Teal);
+                Label(card,State.config.District(t.district).name+" · "+(t.actor<0?"待签发":CommandName(t.actor)+(t.reconnaissance?"调查":"执行"))+(t.reconComplete?" · 已调查 +1骰":"")+(t.stepsRequired>1?" · 阶段 "+t.stepsDone+"/"+t.stepsRequired:""),40,47,720,25,16,t.actor<0?Muted:Teal);
                 Button("CommandTask_"+t.id,card,t.actor<0?"打开任务  ›":"查看已签发方案  ›",28,82,224,30,()=>OpenCommandTask(t.id));
                 if(t.actor<0)Button("CommandRecommend_"+t.id,card,"推荐人选  ›",582,82,178,30,()=>OpenCommandTask(t.id,true));
             }
@@ -171,7 +171,7 @@ namespace Minglu
         void DrawCommandConfirm()
         {
             var p=CommandModal("推进一夜前，确认组织安排",750);
-            string orders=string.Join("\n",State.command.tasks.Where(t=>t.status==0&&t.actor>=0).Select(t=>CommandName(t.actor)+" → "+t.title));
+            string orders=string.Join("\n",State.command.tasks.Where(t=>t.status==0&&t.actor>=0).Select(t=>CommandName(t.actor)+" → "+(t.reconnaissance?"调查":"执行")+"「"+t.title+"」"));
             int jobs=State.command.tasks.Count(t=>t.status==0&&t.actor>=0),routes=State.command.routes.Count(r=>r.enabled);
             var orderList=Scroll(p,"NightOrders",28,97,844,150,Mathf.Max(150,(jobs+3)*29));
             Label(orderList,"授权任务 "+jobs+" 项 / 运行链条 "+routes+" 条\n预留："+CommandRules.ReservedMoney(State)+"银两、"+CommandRules.ReservedIntel(State)+"份情报\n"+(orders==""?"没有额外任务：成员按链条和日常政策工作。":orders),0,0,805,Mathf.Max(150,(jobs+3)*29),19);
