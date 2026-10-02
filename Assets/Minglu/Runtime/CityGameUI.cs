@@ -342,6 +342,7 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--task-layout-only")>=0){yield return TaskLayoutSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--recruitment-only")>=0){yield return RecruitmentSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--assignment-only")>=0){yield return AssignmentSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--portrait-combinations-only")>=0){yield return PortraitCombinationsSmoke(path);Application.Quit();yield break;}

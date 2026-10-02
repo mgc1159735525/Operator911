@@ -42,8 +42,13 @@ namespace Minglu
             int turn=State.turn,money=State.money;Draw();yield return null;
             yield return SmokeOpenBusiness(0);yield return AssignmentScrollTo("CommandTasks","CommandRecommend_"+task.id);yield return Click("CommandRecommend_"+task.id);
             if(selectedAgent!=3)throw new Exception("Recommendation preferred a busy chain member over the capable free member");
-            RequireAssignmentTextFits("AssignmentOutcome","AssignmentTiming","AssignmentChainImpact","AssignmentCost","AssignmentWorkload","AssignmentReconValue");
+            RequireAssignmentTextFits("AssignmentOutcome","AssignmentTiming","AssignmentChainImpact","AssignmentCost","AssignmentReconValue","AssignmentRisk","AssignmentLifeAlert","AssignmentBlockReason");
             Capture(Path.ChangeExtension(path,"assignment-plan.png"));
+            yield return Click("MissionImpactDetails");
+            if(modal!="missionImpact")throw new Exception("Task impact details did not open separately");
+            RequireAssignmentTextFits("AssignmentWorkload");
+            yield return Click("MissionImpactBack");
+            if(modal!="missionPlan")throw new Exception("Impact details did not return to the current task");
             yield return Click("CommandCompare_"+task.id);
             if(!AssignmentText("CandidateReason_2").text.Contains("今晚无待办"))throw new Exception("Idle courier was reported as delaying a packet");
             if(!AssignmentText("CandidateReason_1").text.Contains("接头等待"))throw new Exception("Busy liaison did not explain the actual delay");

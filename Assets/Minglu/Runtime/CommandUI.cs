@@ -92,6 +92,8 @@ namespace Minglu
             else if(modal=="routePicker")DrawRoutePicker();
             else if(modal=="routeReplace")DrawRouteReplacement();
             else if(modal=="missionPlan")DrawMissionPlan();
+            else if(modal=="missionImpact")DrawMissionImpact();
+            else if(modal=="missionBackground")DrawMissionBackground();
             else if(modal=="commandConfirm")DrawCommandConfirm();
             else if(modal!=""){modal="";}
             else if(commandTab!=3)DrawCommandBusiness();
@@ -213,9 +215,10 @@ namespace Minglu
             Box("MapNote",panel,x+16,y+mapHeight-44,574,28,Ink);Label(panel,"点选地名查看安排  ·  红色表示今夜必须开始",x+28,y+mapHeight-42,550,26,15,Muted);
         }
         void DrawCommandReport(Transform panel){DrawNightReport(panel);}
-        Transform CommandModal(string title,float height=600)
+        Transform CommandModal(string title,float height=600,float width=900)
         {
-            var shade=Box("CommandShade",root,0,0,1600,900,new Color(.04f,.06f,.07f,.78f));Box("DialogShadow",shade,359,(900-height)/2+10,900,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,350,(900-height)/2,900,height,Panel);DossierHeading(p,title);return p;
+            float x=(1600-width)/2;
+            var shade=Box("CommandShade",root,0,0,1600,900,new Color(.04f,.06f,.07f,.78f));Box("DialogShadow",shade,x+9,(900-height)/2+10,width,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,x,(900-height)/2,width,height,Panel);DossierHeading(p,title,width);return p;
         }
         void DrawCommandConfirm()
         {
