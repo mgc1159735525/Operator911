@@ -21,14 +21,15 @@ namespace Minglu
                     var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});
                     int outfit=(face+offset)%8;
                     look.parts[0]=face;look.parts[1]=(face+offset)%4;look.parts[7]=outfit;look.parts[6]=sex==0?(face+offset)%4:0;
-                    look.parts[5]=face%4;look.ears=offset%4;look.parts[9]=3;look.parts[11]=offset%5;
+                    for(int feature=2;feature<=5;feature++)look.parts[feature]=(face+offset+feature-2)%AppearancePartCatalog.Names(feature).Length;
+                    look.ears=(face+offset)%AppearancePartCatalog.Ears.Length;look.parts[9]=3;look.parts[11]=offset%5;
                     DrawLook(sheet,look,25+face%4*398,53+face/4*420,267,385);
                     DrawLook(sheet,look,306+face%4*398,129+face/4*420,70,103);
                     Label(sheet,"脸 "+(face+1)+"\n衣 "+(outfit+1),306+face%4*398,256+face/4*420,86,55,17,PaperInk);
                 }
                 yield return null;yield return new WaitForEndOfFrame();Capture(Path.ChangeExtension(path,"cross-"+sex+"-"+offset+".png"));
             }
-            Debug.Log("MINGLU_PORTRAIT_COMBINATIONS_UI_SUCCESS: 128 face/outfit pairs at portrait and roster size; visual review required");
+            Debug.Log("MINGLU_PORTRAIT_COMBINATIONS_UI_SUCCESS: 128 face/outfit pairs at portrait and roster size, all eight options of each facial part across every face; visual review required");
         }
     }
 }

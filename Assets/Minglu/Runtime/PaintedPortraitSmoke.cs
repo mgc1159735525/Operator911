@@ -56,7 +56,7 @@ namespace Minglu
                 for(int face=0;face<8;face++)
                 {
                     var look=AppearanceRules.AsRealistic(new Appearance{enabled=true});
-                    look.parts[0]=face;look.parts[1]=1;look.parts[6]=beard;look.parts[5]=face%4;look.parts[9]=3;look.parts[11]=4;
+                    look.parts[0]=face;look.parts[1]=1;look.parts[6]=beard;look.parts[5]=face%AppearancePartCatalog.Mouths.Length;look.parts[9]=3;look.parts[11]=4;
                     DrawRealisticLook(proof,look,25+face%4*398,53+face/4*420,366,385,Color.white,true);
                 }
                 yield return null;yield return new WaitForEndOfFrame();Capture(Path.ChangeExtension(path,"beard-fit-"+beard+".png"));
@@ -81,7 +81,7 @@ namespace Minglu
                 lookDraft=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});
                 lookDraft.parts[0]=1;lookDraft.parts[1]=sex==0?0:1;lookDraft.parts[7]=sex==0?6:0;
                 lookDraft.parts[9]=3;lookDraft.parts[11]=sex==0?3:1;
-                lookCategory=1;lookGroup=0;lookOptionPage=0;lookZoom=false;lookCompare=false;Draw();
+                lookCategory=1;lookGroup=0;lookZoom=false;lookCompare=false;Draw();
                 yield return null;yield return new WaitForEndOfFrame();Capture(Path.ChangeExtension(path,sex==0?"editor-male.png":"editor-female.png"));
             }
             Debug.Log("MINGLU_PAINTED_PORTRAIT_UI_SUCCESS: 64 face/hair/outfit registrations, 8 beard variants, 24 enlarged beard/face registrations, 10 visible facial edits");

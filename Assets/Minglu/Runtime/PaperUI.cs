@@ -67,6 +67,7 @@ namespace Minglu
         bool QuietControl(string name)
         {
             if(name.EndsWith("Back")||name.EndsWith("Close")||name.EndsWith("Cancel"))return true;
+            if(name.StartsWith("LookPrevious_")||name.StartsWith("LookNext_")||name.StartsWith("LookLock_"))return true;
             if(name.StartsWith("RouteDetails_")||name.StartsWith("LookRandomLock_")||name=="LookRandom"||name=="LookPresets"||name=="LookRandomSettings"||name=="LookLock"||name=="LookLockAll"||name=="LookUnlockAll"||name=="LookZoom"||name=="LookCompare"||name=="LookOptionPrevious"||name=="LookOptionNext")return true;
             if(name=="CommandChiefAppearance"||name=="CommandPeopleDetails"||name=="CommandPeopleAppearance"||name=="CommandEditLook"||name=="CommandEmployment"||name=="DistrictOpen"||name=="StrategyDetails"||name=="LookPopupKeep"||name=="LookSaveSlot")return true;
             if(name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes")return true;
@@ -99,6 +100,7 @@ namespace Minglu
             if(artwork&&!enabled)foreground=submit?Hex("DED6C5"):paper?Hex("625F57"):Hex("A3A294");
             bool left=nav||name.StartsWith("DistrictTask_")||name=="DistrictAffairs"||name=="DistrictRoutes"||name=="CommandMemberOpen"||name=="CommandOverview"||name=="CommandHelpRoute"||name=="CommandPlan"||name.StartsWith("CommandTask_")||name.StartsWith("CommandRecommend_")||name.StartsWith("CommandCompare_")||name.StartsWith("CommandCancel_");
             var label=Label(r,text,nav?42:left?14:8,0,w-(nav?48:left?26:16),h,nav?17:w<60?14:17,foreground,left?TextAnchor.MiddleLeft:TextAnchor.MiddleCenter);label.color=foreground;
+            if(name.StartsWith("LookPrevious_")||name.StartsWith("LookNext_"))label.fontSize=24;
             if(choice)
             {
                 if(nav&&selected){var mark=Box("SelectionMark",r,0,7,3,h-14,Gold);mark.GetComponent<Image>().raycastTarget=false;}

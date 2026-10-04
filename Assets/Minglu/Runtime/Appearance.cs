@@ -13,7 +13,7 @@ namespace Minglu
     {
         public static readonly string[] Labels={"脸型","发式","眼睛","眉形","鼻形","嘴形","胡须","服装","饰物","背景","肤色","衣色","发色"};
         public static readonly string[][] Names={
-            new[]{"清秀","方正","圆润","修长","书卷","敦厚","历练","清癯"},new[]{"束髻","侧分","披发","短发"},new[]{"平静","锐利","温和","凝视"},new[]{"平眉","剑眉","细眉","浓眉"},new[]{"挺直","小巧","宽鼻","鹰鼻"},new[]{"沉静","微笑","严肃","丰唇"},new[]{"无","短须","长须","八字须"},new[]{"交领袍","立领衫","披肩","行装","马甲","围巾衫","商服","挎包装"},new[]{"无","圆镜","耳坠","刀疤"},new[]{"墨竹","烟蓝","赭石","纸白"},new[]{"瓷白","暖玉","小麦","深棕"},new[]{"青黛","松绿","朱砂","沙金","墨灰","绛紫"},new[]{"乌黑","栗棕","霜灰","银白"}};
+            new[]{"清秀","方正","圆润","修长","书卷","敦厚","历练","清癯"},new[]{"束髻","侧分","披发","短发"},AppearancePartCatalog.Eyes,AppearancePartCatalog.Brows,AppearancePartCatalog.Noses,AppearancePartCatalog.Mouths,new[]{"无","短须","长须","八字须"},new[]{"交领袍","立领衫","披肩","行装","马甲","围巾衫","商服","挎包装"},new[]{"无","圆镜","耳坠","刀疤"},new[]{"墨竹","烟蓝","赭石","纸白"},new[]{"瓷白","暖玉","小麦","深棕"},new[]{"青黛","松绿","朱砂","沙金","墨灰","绛紫"},new[]{"乌黑","栗棕","霜灰","银白"}};
         public static Appearance Copy(Appearance a){return a==null?new Appearance():JsonUtility.FromJson<Appearance>(JsonUtility.ToJson(a));}
         public static Appearance AsRealistic(Appearance a)
         {
@@ -25,7 +25,7 @@ namespace Minglu
         public static void Validate(Appearance a)
         {
             if(a==null)return;
-            if(a.ears<0||a.ears>3)throw new ArgumentException("耳部索引无效。");
+            if(a.ears<0||a.ears>=AppearancePartCatalog.Ears.Length)throw new ArgumentException("耳部索引无效。");
             if(a.style<0||a.style>1||a.sex<0||a.sex>1)throw new ArgumentException("外观风格或性别无效。");
             if(a.parts==null||a.parts.Length!=Names.Length)throw new ArgumentException("外观部件数量无效。");
             for(int i=0;i<a.parts.Length;i++)if(a.parts[i]<0||a.parts[i]>=Names[i].Length)throw new ArgumentException("外观部件索引无效："+Labels[i]);
@@ -34,7 +34,7 @@ namespace Minglu
         {
             var random=new System.Random(seed);var a=new Appearance{enabled=true,style=1,portraitVersion=15};
             for(int i=0;i<a.parts.Length;i++)a.parts[i]=random.Next(Names[i].Length);
-            a.featureEditing=true;a.ears=random.Next(4);
+            a.featureEditing=true;a.ears=random.Next(AppearancePartCatalog.Ears.Length);
             a.parts[12]=a.parts[0]%4==3?2+random.Next(2):random.Next(2);
             a.sex=sex<0?random.Next(2):sex;a.groomingEditing=true;if(a.sex==1)a.parts[6]=0;Validate(a);return a;
         }

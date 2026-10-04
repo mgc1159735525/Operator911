@@ -14,7 +14,7 @@ namespace Minglu
         string[] LookOptions(int n)
         {
             if(lookDraft.style==1&&n==0)return lookDraft.sex==0?new[]{"清俊青年","端正壮年","坚毅中年","沉稳长者","书生","匠人","旅者","长者"}:new[]{"清秀青年","温婉壮年","干练中年","沉静长者","亲和","干练","坚韧","慈和"};
-            if(lookDraft.style==1&&((n>=2&&n<=5)||n==13))return n==2?new[]{"原生眼形","细长","圆润","舒展"}:n==3?new[]{"原生眉形","平缓","上扬","修长"}:n==4?new[]{"原生鼻形","窄鼻","宽鼻","修长"}:n==5?new[]{"原生嘴形","收窄","舒展","丰唇"}:new[]{"原生耳形","贴耳","宽耳","修长"};
+            if((n>=2&&n<=5)||n==13)return AppearancePartCatalog.Names(n);
             if(lookDraft.style==1&&n==1)return lookDraft.sex==0?new[]{"束髻","短束","披发","巾帽"}:new[]{"高髻","低髻","侧髻","半束"};
             return AppearanceRules.Names[n];
         }

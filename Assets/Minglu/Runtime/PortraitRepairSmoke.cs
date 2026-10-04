@@ -14,14 +14,14 @@ namespace Minglu
                 yield return Click(sex==0?"LookMale":"LookFemale");
                 foreach(int category in new[]{2,3,4,5,13})
                 {
-                    yield return Click("LookCategory_"+category);yield return Click("LookOption_0");
+                    yield return StudioSetOption(category,0);
                     var before=Path.ChangeExtension(path,"s"+sex+"-c"+category+"-before.png");Capture(before);
-                    yield return Click("LookOption_3");var after=Path.ChangeExtension(path,"s"+sex+"-c"+category+"-after.png");Capture(after);
+                    yield return StudioSetOption(category,3);var after=Path.ChangeExtension(path,"s"+sex+"-c"+category+"-after.png");Capture(after);
                     if(!FacePixelsDiffer(before,after))throw new Exception("Local morph did not render: "+category);
                 }
             }
-            yield return Click("LookSaveSlot");string expected=JsonUtility.ToJson(lookDraft);
-            yield return Click("LookRandom");yield return Click("LookLoadSlot");
+            yield return Click("LookPresets");yield return Click("LookSaveSlot");string expected=JsonUtility.ToJson(lookDraft);yield return Click("LookPopupBack");
+            yield return Click("LookRandom");yield return Click("LookPresets");yield return Click("LookLoadSlot");
             if(JsonUtility.ToJson(lookDraft)!=expected)throw new Exception("Morph preset mismatch");
             yield return Click("LookApply");yield return Click("HomeAppearance");
             if(JsonUtility.ToJson(lookDraft)!=expected)throw new Exception("Morph save mismatch");

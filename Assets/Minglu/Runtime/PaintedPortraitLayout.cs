@@ -48,13 +48,53 @@ namespace Minglu
         public static Features Landmarks(Appearance look)
         {
             int s=look.sex,f=look.parts[0];var near=NearEyes[s,f];var far=FarEyes[s,f];var mouth=Mouths[s,f];var ear=Ears[s,f];
+            // Keep the measured feature centres, but fit each edit's footprint
+            // to this face's eye span and lower-face height. A shared footprint
+            // pulled an older/narrower face's neighbouring features into edits.
+            float width=Mathf.Clamp((near.x-far.x)/.192f,.90f,1.08f);
+            float lower=Mathf.Clamp((Chins[s,f].y-mouth.y)/.076f,.90f,1.10f);
+            float earHeight=Mathf.Clamp((ear.y-Skulls[s,f].y)/.281f,.93f,1.06f);
             return new Features{
-                eyeFar=new Vector4(far.x,far.y,.050f,.027f),eyeNear=new Vector4(near.x,near.y,.070f,.031f),
-                browFar=new Vector4(far.x-.006f,far.y-.034f,.057f,.024f),browNear=new Vector4(near.x-.004f,near.y-.038f,.079f,.025f),
-                nose=new Vector4(Noses[s,f].x,Noses[s,f].y,.070f,.068f),mouth=new Vector4(mouth.x,mouth.y,.089f,.033f),
-                earFar=new Vector4(far.x-.040f,ear.y,.018f,.032f),earNear=new Vector4(ear.x,ear.y,.061f,.065f),
+                eyeFar=new Vector4(far.x,far.y,.050f*width,.027f),eyeNear=new Vector4(near.x,near.y,.070f*width,.031f),
+                browFar=new Vector4(far.x-.006f,far.y-.034f,.057f*width,.024f),browNear=new Vector4(near.x-.004f,near.y-.038f,.079f*width,.025f),
+                nose=new Vector4(Noses[s,f].x,Noses[s,f].y,.070f*width,.068f*lower),mouth=new Vector4(mouth.x,mouth.y,.089f*width,.033f*lower),
+                earFar=new Vector4(far.x-.040f,ear.y,.018f*width,.032f*earHeight),earNear=new Vector4(ear.x,ear.y,.061f*width,.065f*earHeight),
                 chin=Chins[s,f],skull=Skulls[s,f],hairline=new Vector2(near.x+.018f,near.y-.106f),
-                lipFar=mouth+new Vector2(-.054f,-.002f),lipNear=mouth+new Vector2(.073f,.002f)};
+                lipFar=mouth+new Vector2(-.054f*width,-.002f),lipNear=mouth+new Vector2(.073f*width,.002f)};
+        }
+        static Vector2 Morph(Vector2 p,Vector4 feature,Vector4 shape,float tiltMultiplier=1)
+        {
+            var d=p-new Vector2(feature.x,feature.y);
+            float weight=1-Smooth(.12f,1,new Vector2(d.x/feature.z,d.y/feature.w).magnitude);
+            var transformed=new Vector2(d.x/shape.x,d.y/shape.y+d.x*shape.z*tiltMultiplier);
+            return (transformed-d)*weight;
+        }
+        // This inverse mapping is shared by the face and facial hair. In
+        // particular a nose edit must also move the moustache's upper edge.
+        public static Vector2 FeatureSamplingPoint(Appearance look,Vector2 p)
+        {
+            var f=Landmarks(look);var eye=AppearancePartCatalog.Shape(2,look.parts[2]);var brow=AppearancePartCatalog.Shape(3,look.parts[3]);
+            return p+Morph(p,f.eyeFar,eye,.70f)+Morph(p,f.eyeNear,eye,-1)
+                +Morph(p,f.browFar,brow,.70f)+Morph(p,f.browNear,brow,-1)
+                +Morph(p,f.nose,AppearancePartCatalog.Shape(4,look.parts[4]))
+                +Morph(p,f.mouth,AppearancePartCatalog.Shape(5,look.parts[5]))
+                +EarOffset(look,p,f);
+        }
+        static Vector2 EarOffset(Appearance look,Vector2 p,Features f)
+        {
+            var shape=AppearancePartCatalog.Shape(13,look.ears);
+            return Morph(p,f.earFar,shape)+Morph(p,f.earNear,shape);
+        }
+        public static Vector2 EarSamplingPoint(Appearance look,Vector2 p){return p+EarOffset(look,p,Landmarks(look));}
+        public static float HairEarAlpha(Appearance look,Vector2 p)
+        {
+            var f=Landmarks(look);var sample=EarSamplingPoint(look,p)-new Vector2(f.earNear.x,f.earNear.y);
+            return Smooth(.45f,1,new Vector2(sample.x/(f.earNear.z*.58f),sample.y/(f.earNear.w*.65f)).magnitude);
+        }
+        public static float BeardLipAlpha(Appearance look,Vector2 p)
+        {
+            var f=Landmarks(look);var sample=FeatureSamplingPoint(look,p)-new Vector2(f.mouth.x,f.mouth.y);
+            return Smooth(.65f,1,new Vector2(sample.x/(f.mouth.z*(.058f/.089f)),sample.y/(f.mouth.w*(.010f/.033f))).magnitude);
         }
         public static Rect Cell(int column,int row,int columns,int rows)
         {
@@ -80,6 +120,11 @@ namespace Minglu
         // the actual garment begins at pixel 319 and keeps its full width.
         public static float OutfitEdgeAlpha(Appearance look,Vector2 source)
         {return look.parts[7]%4==1?Smooth(.0128f,.0160f,source.x):1;}
+        // The long-hair cell spills 483 alpha-bearing pixels into the side
+        // bun's empty lower-right margin (x .923..1, y .818...903). Fade in
+        // the transparent gap, preserving the bun and its real neck strands.
+        public static float HairSourceAlpha(Appearance look,Vector2 source)
+        {return look.sex==1&&look.parts[1]==2?1-Smooth(.88f,.915f,source.x)*Smooth(.755f,.79f,source.y):1;}
         public static Rect Beard(Appearance look){return Cell(Mathf.Clamp(look.parts[6]-1,0,2),0,3,1);}
         public static Rect HairRect(Appearance look)
         {
@@ -200,6 +245,9 @@ namespace Minglu
         static float Smooth(float a,float b,float v){float t=Mathf.Clamp01((v-a)/(b-a));return t*t*(3-2*t);}
         public static Vector2 HairSamplingPoint(Appearance look,Vector2 p)
         {
+            // The opening and the visible ear use one deformation; changing
+            // ear size must not leave a strip of hair over the new silhouette.
+            p=EarSamplingPoint(look,p);
             var crown=CrownAdjustment(look);var center=new Vector2(crown.x,crown.y);
             var f=Landmarks(look);
             float scalp=(1-Smooth(f.eyeFar.x+.055f,f.eyeNear.x-.015f,p.x))*(1-Smooth(f.browFar.y-.055f,f.browFar.y-.010f,p.y))*Smooth(crown.y-.035f,crown.y+.035f,p.y);
@@ -222,12 +270,18 @@ namespace Minglu
             var f=Landmarks(look);float style=look.parts[6]==3?.86f:1;
             return new Vector4((f.mouth.x-f.lipFar.x)/.120f*style,(f.lipNear.x-f.mouth.x)/.110f*style,.49f,look.parts[6]==2?.49f:.46f);
         }
+        public static float BeardJawWidth(Appearance look)
+        {
+            var f=Landmarks(look);
+            return .57f*Mathf.Clamp((f.earNear.x-f.chin.x)/.301f,.90f,1.08f);
+        }
         public static Vector2 BeardSamplingPoint(Appearance look,Vector2 p)
         {
+            p=FeatureSamplingPoint(look,p);
             var m=BeardMouth(look);var c=BeardChin(look);var scale=BeardScales(look);
             float t=Mathf.Clamp01((p.y-m.y)/(c.y-m.y));float center=Mathf.Lerp(m.x,c.x,t),sourceCenter=Mathf.Lerp(m.z,c.z,t);
             float sy=p.y<m.y?m.w+(p.y-m.y)/scale.z:p.y>c.y?c.w+(p.y-c.y)/scale.w:Mathf.Lerp(m.w,c.w,t);
-            float sxScale=Mathf.Lerp(p.x<center?scale.x:scale.y,.57f,t);
+            float sxScale=Mathf.Lerp(p.x<center?scale.x:scale.y,BeardJawWidth(look),t);
             return new Vector2(sourceCenter+(p.x-center)/sxScale,sy);
         }
     }

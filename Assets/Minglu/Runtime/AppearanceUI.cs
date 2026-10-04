@@ -17,7 +17,6 @@ namespace Minglu
             lookReturnModal=modal;lookTarget=target;lookCategory=0;lookNotice="";lookGroup=0;lookPopup="";lookZoom=false;lookCompare=false;lookUndo.Clear();lookRedo.Clear();Array.Clear(lookLocks,0,lookLocks.Length);
             lookDraft=AppearanceRules.AsRealistic(target<0?(atTitle?profile.chiefLook:State.chiefLook):State.agents.First(x=>x.id==target).appearance);
             if(!lookDraft.enabled){lookDraft.style=1;lookDraft.sex=target==1?1:0;}
-            lookOptionPage=LookIndex(lookCategory)/4;
             lookOriginal=AppearanceRules.Copy(lookDraft);
             if(atTitle)homePage="appearance";else modal="appearance";Draw();
         }

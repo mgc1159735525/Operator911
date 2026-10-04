@@ -33,19 +33,26 @@ Shader "Minglu/PaintedPortrait"
    struct output {float4 vertex:SV_POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;float4 world:TEXCOORD1;};
    sampler2D _MainTex,_BodyTex;float4 _MainTex_TexelSize;
    fixed4 _Color,_Complexion,_ClothShadow,_ClothLight,_HairShadow,_HairLight;
-   float4 _ClipRect,_AtlasRect,_LayerRect,_DrawRect,_BodyRect,_FeatureCols,_EyeFar,_EyeNear,_BrowFar,_BrowNear,_Nose,_Mouth,_EarFar,_EarNear;
+   float4 _ClipRect,_AtlasRect,_LayerRect,_DrawRect,_BodyRect,_EyeFar,_EyeNear,_BrowFar,_BrowNear,_Nose,_Mouth,_EarFar,_EarNear;
+   float4 _EyeShape,_BrowShape,_NoseShape,_MouthShape,_EarShape;
    float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
    float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_CollarAnchor3,_CollarAnchor4,_CollarAnchor5,_CollarAnchor6,_CollarAnchor7,_Jaw;
-   float _LayerMode,_EarOption,_BackHair,_CapStrayCut,_OutfitLeftTrim,_FarScalpPad;
+   float _LayerMode,_BackHair,_CapStrayCut,_SideBunStrayCut,_OutfitLeftTrim,_FarScalpPad,_BeardJawWidth;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
-   float2 optionShape(float option,float2 one,float2 two,float2 three)
-   {return option<.5?float2(1,1):option<1.5?one:option<2.5?two:three;}
    float2 morph(float2 p,float4 feature,float2 size,float tilt)
    {
     float2 delta=p-feature.xy;
     float weight=1-smoothstep(.12,1,length(delta/feature.zw));
     float2 transformed=delta/size;transformed.y+=delta.x*tilt;
     return (transformed-delta)*weight;
+   }
+   float2 earMorph(float2 p)
+   {return morph(p,_EarFar,_EarShape.xy,_EarShape.z)+morph(p,_EarNear,_EarShape.xy,_EarShape.z);}
+   float2 faceMorph(float2 p)
+   {
+    return morph(p,_EyeFar,_EyeShape.xy,_EyeShape.z*.70)+morph(p,_EyeNear,_EyeShape.xy,-_EyeShape.z)
+     +morph(p,_BrowFar,_BrowShape.xy,_BrowShape.z*.70)+morph(p,_BrowNear,_BrowShape.xy,-_BrowShape.z)
+     +morph(p,_Nose,_NoseShape.xy,_NoseShape.z)+morph(p,_Mouth,_MouthShape.xy,_MouthShape.z)+earMorph(p);
    }
    float3 hairAnchor(float2 p,float4 anchor)
    {
@@ -70,7 +77,7 @@ Shader "Minglu/PaintedPortrait"
     float t=saturate((p.y-_BeardMouth.y)/(_BeardChin.y-_BeardMouth.y));
     float center=lerp(_BeardMouth.x,_BeardChin.x,t),sourceCenter=lerp(_BeardMouth.z,_BeardChin.z,t);
     float sy=p.y<_BeardMouth.y?_BeardMouth.w+(p.y-_BeardMouth.y)/_BeardScales.z:p.y>_BeardChin.y?_BeardChin.w+(p.y-_BeardChin.y)/_BeardScales.w:lerp(_BeardMouth.w,_BeardChin.w,t);
-    float sx=lerp(p.x<center?_BeardScales.x:_BeardScales.y,.57,t);
+    float sx=lerp(p.x<center?_BeardScales.x:_BeardScales.y,_BeardJawWidth,t);
     return float2(sourceCenter+(p.x-center)/sx,sy);
    }
    float2 outfitSample(float2 p)
@@ -93,23 +100,10 @@ Shader "Minglu/PaintedPortrait"
     float2 local=float2((i.uv.x-_AtlasRect.x)/_AtlasRect.z,1-(i.uv.y-_AtlasRect.y)/_AtlasRect.w);
     float2 p=_DrawRect.xy+local*_DrawRect.zw;
     float2 q=p;
-    if(_LayerMode<.5)
-    {
-     float2 eyes=optionShape(_FeatureCols.x,float2(1.09,.84),float2(.96,1.17),float2(1.12,1.05));
-     q+=morph(p,_EyeFar,eyes,0)+morph(p,_EyeNear,eyes,0);
-     float2 brows=optionShape(_FeatureCols.y,float2(1,.82),float2(1,1),float2(1.13,1));
-     float tilt=_FeatureCols.y>1.5&&_FeatureCols.y<2.5?.11:0;
-     q+=morph(p,_BrowFar,brows,tilt*.70)+morph(p,_BrowNear,brows,-tilt);
-     q+=morph(p,_Nose,optionShape(_FeatureCols.z,float2(.83,1),float2(1.17,1),float2(.96,1.11)),0);
-     q+=morph(p,_Mouth,optionShape(_FeatureCols.w,float2(.85,1),float2(1.13,1),float2(1,1.19)),0);
-     float2 ears=optionShape(_EarOption,float2(.84,1),float2(1.15,1),float2(1,1.13));
-     q+=morph(p,_EarFar,ears,0)+morph(p,_EarNear,ears,0);
-    }
-    else if(_LayerMode>2.5)
-    {
-     // Beard and lip share the same local deformation and full-canvas frame.
-     q+=morph(p,_Mouth,optionShape(_FeatureCols.w,float2(.85,1),float2(1.13,1),float2(1,1.19)),0);
-    }
+    // Face and beard share every local deformation, including the nose above
+    // a moustache. The hair's ear opening follows the identical ear mapping.
+    if(_LayerMode<.5||_LayerMode>2.5)q+=faceMorph(p);
+    else if(_LayerMode<1.5)q+=earMorph(p);
     float2 featurePoint=q;
     q=_LayerMode>.5&&_LayerMode<1.5?hairSample(q):_LayerMode>2.5?beardSample(q):_LayerMode>1.5?outfitSample(q):(q-_LayerRect.xy)/_LayerRect.zw;
     float sourceInside=step(0,q.x)*step(q.x,1)*step(0,q.y)*step(q.y,1);
@@ -164,9 +158,12 @@ Shader "Minglu/PaintedPortrait"
      // otherwise empty lower-left margin. Exclude that margin, not the cap.
      float stray=(1-smoothstep(.060,.090,q.x))*smoothstep(.64,.69,q.y);
      c.a*=1-_CapStrayCut*stray;
+     // The side bun's lower-right margin contains a fragment of the adjacent
+     // long-hair cell. This source-space cut ends in its transparent moat.
+     c.a*=1-_SideBunStrayCut*smoothstep(.88,.915,q.x)*smoothstep(.755,.79,q.y);
      // Preserve the painted opening of the near ear. Ear edits and age no
      // longer leave an opaque lock across the concha after hair registration.
-     float ear=1-smoothstep(.45,1,length((p-_EarNear.xy)/(_EarNear.zw*float2(.58,.65))));
+     float ear=1-smoothstep(.45,1,length((featurePoint-_EarNear.xy)/(_EarNear.zw*float2(.58,.65))));
      c.a*=1-ear;
      // Follow the whole far-side front lock down to the garment. Ending this
      // cut at the jaw leaves a detached black tuft that looks like a beard.
@@ -185,7 +182,7 @@ Shader "Minglu/PaintedPortrait"
     {
      // The opening follows the same inverse lip edit as the base painting.
      // A beard may touch the lip edge but must not paint over the lip itself.
-     float lip=1-smoothstep(.65,1,length((featurePoint-_Mouth.xy)/float2(.058,.010)));
+     float lip=1-smoothstep(.65,1,length((featurePoint-_Mouth.xy)/(_Mouth.zw*float2(.058/.089,.010/.033))));
      c.a*=1-lip;
     }
     c*=i.color;

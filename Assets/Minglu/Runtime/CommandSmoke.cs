@@ -49,7 +49,7 @@ namespace Minglu
             yield return DrainCommandNotices(path);
             yield return SmokeOpenBusiness(1);Capture(Path.ChangeExtension(path,"running-chain.png"));
             yield return SmokeOpenBusiness(2);Capture(Path.ChangeExtension(path,"life.png"));
-            yield return Click("CommandPeopleDetails");yield return Click("LifePolicy_1");yield return Click("CommandEditLook");yield return Click("LookCategory_1");yield return Click("LookOption_2");yield return Click("LookApply");yield return Click("MemberDetailsClose");
+            yield return Click("CommandPeopleDetails");yield return Click("LifePolicy_1");yield return Click("CommandEditLook");yield return StudioSetOption(1,2);yield return Click("LookApply");yield return Click("MemberDetailsClose");
             yield return SmokeSaveLoad();if(State.command==null)throw new Exception("Appearance commit lost command state");
             State.command.eventKind=2;State.command.eventActor=0;State.command.eventText="城中大清查预警，需要决定是否分散休整。";Draw();yield return null;Capture(Path.ChangeExtension(path,"event.png"));
             yield return Click(State.money>=10?"CommandEventSafe":"CommandEventRisk");Capture(Path.ChangeExtension(path,"decision-result.png"));yield return DrainCommandNotices(path);yield return SmokeReturnToMap();Capture(Path.ChangeExtension(path,"map.png"));

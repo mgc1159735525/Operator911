@@ -9,7 +9,7 @@ namespace Minglu
         Appearance lookOriginal;
         readonly Stack<Appearance> lookUndo=new Stack<Appearance>(),lookRedo=new Stack<Appearance>();
         readonly bool[] lookLocks=new bool[14];
-        int lookGroup,lookOptionPage;
+        int lookGroup;
         bool lookZoom,lookCompare;
         string lookPopup="",lookReturnModal="";
         bool LookDirty(){return JsonUtility.ToJson(lookDraft)!=JsonUtility.ToJson(lookOriginal);}
@@ -18,12 +18,12 @@ namespace Minglu
             var before=AppearanceRules.Copy(lookDraft);change();lookDraft=AppearanceRules.AsRealistic(lookDraft);lookDraft.enabled=true;if(lookDraft.sex==1)lookDraft.parts[6]=0;
             bool changed=JsonUtility.ToJson(before)!=JsonUtility.ToJson(lookDraft);
             if(changed){lookUndo.Push(before);lookRedo.Clear();}
-            lookCompare=false;lookOptionPage=LookIndex(lookCategory)/4;lookNotice=changed?"预览已更新，应用后生效。":"外观未改变。保留的部件不会参与随机。";Draw();
+            lookCompare=false;lookNotice=changed?"预览已更新，应用后生效。":"外观未改变。保留的部件不会参与随机。";Draw();
         }
         void UndoLook(bool redo)
         {
             var from=redo?lookRedo:lookUndo;var to=redo?lookUndo:lookRedo;if(from.Count==0)return;
-            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookOptionPage=LookIndex(lookCategory)/4;lookCompare=false;lookNotice=redo?"已重做，应用后生效。":"已撤销，应用后生效。";Draw();
+            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookCompare=false;lookNotice=redo?"已重做，应用后生效。":"已撤销，应用后生效。";Draw();
         }
         void RandomizeLook()
         {
@@ -40,7 +40,34 @@ namespace Minglu
             var shade=Box("AppearanceShade",root,0,0,1600,900,new Color(0,0,0,.85f));
             var p=Box("AppearanceStudio",shade,240,30,1120,840,Paper);SurfaceTheme(p,true);DrawAppearance(p);
         }
-        void SelectLookCategory(int category){lookCategory=category;lookOptionPage=LookIndex(category)/4;Draw();}
+        void SelectLookCategory(int category){lookCategory=category;Draw();FocusLookControl("LookCategory_"+category);}
+        void FocusLookControl(string control)
+        {
+            var events=UnityEngine.EventSystems.EventSystem.current;if(events==null)return;
+            var target=root.GetComponentsInChildren<UnityEngine.UI.Button>().FirstOrDefault(button=>button.name==control&&button.interactable);
+            if(target!=null)events.SetSelectedGameObject(target.gameObject);
+        }
+        int[] LookGroupCategories(){return lookGroup==0?new[]{0,1,7}:lookGroup==1?(lookDraft.sex==0?new[]{2,3,4,5,13,6}:new[]{2,3,4,5,13}):new[]{10,12,11,9};}
+        void CycleLookOption(int category,int direction,string control)
+        {
+            lookCategory=category;int count=LookOptions(category).Length;
+            int next=(LookIndex(category)+direction+count)%count;
+            ChangeLook(()=>SetLookOption(category,next));
+            // The editor redraws after each choice. Restore focus to the new
+            // control so repeated keyboard Submit does not lose its target.
+            FocusLookControl(control);
+        }
+        void DrawLookCycleRow(Transform parent,int category,float y)
+        {
+            var options=LookOptions(category);int option=LookIndex(category);bool active=lookCategory==category;
+            Button("LookCategory_"+category,parent,LookCategoryName(category),424,y,104,48,()=>SelectLookCategory(category),true,active);
+            Button("LookPrevious_"+category,parent,"‹",536,y,40,48,()=>CycleLookOption(category,-1,"LookPrevious_"+category));
+            var current=Button("LookCurrent_"+category,parent,"",584,y,320,48,()=>CycleLookOption(category,1,"LookCurrent_"+category),true,active);
+            Label(current.transform,options[option],16,0,212,48,18,active?Red:TextColor,TextAnchor.MiddleLeft);
+            Label(current.transform,(option+1)+" / "+options.Length,232,0,72,48,14,Muted,TextAnchor.MiddleRight);
+            Button("LookNext_"+category,parent,"›",912,y,40,48,()=>CycleLookOption(category,1,"LookNext_"+category));
+            Button("LookLock_"+category,parent,lookLocks[category]?"已保留":"随机时保留",968,y,120,48,()=>{lookLocks[category]=!lookLocks[category];lookCategory=category;Draw();FocusLookControl("LookLock_"+category);},true,lookLocks[category]);
+        }
         void DrawAppearance(Transform p)
         {
             string who=lookTarget<0?"地区负责人":State.agents.First(x=>x.id==lookTarget).name;
@@ -59,34 +86,15 @@ namespace Minglu
             Button("LookReset",p,"还原",272,718,104,32,()=>ChangeLook(()=>lookDraft=AppearanceRules.Copy(lookOriginal)),LookDirty());
             string[] groups={"形貌","五官","设色"};
             for(int i=0;i<3;i++){int g=i;Button("LookGroup_"+i,p,groups[i],424+i*226,112,212,40,()=>{lookGroup=g;SelectLookCategory(g==0?0:g==1?2:10);},true,lookGroup==i);}
-            int[] categories=lookGroup==0?new[]{0,1,7}:lookGroup==1?(lookDraft.sex==0?new[]{2,3,4,5,13,6}:new[]{2,3,4,5,13}):new[]{10,12,11,9};
-            for(int i=0;i<categories.Length;i++){int category=categories[i];Button("LookCategory_"+category,p,LookCategoryName(category)+(lookLocks[category]?" · 锁":""),424+i%3*226,176+i/3*44,212,34,()=>SelectLookCategory(category),true,lookCategory==category);}
-            var options=LookOptions(lookCategory);
-            Label(p,LookCategoryName(lookCategory)+" / "+options[LookIndex(lookCategory)],424,278,466,32,21,Gold);
-            Button("LookLock",p,lookLocks[lookCategory]?"已锁定":"随机时保留",920,276,168,36,()=>{lookLocks[lookCategory]=!lookLocks[lookCategory];Draw();},true,lookLocks[lookCategory]);
-            int pages=(options.Length+3)/4;lookOptionPage=Mathf.Clamp(lookOptionPage,0,pages-1);
-            for(int cell=0;cell<4;cell++)
-            {
-                int option=lookOptionPage*4+cell;if(option>=options.Length)break;
-                var b=Button("LookOption_"+option,p,"",424+cell%2*342,332+cell/2*136,322,120,()=>ChangeLook(()=>SetLookOption(lookCategory,option)),true,LookIndex(lookCategory)==option);
-                var sample=AppearanceRules.Copy(lookDraft);if(lookCategory==13)sample.ears=option;else sample.parts[lookCategory]=option;
-                bool feature=(lookCategory>=2&&lookCategory<=6)||lookCategory==13;
-                DrawRealisticLook(b.transform,sample,12,12,64,96,Color.white,feature);
-                Label(b.transform,options[option],96,35,210,32,18,LookIndex(lookCategory)==option?Red:TextColor);
-                if(LookIndex(lookCategory)==option)Label(b.transform,"当前选择",96,76,210,23,13,Muted);
-            }
-            if(pages>1)
-            {
-                Button("LookOptionPrevious",p,"上一页",424,606,110,32,()=>{lookOptionPage--;Draw();},lookOptionPage>0);
-                Label(p,(lookOptionPage+1)+" / "+pages+"  ·  "+options.Length+" 款",546,608,410,28,14,Muted,TextAnchor.MiddleCenter);
-                Button("LookOptionNext",p,"下一页",978,606,110,32,()=>{lookOptionPage++;Draw();},lookOptionPage<pages-1);
-            }
+            Label(p,"点击款名或左右箭头切换；保留的部件不参与随机。",424,178,664,34,16,Muted);
+            var categories=LookGroupCategories();
+            for(int i=0;i<categories.Length;i++)DrawLookCycleRow(p,categories[i],232+i*68);
             Rule(p,424,658,664);
             Button("LookRandom",p,"随机形象",424,674,208,36,RandomizeLook);
             Button("LookPresets",p,"收藏预设",648,674,208,36,()=>{lookPopup="presets";Draw();});
             int locked=LookEditableCategories().Count(n=>lookLocks[n]);
             Button("LookRandomSettings",p,"随机设定"+(locked>0?" · 保留 "+locked:""),872,674,216,36,()=>{lookPopup="random";Draw();});
-            Label(p,string.IsNullOrEmpty(lookNotice)?"点选右侧部件，在左侧查看完整搭配。":lookNotice,424,722,664,24,14,Muted);
+            Label(p,string.IsNullOrEmpty(lookNotice)?"所有部件都可循环切换，在左侧查看完整搭配。":lookNotice,424,722,664,24,14,Muted);
             Rule(p,32,768,1056);
             Button("LookCancel",p,"取消",704,780,112,44,RequestCloseAppearance);
             Button("LookApply",p,lookCompare?"先返回预览":atTitle?"保存为开局外观":"应用并保存",840,780,248,44,CommitAppearance,!lookCompare,true);

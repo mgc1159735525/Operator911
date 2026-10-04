@@ -100,7 +100,7 @@ namespace Minglu
             yield return Click("LookGroup_1");yield return Click("LookCategory_4");
             string original=JsonUtility.ToJson(lookDraft);
             int option=(LookIndex(4)+1)%LookOptions(4).Length;
-            yield return Click("LookOption_"+option);
+            yield return StudioSetOption(4,option);
             string edited=JsonUtility.ToJson(lookDraft);
             if(edited==original)throw new Exception("Nose option did not change the chief preview");
             yield return Click("LookUndo");

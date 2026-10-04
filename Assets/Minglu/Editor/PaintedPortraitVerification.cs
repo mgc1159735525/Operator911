@@ -29,6 +29,78 @@ namespace Minglu.EditorTools
             if(point.x<0||point.x>1||point.y<0||point.y>1)return 0;
             return texture.GetPixelBilinear(cell.x+point.x*cell.width,cell.y+(1-point.y)*cell.height).a;
         }
+        static void VerifyFeatureFitting()
+        {
+            int surfaces=0,earPairs=0,beardPairs=0;
+            float minJacobian=float.MaxValue;
+            var categories=new[]{2,3,4,5,13};
+            for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)
+            {
+                var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});look.parts[0]=face;
+                var f=PaintedPortraitLayout.Landmarks(look);
+                // Every option is exercised once in isolation and in eight
+                // mixed combinations. Check areas between anchors too: an
+                // anchor alone cannot reveal a fold in a cheek or eyelid.
+                for(int category=-1;category<categories.Length;category++)for(int option=0;option<8;option++)
+                {
+                    for(int c=2;c<=5;c++)look.parts[c]=category<0?(option+c*3)%8:0;look.ears=category<0?(option+5)%8:0;
+                    if(category>=0){int c=categories[category];if(c==13)look.ears=option;else look.parts[c]=option;}
+                    for(int x=0;x<=44;x++)for(int y=0;y<=34;y++)
+                    {
+                        var p=new Vector2(.19f+x*.015f,.23f+y*.012f);
+                        var q=PaintedPortraitLayout.FeatureSamplingPoint(look,p);
+                        var dx=(PaintedPortraitLayout.FeatureSamplingPoint(look,p+new Vector2(.0005f,0))-q)/.0005f;
+                        var dy=(PaintedPortraitLayout.FeatureSamplingPoint(look,p+new Vector2(0,.0005f))-q)/.0005f;
+                        float jacobian=dx.x*dy.y-dx.y*dy.x;
+                        minJacobian=Mathf.Min(minJacobian,jacobian);
+                        Check(jacobian>.15f,"facial edit folds or pinches the source: "+sex+"/"+face+"/"+category+"/"+option);
+                        Check(q.x>0&&q.x<1&&q.y>0&&q.y<1,"facial edit samples a neighbouring atlas cell");
+                    }
+                    foreach(var point in new[]{f.skull,f.hairline,f.chin,PaintedPortraitLayout.CollarTarget(look,2)})
+                        Check(Vector2.Distance(point,PaintedPortraitLayout.FeatureSamplingPoint(look,point))<.00001f,"feature edit displaces the head outline, chin or collar");
+                    surfaces++;
+                }
+                for(int c=2;c<=5;c++)look.parts[c]=0;
+                for(int ear=0;ear<8;ear++)for(int hair=0;hair<4;hair++)
+                {
+                    look.ears=ear;look.parts[1]=hair;
+                    var bounds=PaintedPortraitLayout.HairCanvas(look);
+                    for(int anchor=0;anchor<4;anchor++)
+                    {
+                        var source=PaintedPortraitLayout.HairSource(look,anchor);
+                        var expected=new Vector2((source.x-bounds.x)/bounds.width,(source.y-bounds.y)/bounds.height);
+                        Check(Vector2.Distance(PaintedPortraitLayout.HairSamplingPoint(look,PaintedPortraitLayout.HairTarget(look,anchor)),expected)<.001f,"edited ear moves the registered hairline");
+                    }
+                    var center=new Vector2(f.earNear.x,f.earNear.y);
+                    Check(PaintedPortraitLayout.HairEarAlpha(look,center)==0,"hair covers the edited ear opening");
+                    // The opening must actually respond to ear size, not just
+                    // cut the same fixed ellipse for all eight choices.
+                    var edge=center+new Vector2(f.earNear.z*.48f,0);
+                    float edited=PaintedPortraitLayout.HairEarAlpha(look,edge);
+                    look.ears=0;float native=PaintedPortraitLayout.HairEarAlpha(look,edge);look.ears=ear;
+                    if(ear==1)Check(edited>native,"narrow ear retains an oversized hair opening");
+                    if(ear==2)Check(edited<native,"wide ear remains covered by hair");
+                    earPairs++;
+                }
+                look.ears=0;
+                if(sex==0)for(int beard=1;beard<4;beard++)for(int mouth=0;mouth<8;mouth++)for(int nose=0;nose<8;nose++)
+                {
+                    look.parts[6]=beard;look.parts[5]=mouth;look.parts[4]=nose;
+                    var center=new Vector2(f.mouth.x,f.mouth.y);
+                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,center),new Vector2(.400f,.382f))<.0001f,"edited mouth loses beard anchor");
+                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,f.chin),new Vector2(.394f,.510f))<.0001f,"edited mouth displaces beard from the chin");
+                    Check(PaintedPortraitLayout.BeardLipAlpha(look,center)==0,"beard paints over the lip opening");
+                    float previous=-10;
+                    for(int y=0;y<=60;y++)
+                    {
+                        var q=PaintedPortraitLayout.BeardSamplingPoint(look,center+new Vector2(0,-.055f+y*.004f));
+                        Check(q.y>previous,"nose or mouth edit folds the beard");previous=q.y;
+                    }
+                    beardPairs++;
+                }
+            }
+            Debug.Log("MINGLU_PORTRAIT_FEATURE_FIT_SUCCESS: "+surfaces+" face/feature surfaces, min Jacobian "+minJacobian.ToString("F3")+", "+earPairs+" hair/edited-ear pairs, "+beardPairs+" beard/mouth/nose pairs; framing and collar anchors preserved");
+        }
         static void VerifyRegistration()
         {
             var hair=ReadAtlas("hair-overlays");var body=ReadAtlas("portrait-bases");var outfit=ReadAtlas("outfit-overlays");
@@ -104,6 +176,11 @@ namespace Minglu.EditorTools
                     Check(Alpha(outfit,cell,shoulder)>.90f,"expected garment shoulder moved");
                     Check(PaintedPortraitLayout.OutfitEdgeAlpha(look,sliver)==0&&PaintedPortraitLayout.OutfitEdgeAlpha(look,shoulder)==1,"garment edge trim removes a shoulder or retains a sliver");
                 }
+                var sideBun=AppearanceRules.Randomize(17,1);sideBun.parts[1]=2;var bunCell=PaintedPortraitLayout.Hair(sideBun);
+                var strayHair=new Vector2(.96f,.85f);var bun=new Vector2(.88f,.45f);var strand=new Vector2(.71f,.75f);
+                Check(Alpha(hair,bunCell,strayHair)>.20f,"side-bun atlas fragment moved; recheck margin bounds");
+                Check(Alpha(hair,bunCell,bun)>.90f&&Alpha(hair,bunCell,strand)>.20f,"side-bun or neck strand source moved");
+                Check(PaintedPortraitLayout.HairSourceAlpha(sideBun,strayHair)==0&&PaintedPortraitLayout.HairSourceAlpha(sideBun,bun)==1&&PaintedPortraitLayout.HairSourceAlpha(sideBun,strand)==1,"side-bun trim changes the authored silhouette or retains debris");
                 Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 continuous necks, 384 collar bindings without fabric folds, 256 hair bindings, 64 actual transparent ear openings, 24 separate lip/jaw bindings; visual sheets still required");
             }
             finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);UnityEngine.Object.DestroyImmediate(outfit);}
@@ -114,6 +191,7 @@ namespace Minglu.EditorTools
             var shader=Resources.Load<Shader>("Minglu/Art/PaintedPortrait");
             Check(shader!=null&&!ShaderUtil.ShaderHasError(shader),"shader compilation");
             VerifyRegistration();
+            VerifyFeatureFitting();
             int combinations=0;
             for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int hair=0;hair<4;hair++)for(int outfit=0;outfit<8;outfit++)
             {
