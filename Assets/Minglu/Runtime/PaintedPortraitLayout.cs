@@ -8,10 +8,17 @@ namespace Minglu
     public static class PaintedPortraitLayout
     {
         public const float Width=400, Height=600;
-        public static readonly Rect DetailCrop=new Rect(.055f,-.035f,.88f,.84f);
+        public const int HairCount=8, BeardCount=8;
+        // Hair and facial hair share pigments. The ivory range starts bright
+        // enough to read as white, while retaining painted strand shadows.
+        public static Color HairShadow(int color)
+        {return new[]{new Color(.055f,.048f,.041f),new Color(.105f,.062f,.039f),new Color(.31f,.31f,.29f),new Color(.64f,.64f,.61f)}[Mathf.Clamp(color,0,3)];}
+        public static Color HairLight(int color)
+        {return new[]{new Color(.35f,.31f,.27f),new Color(.48f,.34f,.23f),new Color(.78f,.78f,.74f),new Color(.99f,.985f,.95f)}[Mathf.Clamp(color,0,3)];}
+        public static readonly Rect DetailCrop=new Rect(.055f,-.090f,.88f,.895f);
         // One common full-body frame for all headwear and outfits. Leave room
         // for the shoulder silhouette instead of fitting the frame to the head.
-        public static readonly Rect FullCrop=new Rect(-.235f,-.060f,1.52f,1.46f);
+        public static readonly Rect FullCrop=new Rect(-.235f,-.095f,1.52f,1.495f);
         public struct Features
         {
             public Vector4 eyeFar,eyeNear,browFar,browNear,nose,mouth,earFar,earNear;
@@ -104,14 +111,16 @@ namespace Minglu
         public static Rect Base(Appearance look){return Cell(look.parts[0]%4,look.sex*2+look.parts[0]/4,4,4);}
         public static Rect HairCanvas(Appearance look)
         {
-            if(look.sex==0&&look.parts[1]==0)return new Rect(0,0,1,.92f);
-            if(look.sex==0&&look.parts[1]==1)return new Rect(0,0,.94f,.92f);
-            if(look.sex==1&&look.parts[1]==0)return new Rect(0,-.042f,1,1.042f);
+            if(look.sex==0&&look.parts[1]==2)return new Rect(0,0,1.04f,1.07f);
+            if(look.sex==0&&look.parts[1]==3)return new Rect(.05f,0,.95f,1.07f);
+            if(look.sex==0&&look.parts[1]==6)return new Rect(0,.09f,1.04f,.97f);
+            if(look.sex==0&&look.parts[1]==7)return new Rect(.05f,.09f,.95f,.91f);
+            if(look.sex==1&&look.parts[1]==2)return new Rect(0,.08f,1,.92f);
             return new Rect(0,0,1,1);
         }
         public static Rect Hair(Appearance look)
         {
-            var cell=Cell(look.parts[1],look.sex,4,2);var bounds=HairCanvas(look);
+            var cell=Cell(look.parts[1]%4,look.sex*2+look.parts[1]/4,4,4);var bounds=HairCanvas(look);
             return new Rect(cell.x+bounds.x*cell.width,cell.y+(1-bounds.yMax)*cell.height,cell.width*bounds.width,cell.height*bounds.height);
         }
         public static Rect Outfit(Appearance look){return Cell(look.parts[7]%4,look.sex*2+look.parts[7]/4,4,4);}
@@ -120,19 +129,25 @@ namespace Minglu
         // the actual garment begins at pixel 319 and keeps its full width.
         public static float OutfitEdgeAlpha(Appearance look,Vector2 source)
         {return look.parts[7]%4==1?Smooth(.0128f,.0160f,source.x):1;}
-        // The long-hair cell spills 483 alpha-bearing pixels into the side
-        // bun's empty lower-right margin (x .923..1, y .818...903). Fade in
-        // the transparent gap, preserving the bun and its real neck strands.
+        // Source canvases select the complete silhouette with transparent
+        // margins. They no longer need per-pixel patches from the old atlas.
         public static float HairSourceAlpha(Appearance look,Vector2 source)
-        {return look.sex==1&&look.parts[1]==2?1-Smooth(.88f,.915f,source.x)*Smooth(.755f,.79f,source.y):1;}
-        public static Rect Beard(Appearance look){return Cell(Mathf.Clamp(look.parts[6]-1,0,2),0,3,1);}
+        {return 1;}
+        // The long beard has a deliberately taller transparent source canvas.
+        // The following row begins below its tip; crop that row's empty margin
+        // so the neighbouring long tip cannot enter the three-strand beard.
+        public static Rect BeardCanvas(Appearance look)
+        {return look.parts[6]==2?new Rect(0,0,1,1.16f):look.parts[6]==6?new Rect(0,.17f,1,.83f):new Rect(0,0,1,1);}
+        public static Rect Beard(Appearance look)
+        {
+            int index=look.parts[6]==0?7:Mathf.Clamp(look.parts[6]-1,0,6);
+            var cell=Cell(index%4,index/4,4,2);var bounds=BeardCanvas(look);
+            return new Rect(cell.x+bounds.x*cell.width,cell.y+(1-bounds.yMax)*cell.height,cell.width*bounds.width,cell.height*bounds.height);
+        }
         public static Rect HairRect(Appearance look)
         {
-            float[] ms={.780f,.780f,.780f,.804f},fs={.800f,.815f,.795f,.800f};
-            float[] mx={.165f,.165f,.165f,.162f},fx={.142f,.142f,.151f,.146f};
-            float[] my={-.052f,-.052f,-.052f,-.060f},fy={-.020f,-.031f,-.017f,-.016f};
-            int h=look.parts[1];float scale=(look.sex==0?ms:fs)[h];var b=HairCanvas(look);
-            return new Rect((look.sex==0?mx:fx)[h]+b.x*scale,(look.sex==0?my:fy)[h]+b.y*scale,b.width*scale,b.height*scale);
+            const float scale=.82f;var b=HairCanvas(look);var source=HairSource(look,0);var target=HairTarget(look,0);
+            return new Rect(target.x+(b.x-source.x)*scale,target.y+(b.y-source.y)*scale,b.width*scale,b.height*scale);
         }
         public static Rect BeardRect(Appearance look){return new Rect(0,0,1,1);}
         public static Rect OutfitRect(Appearance look){return new Rect(-.185f,look.sex==0?.424f:.416f,1.42f,1.42f*2f/3);}
@@ -213,15 +228,23 @@ namespace Minglu
         // Crown, frontal hairline, exposed near ear and far temple. Source
         // coordinates precede the crop which removes neighbouring-cell debris.
         static readonly Vector2[,] HairSources={
-            {new Vector2(.480f,.198f),new Vector2(.400f,.347f),new Vector2(.755f,.550f),new Vector2(.160f,.500f)},
-            {new Vector2(.480f,.198f),new Vector2(.400f,.346f),new Vector2(.720f,.551f),new Vector2(.120f,.500f)},
-            {new Vector2(.480f,.198f),new Vector2(.400f,.349f),new Vector2(.720f,.556f),new Vector2(.117f,.500f)},
-            {new Vector2(.494f,.199f),new Vector2(.400f,.371f),new Vector2(.668f,.545f),new Vector2(.065f,.500f)},
-            {new Vector2(.500f,.116f),new Vector2(.400f,.270f),new Vector2(.753f,.468f),new Vector2(.170f,.425f)},
-            {new Vector2(.480f,.111f),new Vector2(.400f,.310f),new Vector2(.720f,.470f),new Vector2(.130f,.425f)},
-            {new Vector2(.480f,.095f),new Vector2(.400f,.312f),new Vector2(.686f,.475f),new Vector2(.120f,.425f)},
-            {new Vector2(.480f,.095f),new Vector2(.400f,.328f),new Vector2(.650f,.468f),new Vector2(.112f,.425f)}};
-        public static Vector2 HairSource(Appearance look,int anchor){return HairSources[look.sex*4+look.parts[1],anchor];}
+            {new Vector2(.535f,.365f),new Vector2(.430f,.535f),new Vector2(.790f,.730f),new Vector2(.215f,.655f)},
+            {new Vector2(.508f,.365f),new Vector2(.449f,.526f),new Vector2(.742f,.719f),new Vector2(.184f,.646f)},
+            {new Vector2(.469f,.344f),new Vector2(.441f,.508f),new Vector2(.750f,.721f),new Vector2(.121f,.633f)},
+            {new Vector2(.520f,.385f),new Vector2(.383f,.552f),new Vector2(.687f,.732f),new Vector2(.113f,.656f)},
+            {new Vector2(.550f,.281f),new Vector2(.441f,.500f),new Vector2(.785f,.667f),new Vector2(.234f,.604f)},
+            {new Vector2(.520f,.310f),new Vector2(.449f,.503f),new Vector2(.746f,.664f),new Vector2(.191f,.607f)},
+            {new Vector2(.508f,.307f),new Vector2(.438f,.484f),new Vector2(.738f,.667f),new Vector2(.129f,.599f)},
+            {new Vector2(.516f,.320f),new Vector2(.434f,.513f),new Vector2(.680f,.677f),new Vector2(.145f,.615f)},
+            {new Vector2(.550f,.302f),new Vector2(.418f,.456f),new Vector2(.785f,.651f),new Vector2(.227f,.563f)},
+            {new Vector2(.516f,.292f),new Vector2(.434f,.464f),new Vector2(.746f,.667f),new Vector2(.191f,.578f)},
+            {new Vector2(.523f,.289f),new Vector2(.430f,.458f),new Vector2(.730f,.661f),new Vector2(.141f,.573f)},
+            {new Vector2(.516f,.263f),new Vector2(.422f,.448f),new Vector2(.691f,.630f),new Vector2(.141f,.568f)},
+            {new Vector2(.547f,.266f),new Vector2(.438f,.393f),new Vector2(.785f,.575f),new Vector2(.230f,.505f)},
+            {new Vector2(.516f,.221f),new Vector2(.438f,.393f),new Vector2(.738f,.589f),new Vector2(.184f,.505f)},
+            {new Vector2(.512f,.230f),new Vector2(.430f,.404f),new Vector2(.734f,.594f),new Vector2(.148f,.510f)},
+            {new Vector2(.516f,.227f),new Vector2(.438f,.406f),new Vector2(.710f,.585f),new Vector2(.145f,.505f)}};
+        public static Vector2 HairSource(Appearance look,int anchor){return HairSources[look.sex*HairCount+look.parts[1],anchor];}
         public static Vector2 HairTarget(Appearance look,int anchor)
         {
             var f=Landmarks(look);
@@ -238,10 +261,19 @@ namespace Minglu
         }
         public static Vector4 CrownAdjustment(Appearance look)
         {
-            var p=HairTarget(look,0);float amount=look.parts[1]==0?(look.sex==0?.72f:.76f):look.sex==0&&look.parts[1]==3?.60f:1;
-            return new Vector4(p.x,p.y,amount,0);
+            var p=HairTarget(look,0);int hair=look.parts[1];
+            // Compact the ornament above the registered crown, never the
+            // skull or face. Keep headwear inside both portrait frames.
+            float scale=look.sex==1?(hair==0?.74f:hair==4?.60f:1):(hair==0?.80f:hair==3?.85f:hair==5?.86f:1);
+            return new Vector4(p.x,p.y,scale,0);
         }
-        public static float FarScalpPad(Appearance look){return look.sex==0&&look.parts[1]<2?.032f:0;}
+        public static float FarScalpPad(Appearance look)
+        {
+            int hair=look.parts[1];
+            // The new tied silhouettes narrow at the far upper temple. Fill
+            // only that skull arc; measured hairline, eye and ear stay fixed.
+            return hair==0||hair==1||hair==4||hair==5?.055f:.016f;
+        }
         static float Smooth(float a,float b,float v){float t=Mathf.Clamp01((v-a)/(b-a));return t*t*(3-2*t);}
         public static Vector2 HairSamplingPoint(Appearance look,Vector2 p)
         {
@@ -263,17 +295,37 @@ namespace Minglu
             var rect=HairRect(look);var sample=p-delta/total;
             return new Vector2((sample.x-rect.x)/rect.width,(sample.y-rect.y)/rect.height);
         }
-        public static Vector4 BeardMouth(Appearance look){var f=Landmarks(look);return new Vector4(f.mouth.x,f.mouth.y,.400f,.382f);}
-        public static Vector4 BeardChin(Appearance look){var f=Landmarks(look);return new Vector4(f.chin.x,f.chin.y,.394f,.510f);}
+        // Lip opening and underlying chin are measured independently in each
+        // new painting. A common source pivot stretched a short moustache into
+        // a handlebar and made the long beard float below a narrow face.
+        static readonly Vector4[] BeardSources={
+            new Vector4(.483f,.523f,.489f,.657f),
+            new Vector4(.439f,.503f,.483f,.674f),
+            new Vector4(.466f,.572f,.486f,.704f),
+            new Vector4(.438f,.562f,.481f,.731f),
+            new Vector4(.477f,.495f,.484f,.600f),
+            new Vector4(.493f,.464f,.500f,.643f),
+            new Vector4(.508f,.501f,.528f,.633f)};
+        public static Vector2 BeardSource(Appearance look,int anchor)
+        {
+            var source=BeardSources[Mathf.Clamp(look.parts[6]-1,0,BeardSources.Length-1)];var canvas=BeardCanvas(look);
+            var p=anchor==0?new Vector2(source.x,source.y):new Vector2(source.z,source.w);
+            return new Vector2((p.x-canvas.x)/canvas.width,(p.y-canvas.y)/canvas.height);
+        }
+        public static Vector4 BeardMouth(Appearance look)
+        {var f=Landmarks(look);var source=BeardSource(look,0);return new Vector4(f.mouth.x,f.mouth.y,source.x,source.y);}
+        public static Vector4 BeardChin(Appearance look)
+        {var f=Landmarks(look);var source=BeardSource(look,1);return new Vector4(f.chin.x,f.chin.y,source.x,source.y);}
         public static Vector4 BeardScales(Appearance look)
         {
-            var f=Landmarks(look);float style=look.parts[6]==3?.86f:1;
-            return new Vector4((f.mouth.x-f.lipFar.x)/.120f*style,(f.lipNear.x-f.mouth.x)/.110f*style,.49f,look.parts[6]==2?.49f:.46f);
+            var f=Landmarks(look);var canvas=BeardCanvas(look);float width=look.parts[6]==3?.78f:1;
+            float lower=look.parts[6]==2?.45f:look.parts[6]==6?.44f:.35f;
+            return new Vector4((f.mouth.x-f.lipFar.x)/.170f*canvas.width*width,(f.lipNear.x-f.mouth.x)/.180f*canvas.width*width,.28f*canvas.height,lower*canvas.height);
         }
         public static float BeardJawWidth(Appearance look)
         {
             var f=Landmarks(look);
-            return .57f*Mathf.Clamp((f.earNear.x-f.chin.x)/.301f,.90f,1.08f);
+            return (look.parts[6]==4?.64f:.52f)*(look.parts[6]==3?.78f:1)*Mathf.Clamp((f.earNear.x-f.chin.x)/.301f,.90f,1.08f)*BeardCanvas(look).width;
         }
         public static Vector2 BeardSamplingPoint(Appearance look,Vector2 p)
         {

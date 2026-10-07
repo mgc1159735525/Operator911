@@ -41,9 +41,9 @@ namespace Minglu
             string[] female={"映雪","素秋","南枝","晚晴","静宜","玉宁","知微","青禾","兰因","月白","含章","锦书"};
             string name;do{name=surnames[Next(s,surnames.Length)]+(sex==0?male:female)[Next(s,12)];}while(s.agents.Any(a=>a.name==name));
             var a=new Agent{id=id,name=name,intel=2+Next(s,4),stealth=2+Next(s,4),persuade=2+Next(s,4),organize=2+Next(s,4),appearance=AppearanceRules.Randomize(Next(s,int.MaxValue),sex),handler=-1};
-            // Coherent age and hair tones remain randomized, rather than white hair on every young face.
-            // All entry points use the same age-coherent, local morph generator.
-            a.appearance.parts[12]=a.appearance.parts[0]%4==3?2+Next(s,2):Next(s,2);
+            // Keep the existing single simulation-RNG draw so this cosmetic
+            // preference does not shift professions, stats or later events.
+            a.appearance.parts[12]=AppearanceRules.IsElderFace(a.appearance.parts[0])?(Next(s,100)<85?3:2):Next(s,2);
             var p=new CommandPerson{id=id,profession=Professions[Next(s,Professions.Length)],code="灯影"+(Next(s,800)+100),age=new[]{22,32,44,58}[a.appearance.parts[0]%4]+Next(s,10),loyalty=60+Next(s,31),level=1+Next(s,2),life=new[]{"照顾家人","经营铺面","进修学业","偿还旧债","照顾病亲","维系同乡"}[Next(s,6)],temper=new[]{"谨慎","热心","果断"}[Next(s,3)],originalLook=AppearanceRules.Copy(a.appearance)};
             p.institution=id==0?1+Next(s,4):(Next(s,100)<25?1+Next(s,4):0);
             a.coverRole=p.profession;s.agents.Add(a);s.command.people.Add(p);
@@ -255,6 +255,7 @@ namespace Minglu
         public static void Validate(RunState s)
         {
             var c=s.command;if(c==null||c.version!=1||c.config==null||c.people==null||c.tasks==null||c.routes==null||c.config.templates==null||c.config.templates.Count<1||c.config.coverXP<1||c.config.taskInterval<1||s.turn<1||s.turn>s.config.Value("turns")||s.random==0||s.money<0||s.agents.Count!=c.people.Count||c.people.Select(p=>p.id).Distinct().Count()!=c.people.Count)throw new Exception("组织存档结构无效");
+            AppearanceRules.Validate(s.chiefLook);
             UpgradeMissions(s);UpgradeInstitutions(s);EnsureExperience(s);ValidateStrategy(s);
             if(c.experienceRevision!=1||c.goalDeliveries<1||c.goalScore<1||c.goalLevel<1||c.goalLevel>4||c.secondGateDeliveries<1||c.routes.Any(r=>r.compromisedSlots<0||r.compromisedSlots>7))throw new Exception("本局目标或链条交接数据无效");
             if(c.notices==null)c.notices=new List<CommandNotice>();

@@ -8,14 +8,16 @@ namespace Minglu
         void SetLookOption(int n,int option)
         {
             lookDraft=AppearanceRules.AsRealistic(lookDraft);
-            if(n==13)lookDraft.ears=option;else lookDraft.parts[n]=option;
+            if(n==13)lookDraft.ears=option;
+            else if(n==0)AppearanceRules.SelectFace(lookDraft,option,lookLocks[12]);
+            else lookDraft.parts[n]=option;
         }
         string LookCategoryName(int n){return n==13?"耳朵":lookDraft.style==1&&n==0?"基础面容":AppearanceRules.Labels[n];}
         string[] LookOptions(int n)
         {
             if(lookDraft.style==1&&n==0)return lookDraft.sex==0?new[]{"清俊青年","端正壮年","坚毅中年","沉稳长者","书生","匠人","旅者","长者"}:new[]{"清秀青年","温婉壮年","干练中年","沉静长者","亲和","干练","坚韧","慈和"};
             if((n>=2&&n<=5)||n==13)return AppearancePartCatalog.Names(n);
-            if(lookDraft.style==1&&n==1)return lookDraft.sex==0?new[]{"束髻","短束","披发","巾帽"}:new[]{"高髻","低髻","侧髻","半束"};
+            if(lookDraft.style==1&&n==1)return lookDraft.sex==0?AppearanceRules.MaleHairNames:AppearanceRules.FemaleHairNames;
             return AppearanceRules.Names[n];
         }
         void DrawRealisticLook(Transform parent,Appearance look,float x,float y,float w,float h,Color tint,bool headOnly=false)

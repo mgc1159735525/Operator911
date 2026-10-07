@@ -29,6 +29,11 @@ namespace Minglu
         }
         IEnumerator CheckStudioCycle(int category)
         {
+            // Face selection intentionally defaults elders to silver. Lock the
+            // colour through its visible control for this independence test;
+            // GroomingSmoke separately tests the age default and override.
+            bool restoreColorLock=category==0&&!lookLocks[12];
+            if(restoreColorLock){yield return StudioSetOption(12,LookIndex(12));yield return Click("LookLock_12");}
             yield return StudioSetOption(category,0);
             int count=LookOptions(category).Length;
             var before=AppearanceRules.Copy(lookDraft);
@@ -49,6 +54,7 @@ namespace Minglu
             yield return null;yield return new WaitForEndOfFrame();
             if(LookIndex(category)!=1||EventSystem.current.currentSelectedGameObject==null||EventSystem.current.currentSelectedGameObject.name!="LookCurrent_"+category)throw new Exception("Portrait keyboard Submit failed or lost focus: "+category);
             yield return Click("LookPrevious_"+category);
+            if(restoreColorLock){yield return StudioSetOption(12,LookIndex(12));yield return Click("LookLock_12");yield return StudioSetOption(category,0);}
         }
         void CheckStudioPanel(string name)
         {

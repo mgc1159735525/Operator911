@@ -10,6 +10,7 @@ namespace Minglu.EditorTools
             try
             {
                 AppearanceCatalogVerification.Verify();
+                GroomingAgeVerification.Verify();
                 PaintedPortraitVerification.Verify();
                 InstitutionVerification.Verify();
                 StrategyVerification.Verify();

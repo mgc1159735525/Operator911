@@ -20,9 +20,9 @@ namespace Minglu
                 {
                     var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});
                     int outfit=(face+offset)%8;
-                    look.parts[0]=face;look.parts[1]=(face+offset)%4;look.parts[7]=outfit;look.parts[6]=sex==0?(face+offset)%4:0;
+                    look.parts[0]=face;look.parts[1]=(face+offset)%PaintedPortraitLayout.HairCount;look.parts[7]=outfit;look.parts[6]=sex==0?(face+offset)%PaintedPortraitLayout.BeardCount:0;
                     for(int feature=2;feature<=5;feature++)look.parts[feature]=(face+offset+feature-2)%AppearancePartCatalog.Names(feature).Length;
-                    look.ears=(face+offset)%AppearancePartCatalog.Ears.Length;look.parts[9]=3;look.parts[11]=offset%5;
+                    look.ears=(face+offset)%AppearancePartCatalog.Ears.Length;look.parts[9]=3;look.parts[11]=offset%5;AppearanceRules.ApplyAgeHairColor(look);
                     DrawLook(sheet,look,25+face%4*398,53+face/4*420,267,385);
                     DrawLook(sheet,look,306+face%4*398,129+face/4*420,70,103);
                     Label(sheet,"脸 "+(face+1)+"\n衣 "+(outfit+1),306+face%4*398,256+face/4*420,86,55,17,PaperInk);

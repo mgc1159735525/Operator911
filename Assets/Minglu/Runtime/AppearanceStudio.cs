@@ -28,7 +28,7 @@ namespace Minglu
         void RandomizeLook()
         {
             if(LookEditableCategories().All(category=>lookLocks[category])){lookNotice="已保留全部部件，外观未改变。";Draw();return;}
-            ChangeLook(()=>{var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex);for(int n=0;n<13;n++)if(n==8||lookLocks[n])next.parts[n]=old.parts[n];if(lookLocks[13])next.ears=old.ears;lookDraft=next;});
+            ChangeLook(()=>{var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex,lookLocks[0]?old.parts[0]:-1);for(int n=0;n<13;n++)if(n==8||lookLocks[n])next.parts[n]=old.parts[n];if(lookLocks[13])next.ears=old.ears;lookDraft=next;});
         }
         void RequestCloseAppearance()
         {
@@ -89,6 +89,12 @@ namespace Minglu
             Label(p,"点击款名或左右箭头切换；保留的部件不参与随机。",424,178,664,34,16,Muted);
             var categories=LookGroupCategories();
             for(int i=0;i<categories.Length;i++)DrawLookCycleRow(p,categories[i],232+i*68);
+            if(lookGroup==2)
+            {
+                Label(p,"头发与胡须同步设色。长者默认银白，也可手动选择。",424,522,664,30,16,Muted);
+                Button("LookAgeColor",p,"按年龄配色",424,568,208,40,()=>ChangeLook(()=>AppearanceRules.ApplyAgeHairColor(lookDraft)));
+                Label(p,"保留须发色后，随机与更换面容都会沿用该颜色。",648,570,440,46,15,Muted);
+            }
             Rule(p,424,658,664);
             Button("LookRandom",p,"随机形象",424,674,208,36,RandomizeLook);
             Button("LookPresets",p,"收藏预设",648,674,208,36,()=>{lookPopup="presets";Draw();});

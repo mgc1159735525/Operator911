@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,6 +29,103 @@ namespace Minglu.EditorTools
         {
             if(point.x<0||point.x>1||point.y<0||point.y>1)return 0;
             return texture.GetPixelBilinear(cell.x+point.x*cell.width,cell.y+(1-point.y)*cell.height).a;
+        }
+        static int SourceSignature(Texture2D texture,Rect cell,bool empty,string label)
+        {
+            int visible=0,hash=17;
+            for(int y=0;y<64;y++)for(int x=0;x<48;x++)
+            {
+                var p=texture.GetPixelBilinear(cell.x+(x+.5f)/48*cell.width,cell.y+(y+.5f)/64*cell.height);
+                if(p.a>.15f)visible++;
+                unchecked{hash=hash*31+Mathf.RoundToInt(p.a*255);}
+            }
+            Check(empty?visible==0:visible>30,"grooming source is unexpectedly blank or populated: "+label);
+            // Check the selected source rectangle itself, including authored
+            // per-style crops. Transparent gutters prevent the renderer from
+            // sampling a neighbouring hairstyle or cutting off a beard tip.
+            float dx=.6f/texture.width/cell.width,dy=.6f/texture.height/cell.height;
+            for(int i=0;i<=128;i++)
+            {
+                float t=(float)i/128;
+                Check(Alpha(texture,cell,new Vector2(dx,t))<.15f&&Alpha(texture,cell,new Vector2(1-dx,t))<.15f&&
+                      Alpha(texture,cell,new Vector2(t,dy))<.15f&&Alpha(texture,cell,new Vector2(t,1-dy))<.15f,
+                      "grooming silhouette touches its source crop or includes a neighbouring fragment: "+label);
+            }
+            return hash;
+        }
+        static void VerifyGroomingSources()
+        {
+            var hair=ReadAtlas("hair-styles");var beards=ReadAtlas("beard-styles");
+            try
+            {
+                var hairSignatures=new HashSet<int>();var beardSignatures=new HashSet<int>();
+                for(int sex=0;sex<2;sex++)for(int style=0;style<PaintedPortraitLayout.HairCount;style++)
+                {
+                    var look=AppearanceRules.Randomize(17,sex);look.parts[1]=style;
+                    Check(hairSignatures.Add(SourceSignature(hair,PaintedPortraitLayout.Hair(look),false,"hair "+sex+"/"+style)),"duplicate hairstyle source");
+                }
+                for(int style=0;style<PaintedPortraitLayout.BeardCount;style++)
+                {
+                    var look=AppearanceRules.Randomize(17,0);look.parts[6]=style;
+                    Check(beardSignatures.Add(SourceSignature(beards,PaintedPortraitLayout.Beard(look),style==0,"beard "+style)),"duplicate beard source");
+                }
+                var whiteShadow=PaintedPortraitLayout.HairShadow(3);var whiteLight=PaintedPortraitLayout.HairLight(3);
+                Check(whiteShadow.grayscale>.60f&&whiteLight.grayscale>.95f,"silver pigment reads as dark grey rather than white");
+                for(int color=0;color<4;color++)Check(PaintedPortraitLayout.HairLight(color).grayscale>PaintedPortraitLayout.HairShadow(color).grayscale+.20f,"hair pigment loses strand contrast");
+                Debug.Log("MINGLU_GROOMING_SOURCES_SUCCESS: 16 distinct nonempty hair sources, 7 distinct beards and one empty source, transparent source gutters, white hair/beard pigment with strand contrast");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(beards);}
+        }
+        static void VerifyScalpAndHeadwear()
+        {
+            var hair=ReadAtlas("hair-styles");var body=ReadAtlas("portrait-bases");int scalpProbes=0,frameEdges=0;
+            var errors=new List<string>();
+            try
+            {
+                for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int style=0;style<PaintedPortraitLayout.HairCount;style++)
+                {
+                    var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});look.parts[0]=face;look.parts[1]=style;
+                    var f=PaintedPortraitLayout.Landmarks(look);var bodyCell=PaintedPortraitLayout.Base(look);var hairCell=PaintedPortraitLayout.Hair(look);
+                    // The exposed brown crescent sat on the far cranial arc,
+                    // above the forehead, where every authored style has hair.
+                    // Find that arc from this actual face's alpha silhouette;
+                    // do not mistake the legal central forehead for bald scalp.
+                    bool reportedArc=false;
+                    foreach(float offset in new[]{.080f,.105f,.130f})
+                    {
+                        float y=f.skull.y+offset;float edge=-1;
+                        for(int x=0;x<=160;x++)
+                        {
+                            // At the top of a narrow elderly skull its outer
+                            // arc can lie right of the far-eye centre. Search
+                            // as far as the skull centre, still taking only
+                            // the very first opaque pixel from the left.
+                            float px=.10f+x*(f.skull.x-.10f)/160;
+                            if(Alpha(body,bodyCell,new Vector2(px,y))>.95f){edge=px;break;}
+                        }
+                        if(edge<0){if(!reportedArc)errors.Add("cannot locate far skull arc: "+sex+"/"+face);reportedArc=true;continue;}
+                        var p=new Vector2(edge+.006f,y);float coverage=Alpha(hair,hairCell,PaintedPortraitLayout.HairSamplingPoint(look,p));
+                        if(coverage<=.65f&&!reportedArc){errors.Add("exposed far-side scalp crescent: "+sex+"/"+face+"/"+style+" at "+p+" alpha "+coverage.ToString("F3"));reportedArc=true;}
+                        scalpProbes++;
+                    }
+                    foreach(var crop in new[]{PaintedPortraitLayout.FullCrop,PaintedPortraitLayout.DetailCrop})
+                    {
+                        // Sample inside the frame edge: source cell gutters
+                        // alone cannot detect a bun cut off by the UI mask.
+                        bool reportedEdge=false;
+                        foreach(float inset in new[]{.004f,.010f})for(int x=0;x<=160;x++)
+                        {
+                            var p=new Vector2(.10f+x/160f,crop.yMin+inset);
+                            float alpha=Alpha(hair,hairCell,PaintedPortraitLayout.HairSamplingPoint(look,p));
+                            if(alpha>=.10f&&!reportedEdge){errors.Add("headwear touches portrait top mask: "+sex+"/"+face+"/"+style+" crop "+crop.yMin+" at "+p);reportedEdge=true;}
+                        }
+                        frameEdges++;
+                    }
+                }
+                Check(errors.Count==0,"headwear silhouette regressions (one per arc/frame):\n"+string.Join("\n",errors.ToArray()));
+                Debug.Log("MINGLU_GROOMING_SILHOUETTE_SUCCESS: "+scalpProbes+" actual far-skull alpha probes covered, "+frameEdges+" full/detail frame edges clear of hair; portrait sheets still reviewed visually");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);}
         }
         static void VerifyFeatureFitting()
         {
@@ -61,7 +159,7 @@ namespace Minglu.EditorTools
                     surfaces++;
                 }
                 for(int c=2;c<=5;c++)look.parts[c]=0;
-                for(int ear=0;ear<8;ear++)for(int hair=0;hair<4;hair++)
+                for(int ear=0;ear<8;ear++)for(int hair=0;hair<PaintedPortraitLayout.HairCount;hair++)
                 {
                     look.ears=ear;look.parts[1]=hair;
                     var bounds=PaintedPortraitLayout.HairCanvas(look);
@@ -83,12 +181,12 @@ namespace Minglu.EditorTools
                     earPairs++;
                 }
                 look.ears=0;
-                if(sex==0)for(int beard=1;beard<4;beard++)for(int mouth=0;mouth<8;mouth++)for(int nose=0;nose<8;nose++)
+                if(sex==0)for(int beard=1;beard<PaintedPortraitLayout.BeardCount;beard++)for(int mouth=0;mouth<8;mouth++)for(int nose=0;nose<8;nose++)
                 {
                     look.parts[6]=beard;look.parts[5]=mouth;look.parts[4]=nose;
                     var center=new Vector2(f.mouth.x,f.mouth.y);
-                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,center),new Vector2(.400f,.382f))<.0001f,"edited mouth loses beard anchor");
-                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,f.chin),new Vector2(.394f,.510f))<.0001f,"edited mouth displaces beard from the chin");
+                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,center),PaintedPortraitLayout.BeardSource(look,0))<.0001f,"edited mouth loses beard anchor");
+                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,f.chin),PaintedPortraitLayout.BeardSource(look,1))<.0001f,"edited mouth displaces beard from the chin");
                     Check(PaintedPortraitLayout.BeardLipAlpha(look,center)==0,"beard paints over the lip opening");
                     float previous=-10;
                     for(int y=0;y<=60;y++)
@@ -103,7 +201,7 @@ namespace Minglu.EditorTools
         }
         static void VerifyRegistration()
         {
-            var hair=ReadAtlas("hair-overlays");var body=ReadAtlas("portrait-bases");var outfit=ReadAtlas("outfit-overlays");
+            var hair=ReadAtlas("hair-styles");var body=ReadAtlas("portrait-bases");var outfit=ReadAtlas("outfit-overlays");
             try
             {
                 for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)
@@ -138,7 +236,7 @@ namespace Minglu.EditorTools
                             Check(dx.x*dy.y-dx.y*dy.x>0,"collar registration folds the garment");
                         }
                     }
-                    for(int h=0;h<4;h++)
+                    for(int h=0;h<PaintedPortraitLayout.HairCount;h++)
                     {
                         look.parts[1]=h;var bounds=PaintedPortraitLayout.HairCanvas(look);
                         for(int anchor=0;anchor<4;anchor++)
@@ -151,13 +249,13 @@ namespace Minglu.EditorTools
                         var opening=PaintedPortraitLayout.HairSamplingPoint(look,new Vector2(feature.earNear.x,feature.earNear.y));
                         Check(Alpha(hair,PaintedPortraitLayout.Hair(look),opening)<.20f,"registered ear opening contains opaque hair pixels");
                     }
-                    if(sex==0)for(int beard=1;beard<4;beard++)
+                    if(sex==0)for(int beard=1;beard<PaintedPortraitLayout.BeardCount;beard++)
                     {
                         look.parts[6]=beard;
                         var atMouth=PaintedPortraitLayout.BeardSamplingPoint(look,mouth);
                         var atChin=PaintedPortraitLayout.BeardSamplingPoint(look,feature.chin);
-                        Check(Vector2.Distance(atMouth,new Vector2(.400f,.382f))<.0001f,"beard mouth anchor drift");
-                        Check(Vector2.Distance(atChin,new Vector2(.394f,.510f))<.0001f,"beard chin anchor drift");
+                        Check(Vector2.Distance(atMouth,PaintedPortraitLayout.BeardSource(look,0))<.0001f,"beard mouth anchor drift");
+                        Check(Vector2.Distance(atChin,PaintedPortraitLayout.BeardSource(look,1))<.0001f,"beard chin anchor drift");
                         float last=-10;
                         for(int sample=0;sample<=40;sample++)
                         {
@@ -176,32 +274,29 @@ namespace Minglu.EditorTools
                     Check(Alpha(outfit,cell,shoulder)>.90f,"expected garment shoulder moved");
                     Check(PaintedPortraitLayout.OutfitEdgeAlpha(look,sliver)==0&&PaintedPortraitLayout.OutfitEdgeAlpha(look,shoulder)==1,"garment edge trim removes a shoulder or retains a sliver");
                 }
-                var sideBun=AppearanceRules.Randomize(17,1);sideBun.parts[1]=2;var bunCell=PaintedPortraitLayout.Hair(sideBun);
-                var strayHair=new Vector2(.96f,.85f);var bun=new Vector2(.88f,.45f);var strand=new Vector2(.71f,.75f);
-                Check(Alpha(hair,bunCell,strayHair)>.20f,"side-bun atlas fragment moved; recheck margin bounds");
-                Check(Alpha(hair,bunCell,bun)>.90f&&Alpha(hair,bunCell,strand)>.20f,"side-bun or neck strand source moved");
-                Check(PaintedPortraitLayout.HairSourceAlpha(sideBun,strayHair)==0&&PaintedPortraitLayout.HairSourceAlpha(sideBun,bun)==1&&PaintedPortraitLayout.HairSourceAlpha(sideBun,strand)==1,"side-bun trim changes the authored silhouette or retains debris");
-                Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 continuous necks, 384 collar bindings without fabric folds, 256 hair bindings, 64 actual transparent ear openings, 24 separate lip/jaw bindings; visual sheets still required");
+                Debug.Log("MINGLU_PORTRAIT_REGISTRATION_SUCCESS: 16 continuous necks, 384 collar bindings without fabric folds, 512 hair bindings, 128 actual transparent ear openings, 56 separate lip/jaw bindings; visual sheets still required");
             }
             finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);UnityEngine.Object.DestroyImmediate(outfit);}
         }
         public static void Verify()
         {
-            CheckAtlas("portrait-bases",4,4);CheckAtlas("hair-overlays",4,2);CheckAtlas("outfit-overlays",4,4,1);CheckAtlas("beard-overlays",3,1);
+            CheckAtlas("portrait-bases",4,4);CheckAtlas("hair-styles",4,4);CheckAtlas("outfit-overlays",4,4,1);CheckAtlas("beard-styles",4,2);
             var shader=Resources.Load<Shader>("Minglu/Art/PaintedPortrait");
             Check(shader!=null&&!ShaderUtil.ShaderHasError(shader),"shader compilation");
+            VerifyGroomingSources();
+            VerifyScalpAndHeadwear();
             VerifyRegistration();
             VerifyFeatureFitting();
             int combinations=0;
-            for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int hair=0;hair<4;hair++)for(int outfit=0;outfit<8;outfit++)
+            for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int hair=0;hair<PaintedPortraitLayout.HairCount;hair++)for(int outfit=0;outfit<8;outfit++)
             {
                 var look=AppearanceRules.Randomize(17,sex);look.parts[0]=face;look.parts[1]=hair;look.parts[7]=outfit;
-                for(int beard=0;beard<(sex==0?4:1);beard++)
+                for(int beard=0;beard<(sex==0?PaintedPortraitLayout.BeardCount:1);beard++)
                 {
                     look.parts[6]=beard;AppearanceRules.Validate(look);
                     CheckCell(PaintedPortraitLayout.Base(look));CheckCell(PaintedPortraitLayout.Hair(look));CheckCell(PaintedPortraitLayout.Outfit(look));CheckCell(PaintedPortraitLayout.Beard(look));
                     var hairRect=PaintedPortraitLayout.HairRect(look);var hairUV=PaintedPortraitLayout.Hair(look);
-                    Check(Mathf.Abs(hairRect.width/hairRect.height-hairUV.width/hairUV.height*2)<.001f,"hair registration stretches source pixels");
+                    Check(Mathf.Abs(hairRect.width/hairRect.height-hairUV.width/hairUV.height)<.001f,"hair registration stretches source pixels");
                     var outfitRect=PaintedPortraitLayout.OutfitRect(look);
                     Check(Mathf.Abs(outfitRect.width/outfitRect.height*2f/3-1)<.001f,"square clothes stretched");
                     combinations++;

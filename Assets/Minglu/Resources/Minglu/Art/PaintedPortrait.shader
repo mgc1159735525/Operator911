@@ -37,7 +37,8 @@ Shader "Minglu/PaintedPortrait"
    float4 _EyeShape,_BrowShape,_NoseShape,_MouthShape,_EarShape;
    float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
    float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_CollarAnchor3,_CollarAnchor4,_CollarAnchor5,_CollarAnchor6,_CollarAnchor7,_Jaw;
-   float _LayerMode,_BackHair,_CapStrayCut,_SideBunStrayCut,_OutfitLeftTrim,_FarScalpPad,_BeardJawWidth;
+   float4 _HairCanvas;
+   float _LayerMode,_BackHair,_CapCloth,_OutfitLeftTrim,_FarScalpPad,_BeardJawWidth;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 morph(float2 p,float4 feature,float2 size,float tilt)
    {
@@ -146,7 +147,25 @@ Shader "Minglu/PaintedPortrait"
       float faceProtection=1-smoothstep(jawY+.010,jawY+.026,p.y);
       c.a*=1-body.a*faceProtection;
      }
-     else c.rgb=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.42));
+     else
+     {
+      // The beard sheet was painted on a brighter value range than the
+      // scalp hair. Normalize that source light before applying their shared
+      // pigment, retaining strand contrast instead of a flat white sticker.
+      if(_LayerMode>2.5)luminance=max(0,luminance-.10);
+      float3 dyed=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.42));
+      float preserve=0;
+      if(_LayerMode<1.5)
+      {
+       float2 source=_HairCanvas.xy+q*_HairCanvas.zw;
+       float capEdge=.552+max(0,source.x-.383)*.32;
+       float cap=max(1-smoothstep(capEdge-.006,capEdge+.012,source.y),smoothstep(.72,.80,source.x)*smoothstep(.59,.67,source.y));
+       // A white-haired elder keeps a cloth cap and coloured hair ornaments;
+       // those materials are not strands and must not turn ivory with age.
+       preserve=max(_CapCloth*cap,smoothstep(.10,.18,c.r-c.b));
+      }
+      c.rgb=lerp(dyed,c.rgb,preserve);
+     }
     }
     if(_LayerMode>.5&&_LayerMode<1.5)
     {
@@ -154,13 +173,6 @@ Shader "Minglu/PaintedPortrait"
      // passes are alpha-over compensated to avoid doubled dark edge strands.
      float front=1-smoothstep(.590,.700,p.y);
      c.a*=_BackHair>.5?(1-front)/max(.001,1-c.a*front):front;
-     // A few pixels from the adjacent loose-hair cell overlap the cap cell's
-     // otherwise empty lower-left margin. Exclude that margin, not the cap.
-     float stray=(1-smoothstep(.060,.090,q.x))*smoothstep(.64,.69,q.y);
-     c.a*=1-_CapStrayCut*stray;
-     // The side bun's lower-right margin contains a fragment of the adjacent
-     // long-hair cell. This source-space cut ends in its transparent moat.
-     c.a*=1-_SideBunStrayCut*smoothstep(.88,.915,q.x)*smoothstep(.755,.79,q.y);
      // Preserve the painted opening of the near ear. Ear edits and age no
      // longer leave an opaque lock across the concha after hair registration.
      float ear=1-smoothstep(.45,1,length((featurePoint-_EarNear.xy)/(_EarNear.zw*float2(.58,.65))));

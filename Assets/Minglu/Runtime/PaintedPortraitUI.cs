@@ -9,9 +9,9 @@ namespace Minglu
         void DrawPaintedLook(Transform parent,Appearance look,float x,float y,float w,float h,Color tint,bool headOnly=false)
         {
             if(paintedBases==null)paintedBases=Resources.Load<Texture2D>("Minglu/Art/Painted/portrait-bases");
-            if(paintedHair==null)paintedHair=Resources.Load<Texture2D>("Minglu/Art/Painted/hair-overlays");
+            if(paintedHair==null)paintedHair=Resources.Load<Texture2D>("Minglu/Art/Painted/hair-styles");
             if(paintedOutfits==null)paintedOutfits=Resources.Load<Texture2D>("Minglu/Art/Painted/outfit-overlays");
-            if(paintedBeards==null)paintedBeards=Resources.Load<Texture2D>("Minglu/Art/Painted/beard-overlays");
+            if(paintedBeards==null)paintedBeards=Resources.Load<Texture2D>("Minglu/Art/Painted/beard-styles");
             var bg=Hex(new[]{"DDD0AB","A9B4B4","B8A186","E8DDC5"}[look.parts[9]])*tint;
             var frame=Box("PaintedPortrait",parent,x,y,w,h,bg);frame.GetComponent<Image>().raycastTarget=false;frame.gameObject.AddComponent<RectMask2D>();
             if(paintedBases==null||paintedHair==null||paintedOutfits==null||paintedBeards==null||Resources.Load<Shader>("Minglu/Art/PaintedPortrait")==null)
