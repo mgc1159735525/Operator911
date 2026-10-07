@@ -1,0 +1,113 @@
+{
+  "revision": 1,
+  "scenarios": [
+    {
+      "id": 0,
+      "title": "未寄出的名单",
+      "premise": "一份涉及街坊与成员家属的清查名单正在流转。上级要求你在二十夜内查明影响、组织安置，并证明本地组织能够继续运转。",
+      "endingSuccess": "名单造成的威胁得到确认，受影响的人有了接应，地区组织也保住了继续工作的力量。上级收到的不是一串成绩，而是你们共同争取到的时间。",
+      "endingPartial": "部分街坊得到帮助，但名单背后的威胁仍未完全解决。你留下的互助关系会继续发挥作用，未完成的委任则交由后来的人接续。",
+      "chapters": [
+        {
+          "title": "名单的分量",
+          "briefing": "传闻一夜之间传遍街坊。上级需要知道谁确实受到影响。你可以用政务署已送达的报告核证，也可以让成员逐一协调当事人的求助。",
+          "successText": "零散传闻变成了可处理的名单。组织可以把精力放在确实需要帮助的人身上。",
+          "approaches": [
+            {"title":"核证人事文书","body":"比对政务署报告与上级已有记录，形成一份可据以安排人员的核证结论。","skill":0,"required":2,"steps":1,"evidenceInstitution":1,"reward":5,"money":0,"pressureRelief":4,"traceRelief":0,"heartsReward":0},
+            {"title":"协调街坊求助","body":"第一阶段整理当事人的请求，第二阶段核对互助关系。花费更多时间，但这些人会记住组织的帮助。","skill":2,"required":1,"steps":2,"evidenceInstitution":0,"reward":5,"money":0,"pressureRelief":0,"traceRelief":0,"heartsReward":8}
+          ]
+        },
+        {
+          "title": "有去处的人",
+          "briefing": "确认受影响的人只是开始。名单中的老账房还照顾着病亲，年轻学徒不愿离开工作。安排必须兼顾他们的生活，否则纸上的撤离毫无意义。",
+          "successText": "各家的困难得到具体安排，临时救济也有了负责人。组织没有把需要帮助的人当成可以随意搬动的数字。",
+          "approaches": [
+            {"title":"核对临检影响","body":"利用巡防局报告划定本轮受影响的范围，集中安置有限的人手与物资。","skill":3,"required":2,"steps":1,"evidenceInstitution":3,"reward":6,"money":0,"pressureRelief":6,"traceRelief":0,"heartsReward":2},
+            {"title":"筹办互助安置","body":"先与街坊协调住处和照护，再把生活补助交给负责的人。任务分两夜完成，兼顾未列入正式名单的困难家庭。","skill":3,"required":1,"steps":2,"evidenceInstitution":0,"reward":6,"money":4,"pressureRelief":0,"traceRelief":0,"heartsReward":10}
+          ]
+        },
+        {
+          "title": "留下继续工作的人",
+          "briefing": "上级要求递交最终判断：哪些联系可以保留，哪些人应该休养。你的职责是组织后续工作，并为仍在岗位上的成员保留替补。",
+          "successText": "地区委任完成：街坊安置与组织后续工作都有了着落。接下来要证明这套安排能持续送达报告，而非只完成一次应急行动。",
+          "approaches": [
+            {"title":"汇审驻军变动","body":"结合已送达的驻军调令与前两章成果，向上级提交组织调整的依据。准确的判断可以减少地区压力。","skill":0,"required":2,"steps":1,"evidenceInstitution":4,"reward":8,"money":4,"pressureRelief":8,"traceRelief":0,"heartsReward":0},
+            {"title":"建立后续照应","body":"先确认现有人手的长期安排，再组织街坊承担互助事务。你争取的是韧性，而不只是一个较早的完成日期。","skill":3,"required":2,"steps":2,"evidenceInstitution":0,"reward":8,"money":0,"pressureRelief":2,"traceRelief":8,"heartsReward":6}
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "title": "冬粮账簿",
+      "premise": "城里的冬粮迟迟没有发放，成员与街坊都面临生活压力。上级要求查清缺口、组织救济，并建立能够维持到下一季的地区支持。",
+      "endingSuccess": "冬粮缺口得到核实，救济与长期支持相继建立。组织不再只依靠少数人透支自己的生活，街坊也知道这盏灯会为谁而亮。",
+      "endingPartial": "一部分救济已经抵达，但持续供应仍有缺口。街坊记得受到的帮助，也记得尚未兑现的承诺。地区组织需要从这些承诺重新出发。",
+      "chapters": [
+        {
+          "title": "账上有粮",
+          "briefing": "账目显示粮款已经支出，街坊却没有领到粮食。直接核证税务署报告能够较快厘清缺口；逐户整理求助则更慢，却有助于建立信任。",
+          "successText": "账面与生活之间的差额终于有了具体数目。组织知道这次需要补足多少，而不再被传言带着走。",
+          "approaches": [
+            {"title":"复核征收账目","body":"用税务署报告核对粮款与征收记录，整理出上级可以追问的缺口。","skill":0,"required":2,"steps":1,"evidenceInstitution":2,"reward":5,"money":8,"pressureRelief":0,"traceRelief":0,"heartsReward":0},
+            {"title":"整理缺粮求助","body":"先收集街坊实际困难，再与互助负责人核对人数。两轮工作完成后，组织获得更清楚的救济优先顺序。","skill":2,"required":1,"steps":2,"evidenceInstitution":0,"reward":5,"money":0,"pressureRelief":0,"traceRelief":0,"heartsReward":10}
+          ]
+        },
+        {
+          "title": "先顾哪一头",
+          "briefing": "临时物资不够满足所有请求。商户愿意帮忙，但需要可信的分配依据。你必须安排人把优先次序解释清楚，避免援助反而引发争执。",
+          "successText": "救济有了可说明的顺序。成员不必独自承担每一次争执，困难家庭也知道下一批援助为何时而来。",
+          "approaches": [
+            {"title":"核证救济名额","body":"依据政务署报告整理现有救济名额，减少重复申请，把协调资源留给真正缺口。","skill":3,"required":2,"steps":1,"evidenceInstitution":1,"reward":6,"money":4,"pressureRelief":3,"traceRelief":0,"heartsReward":4},
+            {"title":"组织分批救济","body":"先与商户谈妥分批安排，再向受助街坊解释顺序。此法不依赖机构档案，但要占用两次行动。","skill":2,"required":1,"steps":2,"evidenceInstitution":0,"reward":6,"money":0,"pressureRelief":2,"traceRelief":0,"heartsReward":12}
+          ]
+        },
+        {
+          "title": "下一季的约定",
+          "briefing": "一次救济解决不了漫长的冬天。上级希望你留下清楚的账目与持续帮扶，让成员可以回到正常生活，而不必永远救火。",
+          "successText": "冬粮委任完成：缺口、分配与后续支持都有了记录。组织需要继续运转，才能把这些约定变成下一季的生活。",
+          "approaches": [
+            {"title":"汇审后续粮款","body":"核对税务署新近送达的账目与前两章安排，为上级确认下一季的资金需求。已有归档报告可以反复作为依据。","skill":0,"required":2,"steps":1,"evidenceInstitution":2,"reward":8,"money":12,"pressureRelief":0,"traceRelief":0,"heartsReward":2},
+            {"title":"订立街坊互助约定","body":"先明确轮值与照护责任，再把商户、街坊和成员的安排汇成一份长期约定。更慢，但支持不会只掌握在一个人手里。","skill":3,"required":2,"steps":2,"evidenceInstitution":0,"reward":8,"money":4,"pressureRelief":2,"traceRelief":6,"heartsReward":10}
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "断线之前",
+      "premise": "邻区的定期消息突然中断。本区成员仍有家人和同乡在那里。上级要求核实局势、照顾失联者留下的人，并恢复可信的地区协作。",
+      "endingSuccess": "邻区失联没有继续吞掉本地组织。你们查明影响、接住了留下的人，也建立起能够交接的协作。最值得珍惜的成果，是不再只有一个人知道下一步该怎么办。",
+      "endingPartial": "一些等待消息的人已经得到答复，地区协作却仍未完全恢复。组织留下的记录与照应，成为后来者重新建立信任的起点。",
+      "chapters": [
+        {
+          "title": "消息停下的地方",
+          "briefing": "没有消息本身不代表最坏的结果。你需要在不让所有成员跟着恐慌的前提下，给出一个有依据的判断。",
+          "successText": "失联影响的范围得到确认，成员终于知道哪些是事实、哪些只是担心。下一步可以按真实需求安排支援。",
+          "approaches": [
+            {"title":"核对巡防通告","body":"以已送达的巡防局报告核对本轮地区变动，向组织解释已确认与尚未知晓的部分。","skill":0,"required":2,"steps":1,"evidenceInstitution":3,"reward":5,"money":0,"pressureRelief":5,"traceRelief":0,"heartsReward":0},
+            {"title":"汇总成员近况","body":"先由成员整理亲友的近况，再由另一轮协调排除相互矛盾的说法。不需要特定任职，但需要时间与耐心。","skill":2,"required":1,"steps":2,"evidenceInstitution":0,"reward":5,"money":0,"pressureRelief":2,"traceRelief":0,"heartsReward":6}
+          ]
+        },
+        {
+          "title": "留下来的家人",
+          "briefing": "一名失联者的病亲需要照顾，另一家的铺面无人看管。成员希望帮忙，却也不能放弃自己的岗位。组织需要给出能交接的安排。",
+          "successText": "生活压力不再集中到少数成员身上。援助有了持续的分工，地区也少了一份由孤立无援带来的不安。",
+          "approaches": [
+            {"title":"核实临时帮扶窗口","body":"根据政务署报告确认仍可使用的帮扶名额，把紧缺的成员时间留给无法得到公开帮助的人。","skill":3,"required":2,"steps":1,"evidenceInstitution":1,"reward":6,"money":4,"pressureRelief":2,"traceRelief":0,"heartsReward":4},
+            {"title":"安排亲友照护","body":"先接住最迫切的照护请求，再协调同乡轮值。两个阶段可由不同成员负责，避免把全部责任压给一个人。","skill":3,"required":1,"steps":2,"evidenceInstitution":0,"reward":6,"money":0,"pressureRelief":0,"traceRelief":4,"heartsReward":10}
+          ]
+        },
+        {
+          "title": "能够交接的工作",
+          "briefing": "恢复一封消息容易，恢复可信的协作更难。上级要求一份能由其他负责人读懂的地区工作交接，避免下一次失联再次带走所有经验。",
+          "successText": "地区协作委任完成。上级获得了明确的判断，成员有了能交接的工作安排；组织还需要用持续运转证明这些安排有效。",
+          "approaches": [
+            {"title":"核证地区调令","body":"汇审驻军司令部报告与前两章情况，完成有关地区工作范围的交接判断。","skill":0,"required":2,"steps":1,"evidenceInstitution":4,"reward":8,"money":4,"pressureRelief":2,"traceRelief":8,"heartsReward":0},
+            {"title":"建立地区交接约定","body":"先整理目前仍可承担的工作，再协调替补与休养次序。时间投入更多，但可以避免经验只留在某一名骨干手中。","skill":3,"required":2,"steps":2,"evidenceInstitution":0,"reward":8,"money":0,"pressureRelief":4,"traceRelief":8,"heartsReward":4}
+          ]
+        }
+      ]
+    }
+  ]
+}

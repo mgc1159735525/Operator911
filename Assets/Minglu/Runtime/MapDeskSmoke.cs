@@ -40,7 +40,7 @@ namespace Minglu
             for(int attempts=0;attempts<12;attempts++)
             {
                 if(atTitle&&settingsFromGame){yield return Click("HomeBack");continue;}
-                string back=modal=="missionPlan"?"MissionBack":modal=="memberDetails"?"MemberDetailsClose":modal=="commandOverview"?"OverviewClose":modal=="routePicker"?"RoutePickerCancel":modal=="routeDetails"?"RouteDetailsClose":modal=="strategyDetails"?"StrategyDetailsClose":modal=="districtDetails"?"DistrictClose":modal=="institutionPicker"?"InstitutionCancel":modal=="compareCandidates"?"CompareBack":modal=="commandHelp"?"CommandGuideBack":modal=="commandSettings"?"CommandSettingsBack":modal=="menu"?"CommandResume":modal=="routeReplace"?"RouteReplaceCancel":modal=="commandConfirm"?"CommandBack":"";
+                string back=modal=="campaignDossier"?"CampaignClose":modal=="noticeArchive"?"NoticeArchiveClose":modal=="missionPlan"?"MissionBack":modal=="memberDetails"?"MemberDetailsClose":modal=="commandOverview"?"OverviewClose":modal=="routePicker"?"RoutePickerCancel":modal=="routeDetails"?"RouteDetailsClose":modal=="strategyDetails"?"StrategyDetailsClose":modal=="districtDetails"?"DistrictClose":modal=="institutionPicker"?"InstitutionCancel":modal=="compareCandidates"?"CompareBack":modal=="commandHelp"?"CommandGuideBack":modal=="commandSettings"?"CommandSettingsBack":modal=="menu"?"CommandResume":modal=="routeReplace"?"RouteReplaceCancel":modal=="commandConfirm"?"CommandBack":"";
                 if(back!=""){yield return Click(back);continue;}
                 if(modal!="")throw new Exception("Smoke cannot dismiss this screen through a supported return control: "+modal);
                 if(commandTab!=3){yield return Click("CommandPageClose");continue;}
@@ -126,6 +126,7 @@ namespace Minglu
         }
         IEnumerator DeskGuidanceSmoke(string path)
         {
+            string original=JsonUtility.ToJson(State);State.command.campaignEnabled=false;
             string saved=JsonUtility.ToJson(State);int originalAgent=selectedAgent,originalTask=commandTask;
             try
             {
@@ -201,7 +202,7 @@ namespace Minglu
                 if(State.command.notices.Count!=0||modal!="missionPlan"||commandTask!=rescueNoticeTask.id)throw MapDeskFailure("Grouped bulletin lost the urgent rescue destination");
                 Debug.Log("MINGLU_GUIDANCE_UI_SUCCESS: first task/result pacing, shared stage/investigation timing, rescue, policy, appointment, unavailable crew, grouped notices, navigation only");
             }
-            finally{State=JsonUtility.FromJson<RunState>(saved);selectedAgent=originalAgent;commandTask=originalTask;commandTab=3;modal="";Draw();}
+            finally{State=JsonUtility.FromJson<RunState>(original);selectedAgent=originalAgent;commandTask=originalTask;commandTab=3;modal="";Draw();}
         }
         IEnumerator ReconDeskSmoke(string path)
         {

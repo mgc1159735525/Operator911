@@ -2,9 +2,9 @@
 [Setup]
 AppId={{31982D7D-14E4-4AE1-B273-EBCDC960DA63}
 AppName={#GameName}
-AppVersion=0.16.1
+AppVersion=0.17.0
 AppPublisher=Minglu
-DefaultDirName=D:\Games\MingluCity
+DefaultDirName={code:DefaultInstallDir}
 DefaultGroupName={#GameName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
@@ -37,3 +37,12 @@ Name: "{group}\卸载明路·地下"; Filename: "{uninstallexe}"
 Filename: "{app}\MingluCity.exe"; Description: "启动明路·地下"; Flags: nowait postinstall skipifsilent
 
 ; Save files are outside {app}. No uninstall deletion is applied to user saves.
+
+[Code]
+function DefaultInstallDir(Param: string): string;
+begin
+  if DirExists('D:\') then
+    Result := 'D:\Games\MingluCity'
+  else
+    Result := ExpandConstant('{localappdata}\Programs\MingluCity');
+end;

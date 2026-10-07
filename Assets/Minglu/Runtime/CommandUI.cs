@@ -60,6 +60,8 @@ namespace Minglu
             }
             var neglected=State.command.people.FirstOrDefault(p=>p.neglect>=3&&NeedsAttention(CommandRules.Agent(State,p.id)));
             if(neglected!=null)return new CommandStep{message=CommandName(neglected.id)+"的家事积压：安排轮休，再决定是否替换链条岗位。",label="处理成员家事  ›",page=2,actor=neglected.id,dialog="memberDetails"};
+            var campaignStep=CampaignNextStep();
+            if(campaignStep!=null)return campaignStep;
             int assigned=State.command.tasks.Count(t=>t.status==0&&t.actor>=0);
             if(assigned>0&&feasible.Count>0)return new CommandStep{message="今夜已安排 "+assigned+" 项；另有 "+feasible.Count+" 项可选待办。可以结束今夜，不必派满所有成员。",label="查看可选待办  ›",page=0,ready=true};
             if(feasible.Count>0)return TaskStep(feasible[0],"待授权：比较人选与方案，决定今夜是否执行。","安排待办任务  ›");
@@ -81,7 +83,9 @@ namespace Minglu
             else if(modal=="districtDetails")DrawDistrictDetails();
             else if(modal=="routeDetails")DrawRouteDetails();
             else if(modal=="strategyDetails")DrawStrategyDetails();
+            else if(modal=="campaignDossier")DrawCampaignDossier();
             else if(modal=="commandOverview")DrawCommandOverview();
+            else if(modal=="noticeArchive")DrawNoticeArchive();
             else if(modal=="menu")DrawCommandMenu();
             else if(modal=="commandSettings")DrawCommandPreferences();
             else if(modal=="commandHelp")DrawCommandGuide();
@@ -268,7 +272,7 @@ namespace Minglu
         bool NoticeNeedsRescue(CommandNotice notice)
         {return State.command.tasks.Any(t=>t.status==0&&t.operation==2&&(t.id==notice.task||notice.actor>=0&&t.target==notice.actor));}
         string NoticeDestination(CommandNotice notice)
-        {return NoticeNeedsRescue(notice)?"查看救援任务":notice.tab==0?"查看相关任务":notice.tab==1?"检查联络网":notice.tab==2?"查看成员情况":notice.tab==5?"查看地方事务":"查看执行报告";}
+        {return NoticeNeedsRescue(notice)?"查看救援任务":notice.tab==6?"查看主线进展":notice.tab==0?"查看相关任务":notice.tab==1?"检查联络网":notice.tab==2?"查看成员情况":notice.tab==5?"查看地方事务":"查看执行报告";}
         void AcknowledgeNotice(bool navigate)
         {
             var notice=State.command.notices.OrderBy(n=>NoticeNeedsRescue(n)?0:1).FirstOrDefault();
@@ -276,6 +280,7 @@ namespace Minglu
         }
         void ReadCommandNotices(CommandNotice n,bool navigate)
         {
+            CommandRules.EnsureNoticeArchive(State);
             State.command.notices.Clear();
             commandTab=3;modal="";
             if(navigate)
@@ -288,12 +293,27 @@ namespace Minglu
                     if(State.command.tasks.Any(t=>t.id==n.task&&t.status==0))FocusCommandTask(n.task);
                     else{modal="";commandTab=0;}
                 }
-                else{modal="";commandTab=n.tab;}
+                else if(n.tab==6&&CommandRules.HasCommandCampaign(State)){commandTab=3;campaignPage=0;modal="campaignDossier";}
+                else{modal="";commandTab=UnityEngine.Mathf.Clamp(n.tab,0,5);}
             }
             Save(false);Draw();
         }
         void DrawCommandEnding()
         {
+            if(CommandRules.HasCommandCampaign(State))
+            {
+                var campaign=State.command.campaign;
+                var panel=CommandModal(State.won?"委任完成 / "+campaign.scenarioData.title:"行动落幕 / "+campaign.scenarioData.title,750,1040);
+                Label(panel,CommandRules.CampaignProgressText(State)+"  ·  第 "+State.turn+" 夜",32,99,976,29,20,Gold);
+                CampaignBodyText(panel,"CampaignEndingBody",State.ending,32,146,976,159,21);
+                Rule(panel,32,326,976);
+                string people="归队 "+State.agents.Count(a=>a.condition==Condition.Active)+" 人 · 待救 "+State.agents.Count(a=>a.condition==Condition.Captured)+" 人 · 离队 "+State.agents.Count(a=>a.condition==Condition.Lost)+" 人";
+                Label(panel,people+"\n完成任务 "+State.command.completed+" · 情报送达 "+State.command.delivered+" · 最高表身份 "+State.command.people.Max(x=>x.level)+" 级",32,347,976,66,20,Muted);
+                CampaignBodyText(panel,"CampaignEndingHistory",campaign.history.Count>0?string.Join("\n\n",campaign.history.ToArray()):"本局未完成章节。每条主线均提供不依赖机构档案的方法，可更早安排，并为后续阶段留下时间。",32,436,976,190,19);
+                Button("CommandEndReview",panel,"回看每夜决定",32,672,318,48,()=>{modal="endingReview";reportNight=-1;Draw();});
+                Button("CommandEndHome",panel,"保存战绩，返回主菜单",372,672,636,48,ReturnHome,true,true);
+                return;
+            }
             var p=CommandModal(State.won?"灯火成网":"本次组织行动结束");
             Label(p,State.ending+"\n\n完成任务 "+State.command.completed+" / 送达情报 "+State.command.delivered+"\n成果 "+State.progress+" / 最高表身份 "+State.command.people.Max(x=>x.level)+"级\n\n下次开局会生成不同队员与任务顺序；新局目标按所选难度确定。",28,109,840,280,24);
             Label(p,GateProgress(),28,389,844,69,20,Teal);

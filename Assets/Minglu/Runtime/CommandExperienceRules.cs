@@ -69,7 +69,7 @@ namespace Minglu
         static void ApplySlotDamage(RunState s,CommandRoute r,int slot)
         {
             if(!SlotCompromised(s,r,slot))return;
-            if(slot<=1)r.waiting=0;if(slot>=1)r.atRelay=0;r.compromisedSlots|=1<<slot;
+            if(slot<=1)r.waiting=0;if(slot>=1)r.atRelay=0;r.compromisedSlots|=1<<slot;ReconcileCampaignPackets(s);
         }
         static void DisruptRoutes(RunState s,int id,string reason)
         {

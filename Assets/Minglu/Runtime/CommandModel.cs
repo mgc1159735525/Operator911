@@ -12,6 +12,7 @@ namespace Minglu
     }
     [Serializable] public class CommandTask
     {
+        public string campaignKey="";
         public int id,skill,required=1,level=1,district,deadline,actor=-1,reward=5,money=6,status,source=-1;
         public string title,body,origin,profession="",category="委托",followup="";
         public int institution;
@@ -45,10 +46,13 @@ namespace Minglu
     [Serializable] public class CommandNotice
     {
         public string title,body;
+        public int night;
         public int tab=4,task=-1,actor=-1;
     }
     [Serializable] public class CommandState
     {
+        public CommandCampaignState campaign;
+        public bool campaignEnabled;
         public int missionRevision,institutionRevision;
         public int experienceRevision,goalDeliveries,goalScore,goalLevel,secondGateDeliveries;
         public bool legacySourceSchedule;
@@ -56,6 +60,7 @@ namespace Minglu
         public int version=1,nextTask,delivered,completed,gate,eventKind,eventActor=-1,pauseUntil,variant;
         public string eventText="";
         public List<CommandNotice> notices=new List<CommandNotice>();
+        public List<CommandNotice> noticeArchive=new List<CommandNotice>();
         public CommandConfig config;
         public List<CommandPerson> people=new List<CommandPerson>();
         public List<CommandTask> tasks=new List<CommandTask>();

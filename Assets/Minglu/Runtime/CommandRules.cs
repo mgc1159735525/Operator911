@@ -30,6 +30,7 @@ namespace Minglu
             EnsureStrategy(s);
             s.command.routes.Add(new CommandRoute{id=0});s.command.routes.Add(new CommandRoute{id=1});
             AddTask(s,"上级指示",-1);AddTask(s,"上级指示",-1);AddTask(s,"成员发现",s.agents[Next(s,s.agents.Count)].id);
+            InitializeCommandCampaign(s);
             Log(s,"你是地区组织首脑。先签发一项任务了解执行，再将机构内线接入情报链；成员自动接头、工作、生活。三个阶段门槛全部完成才能赢得本局。");
         }
         public static void AddPerson(RunState s)
@@ -153,12 +154,13 @@ namespace Minglu
             var c=s.command;
             if(c.gate==0&&c.delivered>=2&&c.completed>=2){c.gate=1;Log(s,"阶段突破：组织立足。上级要求扎根社会，培养身份并扩大送达。");}
             if(c.gate==1&&c.delivered>=SecondGateDeliveries(s)&&c.people.Count(p=>p.level>=2&&Agent(s,p.id).condition==Condition.Active)>=2){c.gate=2;Log(s,"阶段突破：进入决胜考验。");}
-            if(c.gate==2&&s.progress>=FinalScore(s)&&c.delivered>=FinalDeliveries(s)&&c.people.Any(p=>p.level>=FinalLevel(s)&&Agent(s,p.id).condition==Condition.Active)){s.ended=true;s.won=true;s.ending="灯火成网：组织完成本局考验。";}
+            if(c.gate==2&&s.progress>=FinalScore(s)&&c.delivered>=FinalDeliveries(s)&&c.people.Any(p=>p.level>=FinalLevel(s)&&Agent(s,p.id).condition==Condition.Active)&&CampaignReadyForVictory(s)){s.ended=true;s.won=true;s.ending=HasCommandCampaign(s)?CampaignEnding(s,true):"灯火成网：组织完成本局考验。";}
         }
         public static void Resolve(RunState s)
         {
             if(s.ended||s.command.eventKind!=0)return;
             EnsureStrategy(s);
+            ReconcileCampaignPackets(s);
             ReleaseUnavailableAssignments(s);
             var c=s.command;int oldMoney=s.money,oldIntel=s.intelligence,maintenancePaid=0,unpaidMembers=0;int firstTask=c.nextTask,oldDelivered=c.delivered,oldCompleted=c.completed,oldGate=c.gate;var oldLevels=c.people.ToDictionary(p=>p.id,p=>p.level);var priorStatus=c.tasks.ToDictionary(t=>t.id,t=>t.status);var taskActorsBefore=c.tasks.ToDictionary(t=>t.id,t=>t.actor);var busy=new HashSet<int>();Log(s,"—— 第"+s.turn+"夜 / 组织执行报告 ——");
             foreach(var t in c.tasks.Where(t=>t.status==0&&t.actor>=0).ToList())
@@ -175,15 +177,15 @@ namespace Minglu
                     Log(s,t.lastResult);Notice(s,new CommandNotice{title=taskSuccess?"目标调查有了结果":"目标调查未能完成",body=a.name+"提交「"+t.title+"」调查报告。\n"+(taskSuccess?"执行该目标时额外+1骰、暴露−3，效果保留至任务结束，可交给另一名成员执行。":"未获得调查优势，本夜投入已消耗；是否再次调查取决于剩余期限。")+"\n任务仍需授权执行，第"+t.deadline+"夜截止。",tab=0,task=t.id});
                     t.actor=-1;t.reconnaissance=false;continue;
                 }
-                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);c.strategy.trace=Math.Max(0,c.strategy.trace-t.traceRelief);c.strategy.hearts=Math.Min(100,c.strategy.hearts+t.heartsReward);GainSkillExperience(s,a,t.skill);Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
+                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;CampaignOnTaskCompleted(s,t);c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);c.strategy.trace=Math.Max(0,c.strategy.trace-t.traceRelief);c.strategy.hearts=Math.Min(100,c.strategy.hearts+t.heartsReward);GainSkillExperience(s,a,t.skill);Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
                 else{a.exposure=Math.Min(100,a.exposure+t.failExposure);s.pressure=Math.Min(100,s.pressure+2);t.lastResult+="；未成 · 额外暴露+"+t.failExposure+"、压力+2，期限内可重新授权";Log(s,t.lastResult);}
                 t.actor=-1;
             }
-            foreach(var r in c.routes.Where(r=>!r.enabled)){int pending=r.waiting+r.atRelay;AgeRoute(r);if(pending>0&&r.waiting+r.atRelay==0)Log(s,"情报链"+(r.id+1)+"：暂停期间积压失效，恢复前请重新安排。");}
+            foreach(var r in c.routes.Where(r=>!r.enabled)){int pending=r.waiting+r.atRelay;AgeRoute(r);ReconcileCampaignPackets(s);if(pending>0&&r.waiting+r.atRelay==0)Log(s,"情报链"+(r.id+1)+"：暂停期间积压失效，恢复前请重新安排。");}
             foreach(var r in c.routes.Where(r=>r.enabled))
             {
-                string e=RouteError(s,r);if(e!=""){r.last=e;AgeRoute(r);Log(s,"情报链"+(r.id+1)+"暂停："+r.last);continue;}
-                if(c.pauseUntil>=s.turn){r.last="隐蔽政策生效，本夜暂停；存量密件仍计时。";AgeRoute(r);Log(s,"情报链"+(r.id+1)+"："+r.last);continue;}
+                string e=RouteError(s,r);if(e!=""){r.last=e;AgeRoute(r);ReconcileCampaignPackets(s);Log(s,"情报链"+(r.id+1)+"暂停："+r.last);continue;}
+                if(c.pauseUntil>=s.turn){r.last="隐蔽政策生效，本夜暂停；存量密件仍计时。";AgeRoute(r);ReconcileCampaignPackets(s);Log(s,"情报链"+(r.id+1)+"："+r.last);continue;}
                 r.last="本夜待报";int oldWaiting=r.waiting,oldRelay=r.atRelay;
                 // Advance downstream first: a packet cannot traverse two links in one night.
                 int[] actors={r.courier,r.liaison,r.source};
@@ -195,12 +197,12 @@ namespace Minglu
                     var a=Agent(s,id);busy.Add(id);int skill=stage==0?1:stage==1?2:0;
                     if(!Roll(s,a,skill,1,stage==0?"链条外送":stage==1?"链条接头":"内线观察")){AddRouteNote(r,a.name+"未通过判定，下夜自动重试");continue;}
                     GainSkillExperience(s,a,skill);
-                    if(stage==0){r.atRelay--;r.age=0;r.delivered++;c.delivered++;s.intelligence++;s.progress+=2;s.money+=3;AddRouteNote(r,"送达1份：成果+2 / 银两+3");}
-                    else if(stage==1){r.waiting--;r.atRelay++;AddRouteNote(r,"接头成功：进入中继，下夜可外送");}
-                    else{r.waiting++;AddRouteNote(r,Employment(Person(s,id))+"："+InstitutionIntel[Person(s,id).institution]+"，产出1份待接情报");if(Next(s,100)<40&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"内线提议",id);if(c.nextTask>before)Log(s,a.name+"从岗位发现新机会，已提交任务待授权。");}}
+                    if(stage==0){r.atRelay--;r.age=0;r.delivered++;c.delivered++;s.intelligence++;CampaignOnDelivery(s,r.source,r.id);s.progress+=2;s.money+=3;AddRouteNote(r,"送达1份：成果+2 / 银两+3");}
+                    else if(stage==1){r.waiting--;r.atRelay++;CampaignOnRelay(s,r.id);AddRouteNote(r,"接头成功：进入中继，下夜可外送");}
+                    else{r.waiting++;CampaignOnSourceProduced(s,r.source,r.id);AddRouteNote(r,Employment(Person(s,id))+"："+InstitutionIntel[Person(s,id).institution]+"，产出1份待接情报");if(Next(s,100)<40&&s.turn<s.config.Value("turns")){int before=c.nextTask;AddTask(s,"内线提议",id);if(c.nextTask>before)Log(s,a.name+"从岗位发现新机会，已提交任务待授权。");}}
                 }
                 if(r.last=="本夜待报")r.last="按观察周期等待：内线次夜观察，本夜没有上游情报可接头或外送。";
-                AgeRoute(r);
+                AgeRoute(r);ReconcileCampaignPackets(s);
                 Log(s,"情报链"+(r.id+1)+"："+r.last);
             }
             foreach(var p in c.people.Where(p=>Agent(s,p.id).condition==Condition.Active))
@@ -218,7 +220,7 @@ namespace Minglu
             if(unpaidMembers>0)Log(s,"维护经费不足：部分成员未领到生活补助，信任−6、可疑度+6；请预留生活经费。");
             if(!s.agents.Any(a=>a.condition==Condition.Active)||(s.agents.Count(a=>a.condition==Condition.Active)<3&&!s.agents.Any(a=>a.condition==Condition.Captured)&&s.agents.Count>=c.config.capacity)){s.ended=true;s.won=false;s.ending="组织无法维持最小联络链。";}
             if(!s.ended&&s.turn>=s.config.Value("turns")){s.ended=true;s.won=false;s.ending="行动窗口结束，未达成："+GateText(s);}
-            if(s.ended)return;
+            if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);return;}
             s.turn++;
             SpawnFollowups(s);
             if(s.turn%c.config.taskInterval==1){int before=c.nextTask;AddTask(s,"上级指示",-1);if(c.nextTask>before)Log(s,"上级发来新指示，请查看任务来源与人员需求。");}
@@ -232,11 +234,14 @@ namespace Minglu
             if(c.completed>oldCompleted)foreach(var t in c.tasks.Where(t=>t.status==1&&priorStatus.ContainsKey(t.id)&&priorStatus[t.id]==0))
                 messages.Add(Agent(s,taskActorsBefore[t.id]).name+"完成「"+t.title+"」："+TaskReward(t)+"。可重新安排该成员。");
             if(c.gate>oldGate)messages.Add("阶段目标达成，新的上级要求已更新。");
-            if(messages.Count>0)Notice(s,new CommandNotice{title="夜间要报 · 第"+(s.turn-1)+"夜",body=string.Join("\n\n",messages),tab=fresh.Count>0?0:4,task=fresh.Count>0?fresh[0].id:-1});
+            if(messages.Count>0)Notice(s,new CommandNotice{title="夜间要报 · 第"+(s.turn-1)+"夜",night=s.turn-1,body=string.Join("\n\n",messages),tab=fresh.Count>0?0:4,task=fresh.Count>0?fresh[0].id:-1});
         }
         public static void Notice(RunState s,CommandNotice notice,bool first=false)
         {
             if(s.command.notices==null)s.command.notices=new List<CommandNotice>();
+            EnsureNoticeArchive(s);
+            if(notice.night<=0)notice.night=s.turn;
+            ArchiveNotice(s,notice);
             if(first)s.command.notices.Insert(0,notice);else s.command.notices.Add(notice);
         }
         public static string Choose(RunState s,bool protect)
@@ -256,7 +261,7 @@ namespace Minglu
         {
             var c=s.command;if(c==null||c.version!=1||c.config==null||c.people==null||c.tasks==null||c.routes==null||c.config.templates==null||c.config.templates.Count<1||c.config.coverXP<1||c.config.taskInterval<1||s.turn<1||s.turn>s.config.Value("turns")||s.random==0||s.money<0||s.agents.Count!=c.people.Count||c.people.Select(p=>p.id).Distinct().Count()!=c.people.Count)throw new Exception("组织存档结构无效");
             AppearanceRules.Validate(s.chiefLook);
-            UpgradeMissions(s);UpgradeInstitutions(s);EnsureExperience(s);ValidateStrategy(s);
+            UpgradeMissions(s);UpgradeInstitutions(s);EnsureExperience(s);ValidateStrategy(s);ValidateCommandCampaign(s);EnsureNoticeArchive(s);
             if(c.experienceRevision!=1||c.goalDeliveries<1||c.goalScore<1||c.goalLevel<1||c.goalLevel>4||c.secondGateDeliveries<1||c.routes.Any(r=>r.compromisedSlots<0||r.compromisedSlots>7))throw new Exception("本局目标或链条交接数据无效");
             if(c.notices==null)c.notices=new List<CommandNotice>();
             foreach(var p in c.people){var a=Agent(s,p.id);if(p.institution<0||p.institution>=Institutions.Length||p.level<1||p.level>4||p.loyalty<0||p.loyalty>100||a.stamina<0||a.stamina>100||a.spirit<0||a.spirit>100)throw new Exception("成员数据无效");AppearanceRules.Validate(a.appearance);}

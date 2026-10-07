@@ -98,7 +98,8 @@ namespace Minglu
             Button("ReportNext",panel,"下一夜",711,24,99,34,()=>{reportNight=Mathf.Min(latest,night+1);Draw();},night<latest);
             var rows=ReportRows(night,true);
             int finished=rows.Count(r=>r.Contains("完成「")),expired=rows.Count(r=>r.Contains("任务到期：")),delivered=rows.Count(r=>r.Contains("情报链")&&r.Contains("送达1份"));
-            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,28,76,782,24,16,Muted);
+            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,28,76,530,24,16,Muted);
+            Button("ReportNotices",panel,"要报留档  ›",600,70,210,34,()=>{modal="noticeArchive";Draw();});
             Button("ReportSummary",panel,"结果与原因",28,116,384,34,()=>{reportAll=false;Draw();},true,!reportAll);
             Button("ReportAll",panel,"展开全部判定",426,116,384,34,()=>{reportAll=true;Draw();},true,reportAll);
             if(!reportAll)rows=ReportRows(night,false);

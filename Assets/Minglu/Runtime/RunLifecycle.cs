@@ -47,7 +47,17 @@ namespace Minglu
         public static string DoctrineName(int n){return new[]{"均衡联络","情报先行","隐蔽入城"}[n];}
         public static PlayerProfile ReadProfile(string path)
         {
-            if(!File.Exists(path))return new PlayerProfile();
+            string recoveryMessage;
+            return ReadProfileWithRecovery(path,out recoveryMessage);
+        }
+        public static PlayerProfile ReadProfileWithRecovery(string path,out string recoveryMessage)
+        {
+            recoveryMessage="";
+            if(!File.Exists(path)&&!File.Exists(path+".bak"))return new PlayerProfile();
+            return SaveFileRecovery.Read(path,ReadProfileStrict,"设置与人物预设",out recoveryMessage);
+        }
+        static PlayerProfile ReadProfileStrict(string path)
+        {
             var p=JsonUtility.FromJson<PlayerProfile>(File.ReadAllText(path));
             if(p==null||p.version!=1||p.records==null||float.IsNaN(p.volume)||p.volume<0||p.volume>1||p.records.Any(r=>r==null||string.IsNullOrEmpty(r.id)||r.seed==0)||p.records.Select(r=>r.id).Distinct().Count()!=p.records.Count)throw new InvalidDataException("档案格式无效。");
             AppearanceRules.Validate(p.chiefLook);
@@ -58,8 +68,7 @@ namespace Minglu
         }
         public static void WriteProfile(PlayerProfile p,string path)
         {
-            string temp=path+".tmp";File.WriteAllText(temp,JsonUtility.ToJson(p,true));
-            if(File.Exists(path))File.Replace(temp,path,path+".bak");else File.Move(temp,path);
+            SaveFileRecovery.Write(p,path,ReadProfileStrict);
         }
         public static bool Record(PlayerProfile p,RunState s)
         {

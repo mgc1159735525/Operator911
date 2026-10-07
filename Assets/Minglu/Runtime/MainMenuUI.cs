@@ -13,11 +13,12 @@ namespace Minglu
         string homePage="main", seedText="", homeNotice="";
         int newDifficulty=1, newDoctrine;
         PlayerProfile profile=new PlayerProfile();
-        string ProfilePath { get { return smokeSave!=null?smokeSave+".profile":Path.Combine(Application.persistentDataPath,"minglu-profile-v1.json"); } }
+        string ProfilePath { get { return smokeSave!=null?smokeSave+".profile":Path.Combine(MingluStorage.Directory,"minglu-profile-v1.json"); } }
         void InitializeProfile()
         {
-            try { profile=RunLifecycle.ReadProfile(ProfilePath); }
-            catch(Exception e){homeNotice="档案读取失败，已使用默认设置；原文件保留备份："+e.Message;profile=new PlayerProfile();}
+            try { string recovery;profile=RunLifecycle.ReadProfileWithRecovery(ProfilePath,out recovery);if(recovery!="")homeNotice=recovery; }
+            catch(Exception e){homeNotice="档案读取失败，已使用默认设置；原文件已保留："+e.Message;profile=new PlayerProfile();}
+            if(profile.records.Count==0)newDifficulty=0;
             sound=profile.sound;
             if(smokeSave==null)Screen.fullScreen=profile.fullscreen;
         }
@@ -60,7 +61,7 @@ namespace Minglu
             uint seed;
             if(string.IsNullOrWhiteSpace(seedText)){seed=BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(),0);if(seed==0)seed=911;}
             else if(!uint.TryParse(seedText,out seed)||seed==0){homeNotice="种子请输入1—4294967295之间的整数，或留空随机。";Draw();return;}
-            if(File.Exists(SavePath)&&!replaceConfirmed){homePage="replace";Draw();return;}
+            if((File.Exists(SavePath)||File.Exists(SavePath+".bak"))&&!replaceConfirmed){homePage="replace";Draw();return;}
             try
             {
                 var content=newCampaign?CampaignRules.Load():null;
@@ -109,11 +110,11 @@ namespace Minglu
             Label(root,"明路 · 地下",98,122,540,84,homePage=="main"?56:30,homePage=="main"?Gold:TextColor);
             Label(root,"人员安排 · 情报传递 · 行动授权",98,223,470,32,16,Muted);
             Box("HomeTitleRule",root,98,284,408,1,Line);
-            Label(root,"单人回合制策略",98,815,408,25,15,Muted);
+            Label(root,"单人回合制策略  /  "+Application.version,98,815,408,25,15,Muted);
             if(homePage=="main")
             {
                 RunState saved=null;string description="尚无行动存档。\n从「开始新局」建立本次组织。";
-                if(File.Exists(SavePath))try{saved=PrototypeSave.Read(SavePath);description=(saved.ended?"行动已结束":"安排已保存，可继续指挥")+"\n成果 "+saved.progress+" / 种子 "+saved.initialSeed;}catch(Exception e){description="存档暂时无法读取，原文件仍保留。\n"+e.Message;}
+                if(File.Exists(SavePath)||File.Exists(SavePath+".bak"))try{string recovery;saved=PrototypeSave.ReadWithRecovery(SavePath,out recovery);description=(recovery!=""?recovery:saved.ended?"行动已结束":"安排已保存，可继续指挥")+"\n成果 "+saved.progress+" / 种子 "+saved.initialSeed;}catch(Exception e){description="存档暂时无法读取，原文件仍保留。\n"+e.Message;}
                 if(saved!=null)
                 {
                     Button("HomeContinue",root,saved.ended?"查看上局结局":"继续行动",98,327,408,55,()=>{Load();},true,true);
@@ -144,7 +145,7 @@ namespace Minglu
                 var p=Rect("HomePanel",root,694,66,810,742);
                 if(homePage=="new"||homePage=="replace")
                 {
-                    DrawHomeHeading(p,"新局登记",(newCampaign?"二十夜行动":"八夜短局")+" · "+CommandRules.NewRunGoalText(newCampaign?20:8,newDifficulty));
+                    DrawHomeHeading(p,"新局登记",newCampaign?"二十夜剧情 · 三章委任 / 每章两条方法 / 种子决定地区危机":"八夜短局 · "+CommandRules.NewRunGoalText(8,newDifficulty));
                     Label(p,"难度",0,163,128,32,20,Muted);
                     for(int i=0;i<3;i++){int n=i;Button("Difficulty_"+i,p,RunLifecycle.DifficultyName(i),150+i*205,155,193,44,()=>{newDifficulty=n;Draw();},true,newDifficulty==i);}
                     Label(p,"开局方案",0,242,138,32,20,Muted);
@@ -156,8 +157,8 @@ namespace Minglu
                     var placeholder=Label(field,"留空随机",12,7,365,31,18,Muted);input.placeholder=placeholder;placeholder.gameObject.SetActive(string.IsNullOrEmpty(seedText));
                     HomeTextButton("RandomSeed",p,"重新随机",564,369,194,44,()=>{seedText="";Draw();});
                     HomeTextButton("CrisisToggle",p,newCrisis?"危机开局    开 / 一名成员临时离岗":"危机开局    关 / 全员归队",0,449,758,42,()=>{newCrisis=!newCrisis;Draw();});
-                    HomeTextButton("CampaignToggle",p,newCampaign?"行动时限    二十夜 / 完整经营":"行动时限    八夜 / 短局挑战",0,499,758,42,()=>{newCampaign=!newCampaign;Draw();});
-                    Label(p,newDifficulty==0?"初探保留更多容错；首夜先完成一项授权，次夜按指引建立传递链。":"目标由难度与时限决定；随机种子改变人员和机会，不改变通关配额。",0,546,758,23,15,Muted);
+                    HomeTextButton("CampaignToggle",p,newCampaign?"行动时限    二十夜 / 三章剧情战役":"行动时限    八夜 / 短局挑战",0,499,758,42,()=>{newCampaign=!newCampaign;Draw();});
+                    Label(p,newDifficulty==0?"初探保留更多容错；首夜先完成一项授权，次夜按指引建立传递链。":newCampaign?"地图「主线委任」提供章节目标；每章都有无需指定机构档案的替代方法。":"短局配额由难度决定；随机种子改变人员和机会，不改变通关配额。",0,546,758,23,15,Muted);
                     Box("HomeSubmitRule",p,0,574,758,1,Line);
                     HomeTextButton("HomeBack",p,"返回",0,604,170,49,BackHome);
                     Button("BeginRun",p,"开始行动",439,604,319,49,BeginConfiguredRun,true,true);
@@ -206,7 +207,7 @@ namespace Minglu
                 {
                     DrawHomeHeading(p,"行动指南","目标由你确定，具体行动由成员完成");
                     var list=Scroll(p,"HomeGuide",0,154,758,472,860);
-                    var guide=Label(list,"建立传递链\n内线必须在敌方机构任职。选择机构内线、接头人、交通员三名不同成员并启用。缺少内线可在人事档案建立任职任务；普通任务与生活不产出情报。\n\n授权任务\n看任务需求与期限，比较负责人，再选择行动方案。提交前检查成功率、资源投入及岗位冲突。\n\n推进与复盘\n确认夜间安排后才推进时间。成员提交执行结果；失败、暂停和到期原因都可在报告中查阅。\n\n生活与成长\n同一成员优先执行授权任务，对应链条岗位会等待。空闲时恢复状态、处理日常并培养表身份；留意连续工作与暴露预警。\n\n阶段目标\n按值班简报中的当前进度，完成送达、任务和身份门槛。不同种子生成不同队伍与事件。\n\n操作\n鼠标选择，滚轮翻页；F5 保存，F9 读取，Esc 返回。",0,0,725,860,20,TextColor);
+                    var guide=Label(list,"建立传递链\n内线必须在敌方机构任职。选择机构内线、接头人、交通员三名不同成员并启用。缺少内线可在人事档案建立任职任务；普通任务与生活不产出情报。\n\n授权任务\n看任务需求与期限，比较负责人，再选择行动方案。提交前检查成功率、资源投入及岗位冲突。\n\n推进与复盘\n确认夜间安排后才推进时间。成员提交执行结果；失败、暂停和到期原因都可在报告中查阅。\n\n生活与成长\n同一成员优先执行授权任务，对应链条岗位会等待。空闲时恢复状态、处理日常并培养表身份；留意连续工作与暴露预警。\n\n阶段目标\n二十夜行动围绕三章地区委任展开：档案核证节约夜数，替代方法无需指定机构档案。地图「主线委任」展示条件和进度。八夜短局保留送达、任务和身份门槛。\n\n操作\n鼠标选择，滚轮翻页；F5 保存，F9 读取，Esc 返回。",0,0,725,860,20,TextColor);
                     float guideHeight=Mathf.Max(472,guide.preferredHeight+18);guide.rectTransform.sizeDelta=new Vector2(725,guideHeight);list.sizeDelta=new Vector2(list.sizeDelta.x,guideHeight);
                     HomeTextButton("HomeBack",p,"返回",0,660,170,48,BackHome);
                 }

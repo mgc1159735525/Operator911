@@ -25,7 +25,7 @@ namespace Minglu
         AudioClip clickSound;
         uint nextSeed = 911;
         string smokeSave;
-        string SavePath { get { return smokeSave ?? Path.Combine(Application.persistentDataPath,"minglu-run-v14.json"); } }
+        string SavePath { get { return smokeSave ?? Path.Combine(MingluStorage.Directory,"minglu-run-v14.json"); } }
         static readonly Color Ink = Hex("20282D"), Panel = Hex("2D373C"), Line = Hex("4C5558"), Gold = Hex("D2B57F"), TextColor = Hex("EEE8DA"), Muted = Hex("B2B6B2"), Red = Hex("E39A86"), Teal = Hex("A8C0B1");
 
         void Start()
@@ -335,13 +335,15 @@ namespace Minglu
         void Save(bool redraw) {try{PrototypeSave.Write(State,SavePath);if(redraw)toast="已保存当前进度和指令。";}catch(Exception e){toast="保存失败："+e.Message;}if(redraw)Draw();}
         void Load()
         {
-            try{State=PrototypeSave.Read(SavePath);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTab=3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast="已恢复存档及当局规则。";}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
+            try{string recovery;State=PrototypeSave.ReadWithRecovery(SavePath,out recovery);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTab=3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast=string.IsNullOrEmpty(recovery)?"已恢复存档及当局规则。":recovery;}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
         }
         IEnumerator CaptureIfRequested()
         {
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--campaign-experience-only")>=0){yield return CampaignExperienceSmoke(path);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--notice-archive-only")>=0){yield return NoticeArchiveSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--task-layout-only")>=0){yield return TaskLayoutSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--recruitment-only")>=0){yield return RecruitmentSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--assignment-only")>=0){yield return AssignmentSmoke(path);Application.Quit();yield break;}

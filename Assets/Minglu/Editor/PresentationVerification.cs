@@ -19,6 +19,10 @@ namespace Minglu.EditorTools
                 ExperienceVerification.Verify();
                 RecruitmentVerification.Verify();
                 PlanningVerification.Verify();
+                CampaignCommandVerification.Verify();
+                NoticeArchiveVerification.Verify();
+                SaveRecoveryVerification.Verify();
+                CampaignBalanceVerification.Verify();
                 PrototypeTools.BatchBuild();EditorApplication.Exit(0);
             }
             catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}

@@ -55,7 +55,7 @@ namespace Minglu.EditorTools
                 delivered+=s.command.delivered;if(s.won)wins++;
             }
             Check(delivered>100,"Routes produce across many seeds");
-            s=Fresh();s.command.completed=2;s.command.delivered=20;s.progress=100;foreach(var p in s.command.people)p.level=3;CommandRules.CheckGate(s);Check(s.ended&&s.won,"Gate victory reachable");
+            s=Fresh();s.command.campaignEnabled=false;s.command.completed=2;s.command.delivered=20;s.progress=100;foreach(var p in s.command.people)p.level=3;CommandRules.CheckGate(s);Check(s.ended&&s.won,"Legacy quota victory remains reachable; new campaign ending covered separately");
             File.Delete(path);if(File.Exists(path+".bak"))File.Delete(path+".bak");Debug.Log("MINGLU_COMMAND_VERIFY_SUCCESS: "+checks+" checks / 60 complete runs / deliveries "+delivered+" / baseline wins "+wins);
         }
         public static void BatchDeliver(){try{Verify();PrototypeTools.BatchBuild();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}

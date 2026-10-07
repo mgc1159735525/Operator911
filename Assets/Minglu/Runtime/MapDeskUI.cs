@@ -32,8 +32,8 @@ namespace Minglu
                 NoirIcon(button.transform,icons[page],11,12,21,commandTab==page?Gold:Muted);
             }
             Rule(root,20,685,140);
-            Button("CommandOverview",root,"阶段目标  ›",10,706,160,42,()=>{modal="commandOverview";Draw();});
-            Label(root,"阶段目标  /  "+GateProgress().Replace(" / 本阶段","").Replace("\n"," · "),206,95,1356,29,18,Gold);
+            Button("CommandOverview",root,CommandRules.HasCommandCampaign(State)?"主线委任  ›":"阶段目标  ›",10,706,160,42,()=>{if(CommandRules.HasCommandCampaign(State))OpenCampaignDossier();else{modal="commandOverview";Draw();}});
+            Label(root,CampaignDeskObjective(),206,95,1356,29,18,Gold).name="CampaignDeskObjective";
             var desk=Rect("CommandMapDesk",root,194,136,1380,640);DrawCommandMap(desk);
             Box("DeskFooter",root,0,790,1600,110,Panel);Rule(root,0,790,1600,Gold);
             var step=NextCommandStep();

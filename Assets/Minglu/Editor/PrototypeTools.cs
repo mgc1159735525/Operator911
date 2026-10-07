@@ -109,9 +109,10 @@ namespace Minglu.EditorTools
                 PrototypeSave.Write(s, path);
                 check(File.Exists(path + ".bak") && PrototypeSave.Read(path).turn == s.turn, "Atomic replacement and backup");
                 File.WriteAllText(path, "{}");
-                bool rejected = false;
-                try { PrototypeSave.Read(path); } catch { rejected = true; }
-                check(rejected, "Malformed save rejected");
+                string recoveryMessage;
+                var recovered = PrototypeSave.ReadWithRecovery(path,out recoveryMessage);
+                check(recoveryMessage.Contains("备份") && JsonUtility.ToJson(recovered)==JsonUtility.ToJson(PrototypeSave.Read(path+".bak")), "Malformed primary recovers its valid backup");
+                check(File.ReadAllText(path)=="{}", "Recovery preserves the damaged primary for diagnosis");
             }
             finally
             {
@@ -155,7 +156,7 @@ namespace Minglu.EditorTools
         [MenuItem("Minglu/构建Windows试玩版")]
         public static void BatchBuild()
         {
-            var report = BuildPipeline.BuildPlayer(new[] { ScenePath }, "Builds/MingluCity/MingluCity.exe", BuildTarget.StandaloneWindows64, BuildOptions.Development);
+            var report = BuildPipeline.BuildPlayer(new[] { ScenePath }, "Builds/MingluCity/MingluCity.exe", BuildTarget.StandaloneWindows64, BuildOptions.None);
             if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
                 throw new Exception("Prototype player build failed: " + report.summary.result);
             Debug.Log("MINGLU_BUILD_SUCCESS");

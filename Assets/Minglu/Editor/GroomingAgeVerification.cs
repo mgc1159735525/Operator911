@@ -93,9 +93,9 @@ namespace Minglu.EditorTools
                 {
                     var invalid=AppearanceRules.Copy(look);invalid.parts[category]=8;bool rejected=false;try{AppearanceRules.Validate(invalid);}catch(ArgumentException){rejected=true;}
                     Require(rejected,"out-of-range grooming index accepted");
-                    state.chiefLook=invalid;PrototypeSave.Write(state,path);rejected=false;
-                    try{PrototypeSave.Read(path);}catch(ArgumentException){rejected=true;}
-                    Require(rejected,"command save accepted an out-of-range chief grooming index: "+category);
+                    string validBytes=File.ReadAllText(path);state.chiefLook=invalid;rejected=false;
+                    try{PrototypeSave.Write(state,path);}catch(ArgumentException){rejected=true;}
+                    Require(rejected&&File.ReadAllText(path)==validBytes,"invalid chief grooming overwrote the last valid save: "+category);
                 }
                 state.chiefLook=null;PrototypeSave.Write(state,path);var legacy=PrototypeSave.Read(path);
                 // JsonUtility may materialize an inline serializable null class
