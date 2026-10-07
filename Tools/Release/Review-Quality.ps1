@@ -29,6 +29,8 @@ $rows += Read-Gate 'campaign-ui-1280x720' 'Logs/release-campaign-ui-720.log' 'MI
 $rows += Read-Gate 'notice-history-ui' 'Logs/release-notice-ui.log' 'MINGLU_NOTICE_ARCHIVE_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'map-and-existing-workflows' 'Logs/release-map-ui.log' 'MINGLU_MAP_DESK_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'installed-game-ui' 'Logs/release-installed-ui.log' 'MINGLU_CAMPAIGN_EXPERIENCE_UI_SUCCESS' $buildTime
+$rows += Read-Gate 'keyboard-modal-isolation' 'Logs/qa-keyboard-ui.log' 'MINGLU_KEYBOARD_MODAL_UI_SUCCESS' $buildTime
+$rows += Read-Gate 'persistence-failure-feedback' 'Logs/qa-persistence-ui.log' 'MINGLU_PERSISTENCE_FAILURE_UI_SUCCESS' $buildTime
 $installed = 'D:/Games/MingluCity'
 $matching = Test-Path -LiteralPath $binary
 foreach ($relative in @('MingluCity.exe','MingluCity_Data/Managed/Assembly-CSharp.dll','MingluCity_Data/resources.assets','MingluCity_Data/resources.assets.resS')) {
@@ -58,7 +60,7 @@ foreach ($file in @($builtEvidence + @($installer))) {
     }
 }
 $report = [PSCustomObject]@{
-    version='0.17.0'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
+    version='0.17.1'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
     artifacts=$artifacts
     automaticChecks=$rows; automaticPassed=@($rows | Where-Object passed).Count; automaticTotal=$rows.Count
     commerciallyApproved=$false

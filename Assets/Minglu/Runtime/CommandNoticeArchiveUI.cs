@@ -17,14 +17,21 @@ namespace Minglu
                 Label(content,"第 "+n.night+" 夜  /  "+n.title,0,y,808,34,21,Gold);
                 var body=Label(content,n.body,0,y+43,808,66,18,TextColor);
                 float height=Mathf.Max(66,body.preferredHeight+8);body.rectTransform.sizeDelta=new Vector2(808,height);
-                Button("ArchivedNotice_"+archive.IndexOf(n),content,"查看相关档案  ›",0,y+51+height,258,40,()=>OpenArchivedNotice(n));
+                Button("ArchivedNotice_"+archive.IndexOf(n),content,State.ended?"回看当夜报告  ›":"查看相关档案  ›",0,y+51+height,258,40,()=>OpenArchivedNotice(n));
                 y+=height+114;Rule(content,0,y,808);y+=20;
             }
             content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(530,y));
-            Button("NoticeArchiveClose",p,"返回值夜报告",28,714,276,48,()=>{modal="";commandTab=4;Draw();});
+            Button("NoticeArchiveClose",p,State.ended?"返回结局复盘":"返回值夜报告",28,714,276,48,CloseNoticeArchive);
+        }
+        void CloseNoticeArchive()
+        {
+            modal=State.ended?"endingReview":"";commandTab=4;Draw();
         }
         void OpenArchivedNotice(CommandNotice notice)
         {
+            // Ended campaigns can inspect history, but cannot reopen live
+            // personnel/mission controls through archived notification links.
+            if(State.ended){reportNight=notice.night;modal="endingReview";Draw();return;}
             modal="";
             var task=State.command.tasks.FirstOrDefault(t=>t.id==notice.task&&t.status==0);
             if(task!=null){commandTab=4;OpenCommandTask(task.id,true);return;}

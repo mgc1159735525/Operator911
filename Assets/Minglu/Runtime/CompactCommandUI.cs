@@ -23,7 +23,7 @@ namespace Minglu
             Label(p,"表身份 / 日常经验",468,474,404,25,18,Gold);
             Label(p,(member.level>=4?"身份已达4级上限。":"经验 "+member.xp+" / "+(State.command.config.coverXP*member.level)+"；空闲一夜+1。")+"\n日常恢复体力20、精神15，暴露−10。\n连勤第三夜起：信任−7、可疑+8。",468,508,404,84,17,Muted).name="MemberGrowthChoice";
             string[] policies={"平衡安排","生活优先","主动发现"};
-            for(int i=0;i<3;i++){int policy=i;Button("LifePolicy_"+i,p,policies[i],28+i*284,612,272,41,()=>{CommandRules.SetPolicy(State,member.id,policy);Save(false);toast="已设为"+policies[policy]+"。";Draw();},a.condition==Condition.Active,member.policy==i);}
+            for(int i=0;i<3;i++){int policy=i;Button("LifePolicy_"+i,p,policies[i],28+i*284,612,272,41,()=>{CommandRules.SetPolicy(State,member.id,policy);toast="已设为"+policies[policy]+"。";Save(false);Draw();},a.condition==Condition.Active,member.policy==i);}
             Label(p,member.policy==1?"生活优先：撤回已签发任务；今夜处理日常，原联络岗位等待，可安排替补。":member.policy==2?"主动发现：空闲时可能上报新机会，仍由你授权；执行地下工作时不享受日常恢复。":"平衡安排：有任务或联络待办就出勤；没有地下工作时，自动处理日常并恢复。",28,669,844,46,18,Muted);
             Button("CommandEmployment",p,CommandRules.HasInstitution(member)?"已任职 · 可担任情报链内线":"建立机构任职 / 查看任职任务  ›",28,728,548,43,OpenEmployment,!CommandRules.HasInstitution(member)&&a.condition==Condition.Active);
             Button("CommandEditLook",p,"编辑人物外观  ›",596,728,276,43,()=>OpenAppearance(a.id));

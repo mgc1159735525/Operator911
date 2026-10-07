@@ -50,7 +50,8 @@ namespace Minglu
             if(modal!="missionPlan"||task.stepsRequired!=2||task.actor>=0||State.money!=money||State.turn!=turn)
                 throw new Exception("Choosing an alternative should create an unassigned two-stage task without spending time or money");
             Capture(Path.ChangeExtension(path,"campaign-alternative-task.png"));
-            yield return Click("MissionBack");yield return Click("CommandOverview");
+            yield return Click("MissionBack");
+            if(modal!="campaignDossier"||ProducerButton("CampaignChangeApproach")==null)throw new Exception("Task return lost the originating campaign method selection");
             uint beforeCancel=State.random;
             yield return Click("CampaignChangeApproach");
             if(State.command.campaign.activeTask>=0||ProducerButton("CampaignApproach_1")==null||State.random!=beforeCancel||State.money!=money||State.turn!=turn)
@@ -67,7 +68,10 @@ namespace Minglu
             if(ProducerButton("CampaignChangeApproach").interactable)throw new Exception("Signed campaign task can be cancelled without withdrawing authorization");
             Capture(Path.ChangeExtension(path,"campaign-active-task.png"));
             yield return Click("CampaignTask");yield return Click("MissionBack");
-            if(commandTab!=3||modal!="")throw new Exception("Campaign task did not return to its map context");
+            if(commandTab!=3||modal!="campaignDossier")throw new Exception("Campaign task did not return to its campaign context");
+            yield return Click("CampaignTask");
+            if(!HandleCommandModalEscape()||modal!="campaignDossier")throw new Exception("Task Escape lost its campaign context");
+            yield return null;yield return Click("CampaignClose");
 
             // Build the evidence fixture through the same source -> relay -> delivery hooks as real execution.
             State=JsonUtility.FromJson<RunState>(opening);

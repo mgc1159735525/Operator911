@@ -1,4 +1,4 @@
-# 明路·地下 0.17.0
+# 明路·地下 0.17.1
 
 单机回合制谍战组织经营游戏。玩家担任地区负责人，安排人员、授权目标和经营联络网；具体行动由成员执行。
 
@@ -14,6 +14,7 @@
 | 当前安装包 | `D:\UnityProjects\Operator911\Builds\Installer\MingluSetup.exe` |
 | 安装与游玩教程 | [Docs/Minglu/安装与游玩指南.html](Docs/Minglu/安装与游玩指南.html) |
 | 制作验收与待办 | [Docs/Minglu/制作验收看板.html](Docs/Minglu/制作验收看板.html) |
+| QA问题、复现与方案 | [Docs/Minglu/QA质检报告.html](Docs/Minglu/QA质检报告.html) |
 
 后续迭代覆盖上述固定目录，以 Git 提交保留历史。运行需要 EXE 同目录的完整数据与运行库；不能只复制 EXE。游戏窗口显示“明路·地下”，主菜单显示版本号。
 
@@ -68,7 +69,11 @@
 - [地图与原有流程](Logs/release-map-ui.log)、[要报留档界面](Logs/release-notice-ui.log)的当前构建重跑通过。
 - [安装包编译](Logs/release-installer.log)、[固定目录覆盖安装](Logs/release-install.log)、[安装后 1280×720 主线界面](Logs/release-installed-ui.log)通过。安装目录与构建的 EXE、游戏程序集和两份资源数据哈希一致，安装教程一致；10 个既有对局、设置及备份文件保持不变。
 
-每次迭代在项目目录运行 `Tools/Release/Review-Quality.ps1 -RequirePass`，生成或刷新 [outputs/release-current/quality-status.json](outputs/release-current/quality-status.json)。**本轮自动证据核对 11/11 通过**；商业人工门槛仍未完成。该脚本核对当前代码/构建之后的成功日志、安装目录关键文件哈希、安装包新鲜度和原有存档一致性；缺项时返回失败。PM 同时维护[制作验收看板](Docs/Minglu/制作验收看板.html)，检查自动证据与人工门槛，不能仅根据旧日志宣布本次迭代通过。
+每次迭代在项目目录运行 `Tools/Release/Review-Quality.ps1 -RequirePass`，生成或刷新 [outputs/release-current/quality-status.json](outputs/release-current/quality-status.json)。**本轮自动证据核对 13/13 通过**；商业人工门槛仍未完成。该脚本核对当前代码/构建之后的成功日志、安装目录关键文件哈希、安装包新鲜度和原有存档一致性；缺项时返回失败。PM 同时维护[制作验收看板](Docs/Minglu/制作验收看板.html)，检查自动证据与人工门槛，不能仅根据旧日志宣布本次迭代通过。
+
+## QA 回归与失败保护
+
+0.17.1 修复补员容量、键盘弹窗穿透、结局留档入口、主线返回层级，以及保存失败提示、退出和战绩归档保护。窗口关闭前也检查未应用的外观草稿。具体复现步骤、修法、运行证据和验收状态见 [QA质检报告](Docs/Minglu/QA质检报告.html)。每轮开发完成后继续检查交叉操作与失败恢复，不以一次自动通过宣称无 Bug。
 
 ## 距离商业发行还缺什么
 

@@ -11,11 +11,15 @@ namespace Minglu
     public static partial class CommandRules
     {
         public const int RecruitmentCost=12;
+        // Keep departed members as historical records, but reserve active roster
+        // places only for members who can still return (including prisoners).
+        public static int OccupiedRosterCount(RunState s)
+        {return s.agents.Count(a=>a.condition!=Condition.Lost);}
         public static string RecruitError(RunState s)
         {
             if(s.ended)return "本局已结束";
             if(s.command.eventKind!=0)return "先处理待决事件";
-            if(s.agents.Count>=s.command.config.capacity)return "组织人数已满";
+            if(OccupiedRosterCount(s)>=s.command.config.capacity)return "在编人数已满（被捕待救成员保留编制）";
             if(s.money-ReservedMoney(s)<RecruitmentCost)return "接纳需要12可用银两；可先撤回其他任务预留";
             return "";
         }
@@ -23,7 +27,7 @@ namespace Minglu
         // and reopening must not reroll candidates or consume action randomness.
         public static CommandRecruitPreview PreviewRecruit(RunState s)
         {
-            if(s.agents.Count>=s.command.config.capacity)return null;
+            if(OccupiedRosterCount(s)>=s.command.config.capacity)return null;
             var copy=JsonUtility.FromJson<RunState>(JsonUtility.ToJson(s));
             AddPerson(copy);
             return new CommandRecruitPreview{agent=copy.agents.Last(),person=copy.command.people.Last()};

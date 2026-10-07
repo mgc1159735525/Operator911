@@ -67,12 +67,12 @@ namespace Minglu
             float top=43;
             if(people)
             {
-                Label(panel,"成员名册  ·  "+State.agents.Count+" / "+State.command.config.capacity,59,40,782,24,15,Muted);
+                Label(panel,"成员名册  ·  在编 "+CommandRules.OccupiedRosterCount(State)+" / "+State.command.config.capacity+"（含待救）  ·  离队档案 "+State.agents.Count(a=>a.condition==Condition.Lost),59,40,782,24,15,Muted).name="CommandRosterCount";
                 var roster=Scroll(panel,"CommandRoster",59,74,782,86,Mathf.CeilToInt(State.agents.Count/4f)*46);
                 for(int i=0;i<State.agents.Count;i++)
                 {
                     var a=State.agents[i];
-                    Button("CommandAgent_"+a.id,roster,a.name+(a.condition==Condition.Active?"":" · 离岗"),(i%4)*193,i/4*46,183,38,()=>{selectedAgent=a.id;Draw();},true,a.id==selectedAgent);
+                    Button("CommandAgent_"+a.id,roster,a.name+(a.condition==Condition.Captured?" · 待救":a.condition==Condition.Lost?" · 已离队":""),(i%4)*193,i/4*46,183,38,()=>{selectedAgent=a.id;Draw();},true,a.id==selectedAgent);
                 }
                 top=170;
             }

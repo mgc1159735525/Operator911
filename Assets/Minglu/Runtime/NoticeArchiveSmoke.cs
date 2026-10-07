@@ -32,8 +32,27 @@ namespace Minglu
             if(modal!="campaignDossier"||commandTab!=3)throw new Exception("Chapter notice opened an empty business page instead of the campaign");
             yield return Click("CampaignClose");yield return SmokeOpenBusiness(4);yield return Click("ReportNotices");yield return Click("ArchivedNotice_2");
             if(modal!="campaignDossier"||State.command.noticeArchive.Count!=3)throw new Exception("Archived chapter notice lost its destination");
+            // Closing a campaign must not turn the archive entry into a dead
+            // button, and archived links must not reopen mutable game controls.
+            State.journal.Add("[1] —— 第1夜 / 组织执行报告 ——");
+            State.journal.Add("[1] 测试留档：成员完成报告。");
+            foreach(bool won in new[]{false,true})
+            {
+                State.ended=true;State.won=won;State.ending="结局归档检查";modal="";Draw();yield return null;
+                string endedState=JsonUtility.ToJson(State);
+                yield return Click("CommandEndReview");yield return Click("ReportNotices");
+                if(modal!="noticeArchive"||ProducerButton("NoticeArchiveClose")==null)throw new Exception("Ending archive entry returned to the ending instead of showing retained reports");
+                yield return RequireMapDeskBlocked();Capture(Path.ChangeExtension(path,won?"winning-archive.png":"ending-archive.png"));
+                yield return AssignmentScrollTo("NoticeArchiveList","ArchivedNotice_0");yield return Click("ArchivedNotice_0");
+                if(modal!="endingReview")throw new Exception("Ended archive reopened a mutable member or task dossier");
+                RequireProducerNight(1);
+                yield return Click("ReportNotices");yield return Click("NoticeArchiveClose");
+                if(modal!="endingReview")throw new Exception("Archive close lost the ending review context");
+                yield return Click("EndingReviewBack");
+                if(ProducerButton("CommandEndHome")==null||JsonUtility.ToJson(State)!=endedState)throw new Exception("Reviewing ended notices mutated the campaign or lost its ending");
+            }
             foreach(string file in new[]{ProfilePath,ProfilePath+".bak",smokeSave,smokeSave+".bak"})if(File.Exists(file))File.Delete(file);
-            Debug.Log("MINGLU_NOTICE_ARCHIVE_UI_SUCCESS: physical clicks, retained messages, save/load, source navigation and modal shielding");
+            Debug.Log("MINGLU_NOTICE_ARCHIVE_UI_SUCCESS: physical clicks, retained messages, save/load, source navigation, modal shielding, winning/losing ending read-only archives");
         }
     }
 }

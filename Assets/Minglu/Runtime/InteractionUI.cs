@@ -9,6 +9,33 @@ namespace Minglu
     public partial class CityGameUI
     {
         readonly Dictionary<string, Vector2> scrollPositions = new Dictionary<string, Vector2>();
+        string redrawKeyboardFocus;
+        void RememberKeyboardFocus()
+        {
+            var events=UnityEngine.EventSystems.EventSystem.current;
+            var selected=events==null?null:events.currentSelectedGameObject;
+            redrawKeyboardFocus=selected!=null&&root!=null&&selected.transform.IsChildOf(root)?selected.name:null;
+        }
+        void RestrictKeyboardToTopDialog()
+        {
+            Transform scope=root;
+            // These full-screen raycast shields are siblings in drawing order.
+            // The last shield owns keyboard input as well, including nested
+            // appearance confirmations and the new-run replacement dialog.
+            foreach(Transform child in root)
+                if(child.name=="CommandShade"||child.name=="ModalShade"||child.name=="AppearanceShade"||child.name=="LookPopupShade"||child.name=="ReplaceShade"||child.name=="PersistenceFailureShade")scope=child;
+            var controls=root.GetComponentsInChildren<Selectable>();
+            foreach(var control in controls)
+                if(!control.transform.IsChildOf(scope))control.interactable=false;
+            var events=UnityEngine.EventSystems.EventSystem.current;if(events==null)return;
+            var available=scope.GetComponentsInChildren<Selectable>().Where(control=>control.IsInteractable()).ToList();
+            var focus=available.FirstOrDefault(control=>control.name==redrawKeyboardFocus);
+            // Returning/continuing is the safe initial focus for a confirmation;
+            // Enter must not accidentally accept a destructive action.
+            if(focus==null)focus=available.FirstOrDefault(control=>control.name=="LookPopupKeep"||control.name=="CancelNewRun"||control.name.EndsWith("Back")||control.name.EndsWith("Close")||control.name.EndsWith("Cancel"));
+            if(focus==null)focus=available.FirstOrDefault();
+            events.SetSelectedGameObject(focus==null?null:focus.gameObject);
+        }
         void SelectAgent(Agent a)
         {
             selectedAgent = a.id;

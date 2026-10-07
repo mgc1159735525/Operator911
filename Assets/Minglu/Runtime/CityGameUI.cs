@@ -61,16 +61,20 @@ namespace Minglu
         void Update()
         {
             if (State == null) return;
+            // A failed write needs an explicit retry/stay decision. Shortcuts
+            // must not replace the unsaved in-memory run behind this dialog.
+            if(PersistenceFailurePending)return;
             if((atTitle&&homePage=="appearance"||modal=="appearance")&&Input.GetKeyDown(KeyCode.Escape)){RequestCloseAppearance();return;}
             if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
             if(State.command!=null&&State.ended&&modal=="endingReview"&&Input.GetKeyDown(KeyCode.Escape)){modal="";Draw();return;}
+            if(State.command!=null&&State.ended&&modal=="noticeArchive"&&Input.GetKeyDown(KeyCode.Escape)){CloseNoticeArchive();return;}
             if(atTitle){if(Input.GetKeyDown(KeyCode.Escape)&&homePage!="main")BackHome();return;}
             if(!atTitle&&Input.GetKeyDown(KeyCode.Escape)&&HandleCommandModalEscape())return;
             if (Input.GetKeyDown(KeyCode.Escape)) { if(State.command!=null&&(State.command.eventKind!=0||State.ended||State.command.notices.Count>0))return; if (modal != "" && modal != "event" && modal != "ending") { modal = ""; Draw(); } else { modal = "menu"; Draw(); } }
             if (Input.GetKeyDown(KeyCode.F5)) Save();
             if (Input.GetKeyDown(KeyCode.F9)) Load();
         }
-        void OnDestroy() { if (clickSound != null) Destroy(clickSound); }
+        void OnDestroy() { RemoveQuitGuard();if (clickSound != null) Destroy(clickSound); }
         void Sound() { if (sound && audioSource != null) audioSource.PlayOneShot(clickSound,profile.volume); }
         static Color Hex(string value) { Color c; ColorUtility.TryParseHtmlString("#" + value, out c); return c; }
         RectTransform Rect(string name, Transform parent, float x, float y, float w, float h)
@@ -124,13 +128,14 @@ namespace Minglu
         }
         void Draw()
         {
+            RememberKeyboardFocus();
             RememberScroll();
             if (root != null) { root.gameObject.SetActive(false); Destroy(root.gameObject); }
             root=Rect("CityRoot",canvas.transform,0,0,1600,900); root.anchorMin=root.anchorMax=new Vector2(.5f,.5f);root.pivot=new Vector2(.5f,.5f);root.anchoredPosition=Vector2.zero;
             Box("Background",root,0,0,1600,900,Ink);
-            if(atTitle){DrawHome();RestoreScroll();return;}
+            if(atTitle){DrawHome();DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();return;}
             RecordEnding();
-            if(State.command!=null){DrawCommandGame();RestoreScroll();return;}
+            if(State.command!=null){DrawCommandGame();DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();return;}
             Label(root,"明路 · 地下",24,23,255,46,32,Gold); Label(root,"新京密报局   /   长夜未尽",26,74,255,25,15,Muted);
             if(State.chiefLook!=null)DrawLook(root,State.chiefLook,880,24,48,65);
             Stat(304,"行动成果",State.progress+" / "+State.config.Value("goal"),State.progress,State.config.Value("goal"),Gold);
@@ -145,7 +150,7 @@ namespace Minglu
             if(State.ended&&modal==""&&!reviewingEnding)modal="ending";
             if(!string.IsNullOrEmpty(State.pendingEvent)&&modal!="report"&&modal!="menu"&&modal!="help")modal="event";
             if(modal!="")DrawModal();
-            RestoreScroll();
+            DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();
         }
         void Stat(float x,string title,string value,int amount,int max,Color color)
         {
@@ -332,7 +337,13 @@ namespace Minglu
             newCrisis=crisis;seedText="";OpenHome("new");
         }
         void Save() { Save(true); }
-        void Save(bool redraw) {try{PrototypeSave.Write(State,SavePath);if(redraw)toast="已保存当前进度和指令。";}catch(Exception e){toast="保存失败："+e.Message;}if(redraw)Draw();}
+        bool Save(bool redraw)
+        {
+            bool saved=false;
+            try{PrototypeSave.Write(State,SavePath);retryRunSave=false;ClearResolvedPersistenceFailure();if(redraw)toast="已保存当前进度和指令。";saved=true;}
+            catch(Exception e){retryRunSave=true;ReportPersistenceFailure("当前安排尚未写入磁盘，已保留在本次运行中。请先重试保存，再关闭游戏。",e);}
+            if(redraw)Draw();return saved;
+        }
         void Load()
         {
             try{string recovery;State=PrototypeSave.ReadWithRecovery(SavePath,out recovery);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTab=3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast=string.IsNullOrEmpty(recovery)?"已恢复存档及当局规则。":recovery;}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
@@ -342,6 +353,9 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--persistence-failure-only")>=0){yield return PersistenceFailureSmoke(path);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--keyboard-modal-probe")>=0){yield return KeyboardModalSmoke(path,true);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--keyboard-modal-only")>=0){yield return KeyboardModalSmoke(path,false);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--campaign-experience-only")>=0){yield return CampaignExperienceSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--notice-archive-only")>=0){yield return NoticeArchiveSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--task-layout-only")>=0){yield return TaskLayoutSmoke(path);Application.Quit();yield break;}

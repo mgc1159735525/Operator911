@@ -25,7 +25,9 @@ namespace Minglu
         {
             var s = JsonUtility.FromJson<RunState>(File.ReadAllText(path));
             if (s == null || s.version != 3 || s.config == null) throw new InvalidDataException("存档格式版本不匹配，当前对局未被替换。");
-            ConfigStore.Validate(s.config);
+            // Command runs retain departed members in historical dossiers.
+            // Their occupied capacity is checked by CommandRules.Validate.
+            ConfigStore.Validate(s.config,s.command!=null);
             if(s.roguelikeRun&&(string.IsNullOrEmpty(s.runId)||s.initialSeed==0||s.difficulty<0||s.difficulty>2||s.doctrine<0||s.doctrine>2))throw new InvalidDataException("新局初始化信息无效。");
             if(s.agents==null||s.agents.Count==0||s.agents.Any(a=>a==null)||s.journal==null||s.intelligence<0||s.progress<0||s.pressure<0||s.pressure>100||s.agents.Select(a=>a.id).Distinct().Count()!=s.agents.Count)throw new InvalidDataException("存档中的组织或资源数据无效。");
             if(s.command!=null){CommandRules.Validate(s);return s;}

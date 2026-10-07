@@ -16,39 +16,44 @@ namespace Minglu
         string ProfilePath { get { return smokeSave!=null?smokeSave+".profile":Path.Combine(MingluStorage.Directory,"minglu-profile-v1.json"); } }
         void InitializeProfile()
         {
+            InstallQuitGuard();
             try { string recovery;profile=RunLifecycle.ReadProfileWithRecovery(ProfilePath,out recovery);if(recovery!="")homeNotice=recovery; }
             catch(Exception e){homeNotice="档案读取失败，已使用默认设置；原文件已保留："+e.Message;profile=new PlayerProfile();}
             if(profile.records.Count==0)newDifficulty=0;
             sound=profile.sound;
             if(smokeSave==null)Screen.fullScreen=profile.fullscreen;
         }
-        void PersistProfile()
+        bool PersistProfile()
         {
-            try{profile.sound=sound;RunLifecycle.WriteProfile(profile,ProfilePath);}
-            catch(Exception e){homeNotice="设置未能保存："+e.Message;}
+            try{profile.sound=sound;RunLifecycle.WriteProfile(profile,ProfilePath);retryProfileSave=false;ClearResolvedPersistenceFailure();return true;}
+            catch(Exception e){retryProfileSave=true;ReportPersistenceFailure("设置尚未写入磁盘，当前选择只在本次运行中生效。",e);return false;}
         }
-        void RecordEnding()
+        bool RecordEnding(bool retry=false)
         {
-            if(State==null||!State.ended||!State.roguelikeRun)return;
+            if(State==null||!State.ended||!State.roguelikeRun)return true;
+            if(retryEndingSave&&!retry)return false;
             try
             {
                 var candidate=JsonUtility.FromJson<PlayerProfile>(JsonUtility.ToJson(profile));
-                if(RunLifecycle.Record(candidate,State)){RunLifecycle.WriteProfile(candidate,ProfilePath);profile=candidate;}
+                if(RunLifecycle.Record(candidate,State)){RunLifecycle.WriteProfile(candidate,ProfilePath);profile=candidate;retryProfileSave=false;}
+                retryEndingSave=false;ClearResolvedPersistenceFailure();return true;
             }
-            catch(Exception e){toast="战绩保存失败："+e.Message;}
+            catch(Exception e){retryEndingSave=true;ReportPersistenceFailure("本局战绩尚未归档，已保留当前结局。请重试成功后再返回或开始新局。",e);return false;}
         }
         void OpenHome(string page="main") { atTitle=true;homePage=page;settingsFromGame=false;modal="";replaceConfirmed=false;scrollPositions.Clear();Draw(); }
         bool SaveForExit()
         {
-            try{PrototypeSave.Write(State,SavePath);RecordEnding();return true;}
-            catch(Exception e){toast="存档失败，已留在当前对局："+e.Message;Draw();return false;}
+            if(!Save(false)||!RecordEnding(true)){Draw();return false;}
+            return true;
         }
         void ReturnHome(){if(SaveForExit())OpenHome();}
-        void QuitGame(){if(!atTitle&&!SaveForExit())return;PersistProfile();Application.Quit();}
+        void QuitGame(){if(TryPrepareQuit())Application.Quit();}
         void OnApplicationQuit()
         {
-            if(smokeSave!=null||State==null||!State.roguelikeRun)return;
-            try{PrototypeSave.Write(State,SavePath);RecordEnding();PersistProfile();}catch(Exception e){Debug.LogWarning("退出存档失败："+e.Message);}
+            // The normal window-close/menu path has already committed exactly
+            // once through wantsToQuit. This fallback cannot veto an OS shutdown.
+            if(quitApproved||smokeSave!=null||State==null||!State.roguelikeRun)return;
+            try{PrototypeSave.Write(State,SavePath);RecordEnding(true);PersistProfile();}catch(Exception e){Debug.LogWarning("退出存档失败："+e.Message);}
         }
         void OpenSettings(){settingsFromGame=!atTitle;atTitle=true;homePage="settings";Draw();}
         void BackHome()
@@ -58,6 +63,9 @@ namespace Minglu
         }
         void BeginConfiguredRun()
         {
+            // A completed run must reach the permanent archive before its only
+            // save slot is replaced, including after a failed profile write.
+            if(State!=null&&State.roguelikeRun&&State.ended&&!RecordEnding(true)){Draw();return;}
             uint seed;
             if(string.IsNullOrWhiteSpace(seedText)){seed=BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(),0);if(seed==0)seed=911;}
             else if(!uint.TryParse(seedText,out seed)||seed==0){homeNotice="种子请输入1—4294967295之间的整数，或留空随机。";Draw();return;}

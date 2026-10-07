@@ -59,7 +59,7 @@ namespace Minglu
             Validate(config);
             return config;
         }
-        public static void Validate(GameConfig c)
+        public static void Validate(GameConfig c,bool commandRosterHistory=false)
         {
             if (c == null || c.settings == null || c.agents == null || c.districts == null || c.actions == null || c.events == null || c.assets == null)
                 throw new InvalidOperationException("配置缺少必要数据表。");
@@ -74,7 +74,7 @@ namespace Minglu
             foreach (string key in keys.Where(x => x != "turns" && x != "goal" && x != "ap" && x != "startingIntel"))
                 if (c.Value(key) > 100) throw new InvalidOperationException("Settings " + key + " 不能超过100。");
             if (c.Value("captureThreshold") < 1) throw new InvalidOperationException("被捕阈值必须为正数。");
-            if (c.agents.Count < 2 || c.agents.Count > 8) throw new InvalidOperationException("当前界面支持2—8名成员。");
+            if (c.agents.Count < 2 || (!commandRosterHistory&&c.agents.Count > 8)) throw new InvalidOperationException("当前界面支持2—8名成员。");
             foreach (var a in c.agents)
             {
                 if (a.id < 0 || string.IsNullOrWhiteSpace(a.name) || a.intel < 1 || a.intel > 8 || a.stealth < 1 || a.stealth > 8 || a.portrait < 0 || a.portrait > 3) throw new InvalidOperationException("Agents " + a.id + " 字段越界。");

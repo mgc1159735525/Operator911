@@ -77,7 +77,7 @@ namespace Minglu
             CommandRules.EnsureStrategy(State);
             DrawDossierDesk();
             if(State.command.eventKind!=0)DrawCommandEvent();
-            else if(State.ended){if(modal=="endingReview")DrawEndingReview();else DrawCommandEnding();}
+            else if(State.ended){if(modal=="endingReview")DrawEndingReview();else if(modal=="noticeArchive")DrawNoticeArchive();else DrawCommandEnding();}
             else if(State.command.notices!=null&&State.command.notices.Count>0)DrawCommandNotice();
             else if(modal=="memberDetails")DrawMemberDetails();
             else if(modal=="districtDetails")DrawDistrictDetails();
@@ -170,7 +170,7 @@ namespace Minglu
                 string error=CommandRules.RouteError(State,r);
                 Label(panel,CompactRouteStatus(r),28,y+170,580,35,14,error==""?Muted:Red);
                 Button("RouteDetails_"+r.id,panel,"待接 "+r.waiting+"  →  中继 "+r.atRelay+"  →  已送达 "+r.delivered+"    详情 ›",16,y+132,596,30,()=>{detailRouteId=r.id;modal="routeDetails";Draw();});
-                Button("RouteEnable_"+r.id,panel,r.enabled?"暂停":"启用此线",650,y+138,160,38,()=>{r.enabled=!r.enabled;r.last=r.enabled?"已启用：内线隔夜尝试产出，接头与外送自动推进。":"已暂停，成员按其他任务或生活安排工作。";Save(false);toast=r.enabled?"链条已启用：后续夜晚自动判定，任务优先占用人手。":"链条已暂停，成员可以生活与休养。";Draw();},r.enabled||error=="");
+                Button("RouteEnable_"+r.id,panel,r.enabled?"暂停":"启用此线",650,y+138,160,38,()=>{r.enabled=!r.enabled;r.last=r.enabled?"已启用：内线隔夜尝试产出，接头与外送自动推进。":"已暂停，成员按其他任务或生活安排工作。";toast=r.enabled?"链条已启用：后续夜晚自动判定，任务优先占用人手。":"链条已暂停，成员可以生活与休养。";Save(false);Draw();},r.enabled||error=="");
             }
             Label(panel,"正常交接保留积压；失陷损失见交接预告，暂停仍继续计时。",28,550,782,24,15,Muted);
         }
@@ -187,8 +187,8 @@ namespace Minglu
             Button("CommandPeopleDetails",panel,"个人档案 / 生活与任职  ›",252,300,558,40,()=>{modal="memberDetails";Draw();});
             Label(panel,"从上方名册切换成员，在个人档案调整生活与任职安排。",28,382,782,28,16,Muted);
             Rule(panel,28,452,782);
-            Label(panel,State.agents.Count>=State.command.config.capacity?"已达到本局人数上限。":State.money-CommandRules.ReservedMoney(State)<12?"招募需12可用银两，当前经费不足。":"新成员的身份、能力与外观随机。",28,472,782,26,15,Muted);
-            ActionTicket("CommandRecruit",panel,"查看接纳人选","12 银两",28,516,374,42,OpenRecruitment,State.money-CommandRules.ReservedMoney(State)>=12&&State.agents.Count<State.command.config.capacity);
+            Label(panel,CommandRules.OccupiedRosterCount(State)>=State.command.config.capacity?"在编已满；被捕成员保留编制，永久离队后可补员。":State.money-CommandRules.ReservedMoney(State)<12?"招募需12可用银两，当前经费不足。":"新成员的身份、能力与外观随机；离队档案不占编制。",28,472,782,26,15,Muted);
+            ActionTicket("CommandRecruit",panel,"查看接纳人选","12 银两",28,516,374,42,OpenRecruitment,CommandRules.RecruitError(State)=="");
             Button("CommandPeopleAppearance",panel,"编辑外观  ›",428,516,382,42,()=>OpenAppearance(a.id));
         }
         void DrawCommandMap(Transform panel)

@@ -35,7 +35,7 @@ namespace Minglu
         }
         public static void AddPerson(RunState s)
         {
-            if(s.agents.Count>=s.command.config.capacity)throw new InvalidOperationException("组织容量已满");
+            if(OccupiedRosterCount(s)>=s.command.config.capacity)throw new InvalidOperationException("组织容量已满");
             int id=s.agents.Count;int sex=Next(s,2);if(id==1)sex=1-s.agents[0].appearance.sex;
             string[] surnames={"周","沈","陆","许","程","叶","林","陈","方","苏","顾","唐"};
             string[] male={"怀远","砚生","知行","绍安","明川","云舟","伯言","景平","庭松","清和","慎之","望舒"};
@@ -218,7 +218,9 @@ namespace Minglu
             s.pressure=Math.Min(100,s.pressure+1);CheckGate(s);
             Log(s,"夜末账目：银两 "+oldMoney+" → "+s.money+"（含维护支出"+maintenancePaid+"）；情报 "+oldIntel+" → "+s.intelligence+"。当前目标："+GateText(s));
             if(unpaidMembers>0)Log(s,"维护经费不足：部分成员未领到生活补助，信任−6、可疑度+6；请预留生活经费。");
-            if(!s.agents.Any(a=>a.condition==Condition.Active)||(s.agents.Count(a=>a.condition==Condition.Active)<3&&!s.agents.Any(a=>a.condition==Condition.Captured)&&s.agents.Count>=c.config.capacity)){s.ended=true;s.won=false;s.ending="组织无法维持最小联络链。";}
+            // A small surviving team can recruit into places vacated by departed
+            // members. Historical headcount must not end that recovery window.
+            if(!s.agents.Any(a=>a.condition==Condition.Active)){s.ended=true;s.won=false;s.ending="组织无法维持最小联络链。";}
             if(!s.ended&&s.turn>=s.config.Value("turns")){s.ended=true;s.won=false;s.ending="行动窗口结束，未达成："+GateText(s);}
             if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);return;}
             s.turn++;
@@ -260,6 +262,7 @@ namespace Minglu
         public static void Validate(RunState s)
         {
             var c=s.command;if(c==null||c.version!=1||c.config==null||c.people==null||c.tasks==null||c.routes==null||c.config.templates==null||c.config.templates.Count<1||c.config.coverXP<1||c.config.taskInterval<1||s.turn<1||s.turn>s.config.Value("turns")||s.random==0||s.money<0||s.agents.Count!=c.people.Count||c.people.Select(p=>p.id).Distinct().Count()!=c.people.Count)throw new Exception("组织存档结构无效");
+            if(c.config.capacity<3||c.config.capacity>8||OccupiedRosterCount(s)>c.config.capacity||s.agents.Count!=s.config.agents.Count||s.agents.Any(a=>!Enum.IsDefined(typeof(Condition),a.condition)||!s.config.agents.Any(row=>row.id==a.id)||!c.people.Any(p=>p.id==a.id)))throw new Exception("在编容量或历史名册数据无效");
             AppearanceRules.Validate(s.chiefLook);
             UpgradeMissions(s);UpgradeInstitutions(s);EnsureExperience(s);ValidateStrategy(s);ValidateCommandCampaign(s);EnsureNoticeArchive(s);
             if(c.experienceRevision!=1||c.goalDeliveries<1||c.goalScore<1||c.goalLevel<1||c.goalLevel>4||c.secondGateDeliveries<1||c.routes.Any(r=>r.compromisedSlots<0||r.compromisedSlots>7))throw new Exception("本局目标或链条交接数据无效");
