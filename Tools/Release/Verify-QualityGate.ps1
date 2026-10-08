@@ -46,7 +46,9 @@ try {
     }
     $null = Write-FixtureFile 'Builds/Installer/MingluSetup.exe' 'Synthetic installer.' $evidenceTime
     $logMarkers = @{
-        'Logs/release-quality-build.log'="MINGLU_BUILD_SUCCESS`nMINGLU_CAMPAIGN_BALANCE_VERIFY_SUCCESS`nMINGLU_SAVE_RECOVERY_VERIFY_SUCCESS"
+        'Logs/release-quality-build.log'="MINGLU_BUILD_SUCCESS`nMINGLU_CAMPAIGN_BALANCE_VERIFY_SUCCESS`nMINGLU_SAVE_RECOVERY_VERIFY_SUCCESS`nMINGLU_TUTORIAL_VERIFY_SUCCESS"
+        'Logs/qa-tutorial-ui.log'='MINGLU_TUTORIAL_UI_SUCCESS'
+        'Logs/qa-tutorial-ui-720.log'='MINGLU_TUTORIAL_UI_SUCCESS'
         'Logs/release-campaign-ui-1600.log'='MINGLU_CAMPAIGN_EXPERIENCE_UI_SUCCESS'
         'Logs/release-campaign-ui-720.log'='MINGLU_CAMPAIGN_EXPERIENCE_UI_SUCCESS'
         'Logs/release-notice-ui.log'='MINGLU_NOTICE_ARCHIVE_UI_SUCCESS'
@@ -89,6 +91,26 @@ try {
     $null = Write-FixtureFile 'Logs/qa-grooming-fit.log' 'MINGLU_GROOMING_FIT_RENDER_SUCCESS' $evidenceTime
     $report = Read-FixtureReport
     Assert-Gate (Gate-Passed $report 'grooming-fit-render-coverage') 'Current actual rendering marker should satisfy coverage only.'
+    foreach ($tutorial in @(
+        @{id='tutorial-rules';file='Logs/release-quality-build.log';marker='MINGLU_TUTORIAL_VERIFY_SUCCESS'},
+        @{id='tutorial-ui-1600x900';file='Logs/qa-tutorial-ui.log';marker='MINGLU_TUTORIAL_UI_SUCCESS'},
+        @{id='tutorial-ui-1280x720';file='Logs/qa-tutorial-ui-720.log';marker='MINGLU_TUTORIAL_UI_SUCCESS'}
+    )) {
+        $path = Join-Path $fixture $tutorial.file
+        [IO.File]::SetLastWriteTimeUtc($path,$sourceTime.AddSeconds(-1))
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $tutorial.id)) ('Tutorial evidence before its code/build is stale: ' + $tutorial.id)
+        $withoutMarker = $logMarkers[$tutorial.file].Replace($tutorial.marker,'UNRELATED_SYNTHETIC_SUCCESS')
+        $null = Write-FixtureFile $tutorial.file $withoutMarker $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $tutorial.id)) ('Unrelated success cannot satisfy tutorial verification: ' + $tutorial.id)
+        $null = Write-FixtureFile $tutorial.file ($logMarkers[$tutorial.file] + "`nException: synthetic tutorial failure") $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $tutorial.id)) ('Tutorial success must not hide an exception: ' + $tutorial.id)
+        $null = Write-FixtureFile $tutorial.file $logMarkers[$tutorial.file] $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (Gate-Passed $report $tutorial.id) ('Current tutorial marker should satisfy its own gate: ' + $tutorial.id)
+    }
     Write-Output ('MINGLU_QUALITY_GATE_VERIFY_SUCCESS: ' + $checks + ' checks using isolated synthetic evidence; no game or player files modified.')
 }
 finally {

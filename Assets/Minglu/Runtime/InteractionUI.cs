@@ -23,10 +23,11 @@ namespace Minglu
             // The last shield owns keyboard input as well, including nested
             // appearance confirmations and the new-run replacement dialog.
             foreach(Transform child in root)
-                if(child.name=="CommandShade"||child.name=="ModalShade"||child.name=="AppearanceShade"||child.name=="LookPopupShade"||child.name=="ReplaceShade"||child.name=="PersistenceFailureShade")scope=child;
+                if(child.name=="CommandShade"||child.name=="ModalShade"||child.name=="AppearanceShade"||child.name=="LookPopupShade"||child.name=="ReplaceShade"||child.name=="TutorialShade"||child.name=="PersistenceFailureShade")scope=child;
             var controls=root.GetComponentsInChildren<Selectable>();
             foreach(var control in controls)
                 if(!control.transform.IsChildOf(scope))control.interactable=false;
+            RestrictTutorialControls(scope,controls);
             var events=UnityEngine.EventSystems.EventSystem.current;if(events==null)return;
             var available=scope.GetComponentsInChildren<Selectable>().Where(control=>control.IsInteractable()).ToList();
             // Buttons already carry this focus behavior. Inputs and scrollbars

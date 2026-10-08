@@ -27,6 +27,7 @@ namespace Minglu
         {
             if(State.ended)return new CommandStep{message="本局已结束，可在结局回看每夜报告。",label="本局已结束",enabled=false};
             if(State.command.eventKind!=0)return new CommandStep{message="先处理眼前的突发事件，组织正等待你的决定。",label="等待事件决定",enabled=false};
+            if(InTutorial)return TutorialNextStep();
             var pending=State.command.tasks.Where(t=>t.status==0&&t.actor<0).OrderBy(t=>t.deadline).ToList();
             var feasible=pending.Where(t=>CommandRules.CanStaffTask(State,t)).ToList();
             var rescue=feasible.FirstOrDefault(t=>t.operation==2);
@@ -289,6 +290,7 @@ namespace Minglu
         }
         void DrawCommandEnding()
         {
+            if(InTutorial){DrawTutorialEnding();return;}
             if(CommandRules.HasCommandCampaign(State))
             {
                 var campaign=State.command.campaign;

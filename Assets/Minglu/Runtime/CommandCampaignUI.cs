@@ -16,6 +16,7 @@ namespace Minglu
 
         string CampaignDeskObjective()
         {
+            if(InTutorial)return TutorialGoalLine();
             if(!CommandRules.HasCommandCampaign(State))return "阶段目标  /  "+GateProgress().Replace(" / 本阶段","").Replace("\n"," · ");
             var campaign=State.command.campaign;var chapter=CommandRules.CampaignCurrentChapter(State);
             return campaign.scenarioData.title+"  /  "+(chapter==null?"三章委任完成 · 继续达成组织目标":"第 "+(campaign.chapter+1)+" 章 · "+chapter.title)+"  ·  已完成 "+campaign.chapter+" / 3 章";

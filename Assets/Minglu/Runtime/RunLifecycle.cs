@@ -72,7 +72,7 @@ namespace Minglu
         }
         public static bool Record(PlayerProfile p,RunState s)
         {
-            if(!s.ended||!s.roguelikeRun||string.IsNullOrEmpty(s.runId)||p.records.Any(r=>r.id==s.runId))return false;
+            if(!s.ended||!s.roguelikeRun||TutorialRules.IsTutorial(s)||string.IsNullOrEmpty(s.runId)||p.records.Any(r=>r.id==s.runId))return false;
             p.records.Add(new RunRecord{id=s.runId,date=DateTime.Now.ToString("yyyy-MM-dd HH:mm"),seed=s.initialSeed,difficulty=s.difficulty,doctrine=DoctrineName(s.doctrine),turn=s.turn,progress=s.progress,won=s.won});
             return true;
         }

@@ -17,6 +17,7 @@ namespace Minglu.EditorTools
                 StrategyVerification.Verify();
                 MissionVerification.Verify();
                 CommandVerification.Verify();
+                TutorialVerification.Verify();
                 ExperienceVerification.Verify();
                 RecruitmentVerification.Verify();
                 PlanningVerification.Verify();

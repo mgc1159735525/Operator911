@@ -25,7 +25,7 @@ namespace Minglu
         AudioClip clickSound;
         uint nextSeed = 911;
         string smokeSave;
-        string SavePath { get { return smokeSave ?? Path.Combine(MingluStorage.Directory,"minglu-run-v14.json"); } }
+        string SavePath { get { return InTutorial?TutorialSavePath:RegularSavePath; } }
         static readonly Color Ink = Hex("20282D"), Panel = Hex("2D373C"), Line = Hex("4C5558"), Gold = Hex("D2B57F"), TextColor = Hex("EEE8DA"), Muted = Hex("B2B6B2"), Red = Hex("E39A86"), Teal = Hex("A8C0B1");
 
         void Start()
@@ -64,6 +64,7 @@ namespace Minglu
             // A failed write needs an explicit retry/stay decision. Shortcuts
             // must not replace the unsaved in-memory run behind this dialog.
             if(PersistenceFailurePending)return;
+            if(HandleTutorialKeyboard())return;
             if((atTitle&&homePage=="appearance"||modal=="appearance")&&Input.GetKeyDown(KeyCode.Escape)){RequestCloseAppearance();return;}
             if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
             if(State.command!=null&&State.ended&&modal=="endingReview"&&Input.GetKeyDown(KeyCode.Escape)){modal="";Draw();return;}
@@ -93,7 +94,7 @@ namespace Minglu
         }
         Button Button(string name, Transform parent, string text, float x, float y, float w, float h, Action action, bool enabled = true, bool primary = false)
         {
-            return PrintButton(name,parent,text,x,y,w,h,action,enabled,primary);
+            return PrintButton(name,parent,text,x,y,w,h,()=>{var before=State;string priorModal=modal;int priorPage=commandTab;action();ObserveTutorialAction(name,before,priorModal,priorPage);},enabled,primary);
         }
         void Border(Transform parent, float x, float y, float w, float h, Color color)
         {
@@ -135,7 +136,7 @@ namespace Minglu
             Box("Background",root,0,0,1600,900,Ink);
             if(atTitle){DrawHome();DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();return;}
             RecordEnding();
-            if(State.command!=null){DrawCommandGame();DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();return;}
+            if(State.command!=null){DrawCommandGame();DrawTutorialLayer();DrawPersistenceFailure();RestoreScroll();RestrictKeyboardToTopDialog();return;}
             Label(root,"明路 · 地下",24,23,255,46,32,Gold); Label(root,"新京密报局   /   长夜未尽",26,74,255,25,15,Muted);
             if(State.chiefLook!=null)DrawLook(root,State.chiefLook,880,24,48,65);
             Stat(304,"行动成果",State.progress+" / "+State.config.Value("goal"),State.progress,State.config.Value("goal"),Gold);
@@ -344,15 +345,18 @@ namespace Minglu
             catch(Exception e){retryRunSave=true;ReportPersistenceFailure("当前安排尚未写入磁盘，已保留在本次运行中。请先重试保存，再关闭游戏。",e);}
             if(redraw)Draw();return saved;
         }
-        void Load()
+        void Load(){LoadRun(SavePath);}
+        void LoadRegular(){LoadRun(RegularSavePath);}
+        void LoadRun(string path)
         {
-            try{string recovery;State=PrototypeSave.ReadWithRecovery(SavePath,out recovery);selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTab=3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast=string.IsNullOrEmpty(recovery)?"已恢复存档及当局规则。":recovery;}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
+            try{string recovery;State=PrototypeSave.ReadWithRecovery(path,out recovery);TutorialRules.Refresh(State);tutorialPopup="";selectedSite="";atTitle=false;LoadArt();selectedAgent=(State.agents.FirstOrDefault(a=>a.condition==Condition.Active)??State.agents[0]).id;commandTab=3;commandTask=-1;taskFilter=0;reportNight=-1;reportAll=false;resetCommandTaskScroll=true;scrollPositions.Clear();selectedDistrict=0;selectedMission="";rescueTarget=-1;modal="";reviewingEnding=false;toast=string.IsNullOrEmpty(recovery)?"已恢复存档及当局规则。":recovery;}catch(Exception e){toast=homeNotice="读取失败："+e.Message;}Draw();
         }
         IEnumerator CaptureIfRequested()
         {
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--tutorial-only")>=0){yield return TutorialSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--work-overview-only")>=0){yield return WorkOverviewSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--keyboard-scroll-probe")>=0){yield return KeyboardScrollSmoke(path,true);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--keyboard-scroll-only")>=0){yield return KeyboardScrollSmoke(path,false);Application.Quit();yield break;}

@@ -30,7 +30,7 @@ namespace Minglu
         }
         bool RecordEnding(bool retry=false)
         {
-            if(State==null||!State.ended||!State.roguelikeRun)return true;
+            if(State==null||!State.ended||!State.roguelikeRun||InTutorial)return true;
             if(retryEndingSave&&!retry)return false;
             try
             {
@@ -69,7 +69,7 @@ namespace Minglu
             uint seed;
             if(string.IsNullOrWhiteSpace(seedText)){seed=BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(),0);if(seed==0)seed=911;}
             else if(!uint.TryParse(seedText,out seed)||seed==0){homeNotice="种子请输入1—4294967295之间的整数，或留空随机。";Draw();return;}
-            if((File.Exists(SavePath)||File.Exists(SavePath+".bak"))&&!replaceConfirmed){homePage="replace";Draw();return;}
+            if((File.Exists(RegularSavePath)||File.Exists(RegularSavePath+".bak"))&&!replaceConfirmed){homePage="replace";Draw();return;}
             try
             {
                 var content=newCampaign?CampaignRules.Load():null;
@@ -78,7 +78,7 @@ namespace Minglu
                 if(newCampaign){CampaignRules.Initialize(candidate,content);CityContentRules.Initialize(candidate);CourierRules.Initialize(candidate);}
                 CommandRules.Initialize(candidate,newCrisis);
                 candidate.chiefLook=profile.chiefLook==null?new Appearance{style=1}:AppearanceRules.Copy(profile.chiefLook);
-                PrototypeSave.Write(candidate,SavePath);
+                PrototypeSave.Write(candidate,RegularSavePath);
                 State=candidate;atTitle=false;homeNotice="";replaceConfirmed=false;ResetRunView();Draw();
             }
             catch(Exception e){homeNotice="无法开始新局："+e.Message;Draw();}
@@ -122,23 +122,24 @@ namespace Minglu
             if(homePage=="main")
             {
                 RunState saved=null;string description="尚无行动存档。\n从「开始新局」建立本次组织。";
-                if(File.Exists(SavePath)||File.Exists(SavePath+".bak"))try{string recovery;saved=PrototypeSave.ReadWithRecovery(SavePath,out recovery);description=(recovery!=""?recovery:saved.ended?"行动已结束":"安排已保存，可继续指挥")+"\n成果 "+saved.progress+" / 种子 "+saved.initialSeed;}catch(Exception e){description="存档暂时无法读取，原文件仍保留。\n"+e.Message;}
+                if(File.Exists(RegularSavePath)||File.Exists(RegularSavePath+".bak"))try{string recovery;saved=PrototypeSave.ReadWithRecovery(RegularSavePath,out recovery);description=(recovery!=""?recovery:saved.ended?"行动已结束":"安排已保存，可继续指挥")+"\n成果 "+saved.progress+" / 种子 "+saved.initialSeed;}catch(Exception e){description="存档暂时无法读取，原文件仍保留。\n"+e.Message;}
                 if(saved!=null)
                 {
-                    Button("HomeContinue",root,saved.ended?"查看上局结局":"继续行动",98,327,408,55,()=>{Load();},true,true);
+                    Button("HomeContinue",root,saved.ended?"查看上局结局":"继续行动",98,327,408,55,LoadRegular,true,true);
                     HomeTextButton("HomeNew",root,"开始新局",98,406,408,44,()=>{homePage="new";homeNotice="";replaceConfirmed=false;Draw();});
                 }
                 else
                 {
                     Button("HomeNew",root,"开始新局",98,327,408,55,()=>{homePage="new";homeNotice="";replaceConfirmed=false;Draw();},true,true);
-                    HomeTextButton("HomeContinue",root,"继续行动 · 尚无存档",98,406,408,44,()=>{Load();},false);
+                    HomeTextButton("HomeContinue",root,"继续行动 · 尚无存档",98,406,408,44,LoadRegular,false);
                 }
-                HomeTextButton("HomeArchive",root,"历次行动    "+profile.records.Count,98,460,408,44,()=>{homePage="archive";Draw();});
-                HomeTextButton("HomeAppearance",root,"负责人外观",98,514,408,44,()=>OpenAppearance(-1));
-                Box("HomeMenuRule",root,98,585,408,1,Line);
-                HomeTextButton("HomeSettings",root,"设置",98,609,408,42,OpenSettings);
-                HomeTextButton("HomeHelp",root,"玩法与操作",98,661,408,42,()=>{homePage="help";Draw();});
-                HomeTextButton("HomeQuit",root,"退出游戏",98,713,408,42,QuitGame);
+                HomeTextButton("HomeTutorial",root,"新手演练    八夜教学 / 推荐初次游玩",98,459,470,44,()=>{homePage="tutorial";homeNotice="";tutorialRestart=false;Draw();},true,Gold);
+                HomeTextButton("HomeArchive",root,"历次行动    "+profile.records.Count,98,511,408,44,()=>{homePage="archive";Draw();});
+                HomeTextButton("HomeAppearance",root,"负责人外观",98,563,408,44,()=>OpenAppearance(-1));
+                Box("HomeMenuRule",root,98,625,408,1,Line);
+                HomeTextButton("HomeSettings",root,"设置",98,643,408,40,OpenSettings);
+                HomeTextButton("HomeHelp",root,"玩法与操作",98,690,408,40,()=>{homePage="help";Draw();});
+                HomeTextButton("HomeQuit",root,"退出游戏",98,737,408,40,QuitGame);
                 Label(root,"当前档案",1040,656,424,26,14,Muted);
                 Label(root,saved==null?"未立卷":"第 "+saved.turn+" 夜",1040,692,424,42,28,TextColor);
                 var status=Label(root,description,1040,750,424,85,16,Muted);
@@ -146,12 +147,13 @@ namespace Minglu
             }
             else
             {
-                string section=homePage=="new"||homePage=="replace"?"新局登记":homePage=="settings"?"声音与显示":homePage=="archive"?"历次行动":"指挥手册";
+                string section=homePage=="tutorial"?"新手演练":homePage=="new"||homePage=="replace"?"新局登记":homePage=="settings"?"声音与显示":homePage=="archive"?"历次行动":"指挥手册";
                 Label(root,section,98,337,408,36,21,TextColor);
                 string detail=homePage=="new"||homePage=="replace"?"选择行动时限与开局条件。\n人员、任务与事件随种子生成。":homePage=="settings"?"设置立即生效。\n返回后继续当前安排。":homePage=="archive"?"已结束的行动保存在此。\n成员与资源不跨局继承。":"你担任地区负责人。\n安排人事与目标，由成员执行。";
                 Label(root,detail,98,394,408,113,18,Muted);
                 var p=Rect("HomePanel",root,694,66,810,742);
-                if(homePage=="new"||homePage=="replace")
+                if(homePage=="tutorial")DrawTutorialHome(p);
+                else if(homePage=="new"||homePage=="replace")
                 {
                     DrawHomeHeading(p,"新局登记",newCampaign?"二十夜剧情 · 三章委任 / 每章两条方法 / 种子决定地区危机":"八夜短局 · "+CommandRules.NewRunGoalText(8,newDifficulty));
                     Label(p,"难度",0,163,128,32,20,Muted);

@@ -24,6 +24,7 @@ namespace Minglu
         }
         string GateProgress()
         {
+            if(InTutorial)return TutorialGoalLine();
             var c=State.command;int level2=c.people.Count(p=>p.level>=2&&CommandRules.Agent(State,p.id).condition==Condition.Active);
             int level=CommandRules.FinalLevel(State);
             if(c.gate==0)return "立足 / 本阶段\n送达 "+c.delivered+"/2 · 任务 "+c.completed+"/2";

@@ -8,7 +8,7 @@ namespace Minglu
         {
             Box("DeskHeader",root,0,0,1600,78,Panel);
             Label(root,"明路 · 地下",24,20,235,36,26,Gold);
-            Label(root,"新京地区",248,26,140,25,16,Muted);
+            Label(root,InTutorial?"新手演练":"新京地区",248,26,140,25,16,Muted);
             string[] labels={"行动成果","可用情报","可用经费","追查 / 阈值","民心"};
             string[] values={State.progress.ToString("00"),(State.intelligence-CommandRules.ReservedIntel(State))+" 份",(State.money-CommandRules.ReservedMoney(State))+" 银两",State.command.strategy.trace+" / "+State.command.strategy.config.raid,State.command.strategy.hearts.ToString()};
             for(int i=0;i<5;i++)
@@ -32,7 +32,7 @@ namespace Minglu
                 NoirIcon(button.transform,icons[page],11,12,21,commandTab==page?Gold:Muted);
             }
             Rule(root,20,685,140);
-            Button("CommandOverview",root,CommandRules.HasCommandCampaign(State)?"主线委任  ›":"阶段目标  ›",10,706,160,42,()=>{if(CommandRules.HasCommandCampaign(State))OpenCampaignDossier();else{modal="commandOverview";Draw();}});
+            Button("CommandOverview",root,InTutorial?"演练目标  ›":CommandRules.HasCommandCampaign(State)?"主线委任  ›":"阶段目标  ›",10,706,160,42,()=>{if(CommandRules.HasCommandCampaign(State))OpenCampaignDossier();else{modal="commandOverview";Draw();}});
             Button("CommandWorkOverview",root,"今夜安排  ›",10,751,160,32,OpenWorkOverview);
             Label(root,CampaignDeskObjective(),206,95,1356,29,18,Gold).name="CampaignDeskObjective";
             var desk=Rect("CommandMapDesk",root,194,136,1380,640);DrawCommandMap(desk);
@@ -85,7 +85,7 @@ namespace Minglu
             else if(commandTab==5)DrawStrategy(body);
             Rule(panel,59,height-91,782);
             Button("CommandPageClose",panel,returnToWorkOverview?"返回今夜安排":"返回城区地图",59,height-76,276,48,()=>{if(returnToWorkOverview)ReturnToWorkOverview();else OpenCommandPage(3);});
-            Label(panel,"ESC  关闭档案",620,height-63,220,25,14,Muted,UnityEngine.TextAnchor.MiddleRight);
+            Label(panel,InTutorial?"Esc  暂停教学":"ESC  关闭档案",620,height-63,220,25,14,Muted,UnityEngine.TextAnchor.MiddleRight);
         }
         void DrawCommandPreferences()
         {

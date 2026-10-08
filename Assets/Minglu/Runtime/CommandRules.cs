@@ -147,10 +147,12 @@ namespace Minglu
         public static int FinalLevel(RunState s){EnsureExperience(s);return s.command.goalLevel;}
         public static string GateText(RunState s)
         {
+            if(TutorialRules.IsTutorial(s))return "八夜教学：完成2项任务 + 真实送达1份机构情报 + 处理1次事件；查看成员、比较人选、阅读报告并安排生活。";
             return s.command.gate==0?"立足：送达2份情报 + 完成2项任务":s.command.gate==1?"扎根：送达"+SecondGateDeliveries(s)+"份 + 至少2人身份达到2级":"决胜：成果"+FinalScore(s)+" + 送达"+FinalDeliveries(s)+"份 + 至少1人身份达到"+FinalLevel(s)+"级";
         }
         public static void CheckGate(RunState s)
         {
+            if(TutorialRules.IsTutorial(s))return;
             var c=s.command;
             if(c.gate==0&&c.delivered>=2&&c.completed>=2){c.gate=1;Log(s,"阶段突破：组织立足。上级要求扎根社会，培养身份并扩大送达。");}
             if(c.gate==1&&c.delivered>=SecondGateDeliveries(s)&&c.people.Count(p=>p.level>=2&&Agent(s,p.id).condition==Condition.Active)>=2){c.gate=2;Log(s,"阶段突破：进入决胜考验。");}
@@ -159,6 +161,7 @@ namespace Minglu
         public static void Resolve(RunState s)
         {
             if(s.ended||s.command.eventKind!=0)return;
+            TutorialRules.BeforeResolve(s);
             EnsureStrategy(s);
             ReconcileCampaignPackets(s);
             var outcomes=CaptureNightOutcomes(s);
@@ -225,12 +228,13 @@ namespace Minglu
             // members. Historical headcount must not end that recovery window.
             if(!s.agents.Any(a=>a.condition==Condition.Active)){s.ended=true;s.won=false;s.ending="组织无法维持最小联络链。";}
             if(!s.ended&&s.turn>=s.config.Value("turns")){s.ended=true;s.won=false;s.ending="行动窗口结束，未达成："+GateText(s);}
-            if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);PublishNightOutcomes(s,outcomes);return;}
+            if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);TutorialRules.AfterResolve(s);PublishNightOutcomes(s,outcomes);return;}
             s.turn++;
             SpawnFollowups(s);
             if(s.turn%c.config.taskInterval==1){int before=c.nextTask;AddTask(s,"上级指示",-1);if(c.nextTask>before)Log(s,"上级发来新指示，请查看任务来源与人员需求。");}
             TryContextEvent(s);
             ArmRaid(s);
+            TutorialRules.AfterResolve(s);
             PublishNightOutcomes(s,outcomes);
         }
         public static void Notice(RunState s,CommandNotice notice,bool first=false)
@@ -252,6 +256,7 @@ namespace Minglu
             if(c.eventKind==3){if(protect){p.leaveUntil=s.turn;p.loyalty=Math.Min(100,p.loyalty+15);Log(s,a.name+"暂离联络岗位接受谈话，今夜休整。" );}else if(Next(s,100)<BetrayalChance(p)){a.condition=Condition.Lost;DisruptRoutes(s,a.id,"成员叛离，此线暂停");foreach(var r in c.routes.Where(r=>new[]{r.source,r.liaison,r.courier}.Contains(a.id)))foreach(int id in new[]{r.source,r.liaison,r.courier}.Where(id=>id>=0&&id!=a.id))Agent(s,id).exposure=Math.Min(100,Agent(s,id).exposure+25);Log(s,a.name+"叛离组织；只损伤其所接触的环节，其他情报与联络链保留。");AddTask(s,"突发事件",p.id);}else{p.loyalty=Math.Min(100,p.loyalty+8);Log(s,a.name+"接受信任，继续留任。");}}
             ReleaseUnavailableAssignments(s);
             Notice(s,new CommandNotice{title="决定已执行",body=string.Join("\n\n",s.journal.Skip(logStart))+"\n\n下一步：检查受影响的成员和链条，再安排今夜工作。",tab=c.eventKind==2||a.condition==Condition.Lost?1:2,actor=p.id},true);
+            TutorialRules.RecordEventDecision(s);
             c.eventKind=0;c.eventText="";ArmRaid(s);return "";
         }
         public static void Validate(RunState s)

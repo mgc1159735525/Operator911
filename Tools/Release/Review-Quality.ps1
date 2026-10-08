@@ -33,6 +33,9 @@ function Read-Gate($id, $file, $marker, $after) {
 $rows += Read-Gate 'rules-and-release-build' 'Logs/release-quality-build.log' 'MINGLU_BUILD_SUCCESS' $latestSource
 $rows += Read-Gate 'sixty-complete-campaigns' 'Logs/release-quality-build.log' 'MINGLU_CAMPAIGN_BALANCE_VERIFY_SUCCESS' $latestSource
 $rows += Read-Gate 'save-recovery' 'Logs/release-quality-build.log' 'MINGLU_SAVE_RECOVERY_VERIFY_SUCCESS' $latestSource
+$rows += Read-Gate 'tutorial-rules' 'Logs/release-quality-build.log' 'MINGLU_TUTORIAL_VERIFY_SUCCESS' $latestSource
+$rows += Read-Gate 'tutorial-ui-1600x900' 'Logs/qa-tutorial-ui.log' 'MINGLU_TUTORIAL_UI_SUCCESS' $buildTime
+$rows += Read-Gate 'tutorial-ui-1280x720' 'Logs/qa-tutorial-ui-720.log' 'MINGLU_TUTORIAL_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'campaign-ui-1600x900' 'Logs/release-campaign-ui-1600.log' 'MINGLU_CAMPAIGN_EXPERIENCE_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'campaign-ui-1280x720' 'Logs/release-campaign-ui-720.log' 'MINGLU_CAMPAIGN_EXPERIENCE_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'notice-history-ui' 'Logs/release-notice-ui.log' 'MINGLU_NOTICE_ARCHIVE_UI_SUCCESS' $buildTime
@@ -73,7 +76,7 @@ foreach ($file in @($builtEvidence + @($installer))) {
     }
 }
 $report = [PSCustomObject]@{
-    version='0.17.3'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
+    version='0.18.0'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
     sourceFreshness=[PSCustomObject]@{ latestPath=if ($null -ne $latestSourceFile) { $latestSourceFile.FullName } else { $null }; latestModifiedUtc=$latestSource.ToString('o'); sourceFiles=$sourceFiles.Count; scope='All Assets files (including shader/png/meta/font), ProjectSettings and package manifests' }
     artifacts=$artifacts
     automaticChecks=$rows; automaticPassed=@($rows | Where-Object passed).Count; automaticTotal=$rows.Count

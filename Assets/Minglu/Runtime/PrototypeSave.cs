@@ -30,7 +30,8 @@ namespace Minglu
             ConfigStore.Validate(s.config,s.command!=null);
             if(s.roguelikeRun&&(string.IsNullOrEmpty(s.runId)||s.initialSeed==0||s.difficulty<0||s.difficulty>2||s.doctrine<0||s.doctrine>2))throw new InvalidDataException("新局初始化信息无效。");
             if(s.agents==null||s.agents.Count==0||s.agents.Any(a=>a==null)||s.journal==null||s.intelligence<0||s.progress<0||s.pressure<0||s.pressure>100||s.agents.Select(a=>a.id).Distinct().Count()!=s.agents.Count)throw new InvalidDataException("存档中的组织或资源数据无效。");
-            if(s.command!=null){CommandRules.Validate(s);return s;}
+            if(s.command!=null){CommandRules.Validate(s);TutorialRules.Validate(s);return s;}
+            TutorialRules.Validate(s);
             if (s.turn < 1 || s.turn > s.config.Value("turns") || s.random == 0 ||
                 s.agents == null || s.agents.Count != s.config.agents.Count || s.journal == null || s.intelligence < 0 || s.progress < 0 || s.pressure < 0 || s.pressure > 100 || s.completedEvents == null ||
                 s.agents.Any(a => a == null || !s.config.agents.Any(x => x.id == a.id) || !s.config.districts.Any(x => x.id == a.district) || a.stamina < 0 || a.stamina > 100 || a.exposure < 0 || a.exposure > 100 || a.interrogation < 0 || a.consecutiveShifts < 0 || a.consecutiveShifts > s.config.Value("turns") || !Enum.IsDefined(typeof(Condition), a.condition) || !Enum.IsDefined(typeof(Duty), a.order)) ||

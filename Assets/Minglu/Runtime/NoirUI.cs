@@ -33,6 +33,7 @@ namespace Minglu
         }
         bool RedAction(string name)
         {
+            if(name=="TutorialBegin"||name=="TutorialResume"||name=="TutorialAck"||name=="TutorialContinue"||name=="TutorialRestartConfirm"||name=="TutorialStartCampaign")return true;
             if(name=="LookLoadSlot"||name=="LookSaveSlot")
             {
                 bool occupied=profile.lookSlots!=null&&profile.lookSlots.Length>lookSlot&&profile.lookSlots[lookSlot]!=null;

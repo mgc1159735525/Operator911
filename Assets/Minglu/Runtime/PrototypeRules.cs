@@ -36,6 +36,7 @@ namespace Minglu
     [Serializable]
     public class RunState
     {
+        public TutorialState tutorial;
         public Appearance chiefLook;
         public CommandState command;
         public string runId="";
