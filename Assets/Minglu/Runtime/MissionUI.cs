@@ -83,7 +83,7 @@ namespace Minglu
             MissionButtonText(Button("MissionImpactDetails",summary,"后果与规则详情  ›",12,478,360,36,()=>{modal="missionImpact";Draw();}),18);
 
             Rule(p,32,668,1056);
-            MissionButtonText(Button("MissionBack",p,taskReturnModal=="memberDetails"?"返回个人档案":taskReturnModal=="districtDetails"?"返回城区档案":taskReturnModal=="campaignDossier"?"返回主线委任":"返回"+CommandPageName(taskReturnTab),24,676,194,48,()=>{CloseTaskDialog();Draw();}));
+            MissionButtonText(Button("MissionBack",p,taskReturnModal=="memberDetails"?"返回个人档案":taskReturnModal=="districtDetails"?"返回城区档案":taskReturnModal=="campaignDossier"?"返回主线委任":taskReturnModal=="commandConfirm"?"返回今夜安排":"返回"+CommandPageName(taskReturnTab),24,676,194,48,()=>{CloseTaskDialog();Draw();}));
             Label(p,t.actor>=0?"已签发给 "+CommandName(t.actor)+"\n撤回后可调整安排。":error!=""?error:"可签发 · 可用 "+(State.money-CommandRules.ReservedMoney(State,t.id))+" 银两 / "+(State.intelligence-CommandRules.ReservedIntel(State,t.id))+" 情报\n结束今夜后，由成员执行。",238,679,438,49,17,error==""?Muted:Red).name="AssignmentBlockReason";
             if(t.actor>=0)MissionButtonText(Button("CommandCancel_"+t.id,p,"撤回授权 · 释放预留",704,676,384,48,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();}));
             else MissionButtonText(Button("CommandAuthorize",p,(t.reconnaissance?"授权调查 · ":"签发给 ")+a.name,704,676,384,48,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已签发"+(t.reconnaissance?"调查":"执行")+"给 "+a.name+"；结束今夜后执行。";CloseTaskDialog();Save(false);}Draw();},error=="",true),20);

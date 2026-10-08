@@ -29,12 +29,64 @@ namespace Minglu
                 if(!control.transform.IsChildOf(scope))control.interactable=false;
             var events=UnityEngine.EventSystems.EventSystem.current;if(events==null)return;
             var available=scope.GetComponentsInChildren<Selectable>().Where(control=>control.IsInteractable()).ToList();
+            // Buttons already carry this focus behavior. Inputs and scrollbars
+            // need the same safe selection handling without requiring an outline.
+            foreach(var control in available)
+                if(control.GetComponent<UIFocusOutline>()==null)control.gameObject.AddComponent<UIFocusOutline>();
+            BindScrollListNavigation(scope,available);
             var focus=available.FirstOrDefault(control=>control.name==redrawKeyboardFocus);
             // Returning/continuing is the safe initial focus for a confirmation;
             // Enter must not accidentally accept a destructive action.
             if(focus==null)focus=available.FirstOrDefault(control=>control.name=="LookPopupKeep"||control.name=="CancelNewRun"||control.name.EndsWith("Back")||control.name.EndsWith("Close")||control.name.EndsWith("Cancel"));
             if(focus==null)focus=available.FirstOrDefault();
             events.SetSelectedGameObject(focus==null?null:focus.gameObject);
+        }
+        void BindScrollListNavigation(Transform scope,List<Selectable> available)
+        {
+            foreach(var scroll in scope.GetComponentsInChildren<ScrollRect>())
+            {
+                if(!scroll.vertical||scroll.content==null||scroll.viewport==null)continue;
+                var items=available.Where(control=>control.transform.IsChildOf(scroll.content)&&control.GetComponentInParent<ScrollRect>()==scroll&&control.navigation.mode!=Navigation.Mode.None).ToList();
+                var bounds=items.ToDictionary(control=>control,control=>RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.content,control.transform));
+                foreach(var control in items)
+                {
+                    var here=bounds[control];Selectable up=null,down=null;float upDistance=float.MaxValue,downDistance=float.MaxValue;
+                    foreach(var candidate in items)
+                    {
+                        if(candidate==control)continue;
+                        var there=bounds[candidate];float overlap=Mathf.Min(here.max.x,there.max.x)-Mathf.Max(here.min.x,there.min.x);
+                        if(overlap<Mathf.Min(here.size.x,there.size.x)*.5f)continue;
+                        float dy=there.center.y-here.center.y;
+                        // Follow adjacent rows in this column even when a fixed
+                        // footer is geometrically nearer than the next row.
+                        float distance=Mathf.Abs(dy)+Mathf.Abs(there.center.x-here.center.x)*.001f;
+                        if(dy>1&&distance<upDistance){up=candidate;upDistance=distance;}
+                        if(dy< -1&&distance<downDistance){down=candidate;downDistance=distance;}
+                    }
+                    var navigation=control.navigation;
+                    navigation.selectOnLeft=control.FindSelectable(control.transform.rotation*Vector3.left);
+                    navigation.selectOnRight=control.FindSelectable(control.transform.rotation*Vector3.right);
+                    navigation.selectOnUp=up??ScrollBoundaryNavigation(scroll,control,available,true);
+                    navigation.selectOnDown=down??ScrollBoundaryNavigation(scroll,control,available,false);
+                    navigation.mode=Navigation.Mode.Explicit;control.navigation=navigation;
+                }
+            }
+        }
+        Selectable ScrollBoundaryNavigation(ScrollRect scroll,Selectable control,List<Selectable> available,bool above)
+        {
+            // Resolve exits from the viewport edge, not an offscreen last row.
+            // These links remain correct as the content scrolls underneath it.
+            var here=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,control.transform);
+            float edge=above?scroll.viewport.rect.yMax:scroll.viewport.rect.yMin,best=float.MinValue;Selectable result=null;
+            foreach(var candidate in available)
+            {
+                if(candidate.transform.IsChildOf(scroll.content))continue;
+                var there=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,candidate.transform);
+                float dy=above?there.center.y-edge:edge-there.center.y;if(dy<=0)continue;
+                float dx=there.center.x-here.center.x;float score=dy/(dx*dx+dy*dy);
+                if(score>best){best=score;result=candidate;}
+            }
+            return result;
         }
         void SelectAgent(Agent a)
         {

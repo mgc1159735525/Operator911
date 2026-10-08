@@ -74,6 +74,7 @@ namespace Minglu
         string CommandNext(){return NextCommandStep().message;}
         void DrawCommandGame()
         {
+            if(commandTab==3&&modal=="")returnToWorkOverview=false;
             CommandRules.EnsureStrategy(State);
             DrawDossierDesk();
             if(State.command.eventKind!=0)DrawCommandEvent();
@@ -223,18 +224,6 @@ namespace Minglu
         {
             float x=(1600-width)/2;
             var shade=Box("CommandShade",root,0,0,1600,900,new Color(.04f,.06f,.07f,.78f));Box("DialogShadow",shade,x+9,(900-height)/2+10,width,height,new Color(0,0,0,.24f));var p=Box("CommandModal",shade,x,(900-height)/2,width,height,Panel);DossierHeading(p,title,width);return p;
-        }
-        void DrawCommandConfirm()
-        {
-            var p=CommandModal("推进一夜前，确认组织安排",750);
-            string orders=string.Join("\n",State.command.tasks.Where(t=>t.status==0&&t.actor>=0).Select(t=>CommandName(t.actor)+" → "+(t.reconnaissance?"调查":"执行")+"「"+t.title+"」"));
-            int jobs=State.command.tasks.Count(t=>t.status==0&&t.actor>=0),routes=State.command.routes.Count(r=>r.enabled);
-            var orderList=Scroll(p,"NightOrders",28,97,844,150,Mathf.Max(150,(jobs+3)*29));
-            Label(orderList,"授权任务 "+jobs+" 项 / 运行链条 "+routes+" 条\n预留："+CommandRules.ReservedMoney(State)+"银两、"+CommandRules.ReservedIntel(State)+"份情报\n"+(orders==""?"没有额外任务：成员按链条和日常政策工作。":orders),0,0,805,Mathf.Max(150,(jobs+3)*29),19);
-            Label(p,"任务优先于长期岗位；空闲成员自动工作与休养。\n本夜维护预计 "+(State.agents.Count(a=>a.condition==Condition.Active)*2)+"银两，夜末收入 "+(State.command.config.income+(State.command.strategy.alliances[0]>=State.command.strategy.config.allianceThreshold?4:0))+"银两（含联盟）。\n"+CommandNext(),28,258,840,125,18,Teal);
-            var warnings=CommandRules.NightWarnings(State);var warningList=Scroll(p,"NightWarnings",28,397,844,235,Mathf.Max(235,warnings.Split('\n').Length*55));Label(warningList,warnings,0,0,805,Mathf.Max(235,warnings.Split('\n').Length*55),19,Gold);
-            Button("CommandBack",p,"返回调整",28,665,300,50,()=>{modal="";Draw();});
-            Button("CommandExecute",p,"下达指示 · 成员执行",348,665,524,50,()=>{CommandRules.Resolve(State);reportNight=-1;reportAll=false;commandTab=3;modal="";toast="执行完毕：要报汇总本夜变化；详细过程可打开值夜报告。";Save(false);Draw();},true,true);
         }
         void DrawCommandEvent()
         {

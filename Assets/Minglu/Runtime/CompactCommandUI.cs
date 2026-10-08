@@ -27,7 +27,7 @@ namespace Minglu
             Label(p,member.policy==1?"生活优先：撤回已签发任务；今夜处理日常，原联络岗位等待，可安排替补。":member.policy==2?"主动发现：空闲时可能上报新机会，仍由你授权；执行地下工作时不享受日常恢复。":"平衡安排：有任务或联络待办就出勤；没有地下工作时，自动处理日常并恢复。",28,669,844,46,18,Muted);
             Button("CommandEmployment",p,CommandRules.HasInstitution(member)?"已任职 · 可担任情报链内线":"建立机构任职 / 查看任职任务  ›",28,728,548,43,OpenEmployment,!CommandRules.HasInstitution(member)&&a.condition==Condition.Active);
             Button("CommandEditLook",p,"编辑人物外观  ›",596,728,276,43,()=>OpenAppearance(a.id));
-            Button("MemberDetailsClose",p,"返回"+CommandPageName(commandTab),28,789,276,42,()=>{modal="";Draw();});
+            Button("MemberDetailsClose",p,returnToWorkOverview?"返回今夜安排":"返回"+CommandPageName(commandTab),28,789,276,42,()=>{if(returnToWorkOverview)ReturnToWorkOverview();else{modal="";Draw();}});
         }
         void DrawCommandOverview()
         {

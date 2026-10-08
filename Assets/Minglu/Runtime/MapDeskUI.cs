@@ -33,6 +33,7 @@ namespace Minglu
             }
             Rule(root,20,685,140);
             Button("CommandOverview",root,CommandRules.HasCommandCampaign(State)?"主线委任  ›":"阶段目标  ›",10,706,160,42,()=>{if(CommandRules.HasCommandCampaign(State))OpenCampaignDossier();else{modal="commandOverview";Draw();}});
+            Button("CommandWorkOverview",root,"今夜安排  ›",10,751,160,32,OpenWorkOverview);
             Label(root,CampaignDeskObjective(),206,95,1356,29,18,Gold).name="CampaignDeskObjective";
             var desk=Rect("CommandMapDesk",root,194,136,1380,640);DrawCommandMap(desk);
             Box("DeskFooter",root,0,790,1600,110,Panel);Rule(root,0,790,1600,Gold);
@@ -41,7 +42,7 @@ namespace Minglu
             Label(root,step.message,200,803,812,48,16,TextColor);
             Label(root,toast,200,854,812,30,13,Muted);
             Button("CommandNextAction",root,step.label,1040,817,232,48,GoNextCommand,step.enabled,!step.ready);
-            Button("CommandEnd",root,"结束今夜  →",1292,817,282,48,()=>{modal="commandConfirm";Draw();},!State.ended&&State.command.eventKind==0,step.ready);
+            Button("CommandEnd",root,"结束今夜  →",1292,817,282,48,OpenWorkOverview,!State.ended&&State.command.eventKind==0,step.ready);
         }
         void DossierHeading(UnityEngine.Transform panel,string title,float width=900)
         {
@@ -83,7 +84,7 @@ namespace Minglu
             else if(commandTab==4)DrawCommandReport(body);
             else if(commandTab==5)DrawStrategy(body);
             Rule(panel,59,height-91,782);
-            Button("CommandPageClose",panel,"返回城区地图",59,height-76,276,48,()=>OpenCommandPage(3));
+            Button("CommandPageClose",panel,returnToWorkOverview?"返回今夜安排":"返回城区地图",59,height-76,276,48,()=>{if(returnToWorkOverview)ReturnToWorkOverview();else OpenCommandPage(3);});
             Label(panel,"ESC  关闭档案",620,height-63,220,25,14,Muted,UnityEngine.TextAnchor.MiddleRight);
         }
         void DrawCommandPreferences()

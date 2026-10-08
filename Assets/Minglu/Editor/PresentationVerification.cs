@@ -19,6 +19,8 @@ namespace Minglu.EditorTools
                 ExperienceVerification.Verify();
                 RecruitmentVerification.Verify();
                 PlanningVerification.Verify();
+                CommandWorkOverviewVerification.Verify();
+                CommandOutcomeVerification.Verify();
                 CampaignCommandVerification.Verify();
                 NoticeArchiveVerification.Verify();
                 SaveRecoveryVerification.Verify();

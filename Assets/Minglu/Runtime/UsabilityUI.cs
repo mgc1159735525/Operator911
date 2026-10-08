@@ -14,7 +14,7 @@ namespace Minglu
             if(modal!="missionPlan"&&modal!="compareCandidates")
             {
                 taskReturnTab=commandTab;
-                taskReturnModal=modal=="memberDetails"||modal=="institutionPicker"?"memberDetails":modal=="districtDetails"?"districtDetails":modal=="campaignDossier"?"campaignDossier":"";
+                taskReturnModal=modal=="memberDetails"||modal=="institutionPicker"?"memberDetails":modal=="districtDetails"?"districtDetails":modal=="campaignDossier"?"campaignDossier":modal=="commandConfirm"?"commandConfirm":"";
                 taskReturnAgent=taskReturnModal=="memberDetails"?selectedAgent:-1;
             }
             selectedDistrict=task.district;commandTask=id;commandTab=0;taskFilter=0;resetCommandTaskScroll=true;modal="missionPlan";

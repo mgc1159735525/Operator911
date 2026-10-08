@@ -32,6 +32,7 @@ namespace Minglu
         void GoNextCommand()
         {
             var step=NextCommandStep();if(!step.enabled)return;
+            if(step.dialog=="commandConfirm"){OpenWorkOverview();return;}
             if(step.task>=0)FocusCommandTask(step.task);
             else if(step.dialog=="campaignDossier"){OpenCampaignDossier();return;}
             else{commandTab=step.page;modal=step.dialog;if(step.actor>=0)selectedAgent=step.actor;}

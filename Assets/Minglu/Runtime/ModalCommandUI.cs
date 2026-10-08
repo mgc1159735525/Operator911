@@ -46,6 +46,7 @@ namespace Minglu
             if(modal=="recruitment"){modal="";commandTab=2;Draw();return true;}
             if(modal=="commandHelp"){modal="menu";Draw();return true;}
             if(modal=="commandSettings"){modal="menu";Draw();return true;}
+            if(returnToWorkOverview&&(modal=="memberDetails"||modal==""&&commandTab!=3)){ReturnToWorkOverview();return true;}
             if(modal==""&&commandTab!=3){OpenCommandPage(3);return true;}
             return false;
         }

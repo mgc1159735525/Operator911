@@ -33,7 +33,7 @@ namespace Minglu
         string OpeningChecklist()
         {
             bool chain=State.command.routes.Any(r=>r.enabled&&CommandRules.RouteError(State,r)=="");
-            bool task=State.command.completed>0||State.command.tasks.Any(t=>t.actor>=0&&t.status==0);
+            bool task=State.command.completed>0||State.command.tasks.Any(t=>t.actor>=0&&t.status==0||!string.IsNullOrEmpty(t.lastResult));
             return (task?"✓":"①")+" 比较人选，签发首项任务\n"+(State.turn>1?"✓":"②")+" 推进一夜，查看执行报告\n"+(chain?"✓":"③")+" 第二夜配置机构情报链";
         }
         string RouteForecast(CommandRoute r)
@@ -103,7 +103,7 @@ namespace Minglu
             Button("ReportSummary",panel,"结果与原因",28,116,384,34,()=>{reportAll=false;Draw();},true,!reportAll);
             Button("ReportAll",panel,"展开全部判定",426,116,384,34,()=>{reportAll=true;Draw();},true,reportAll);
             if(!reportAll)rows=ReportRows(night,false);
-            if(rows.Count==0)rows.Add("还没有执行报告。先建立联络网、签发任务，再结束今夜。\n情报生产、接头与外送至少跨三次结算。");
+            if(rows.Count==0)rows.Add("还没有执行报告。先比较人选、签发一项任务，再结束今夜查看结果。\n第二夜再配置机构情报链；产出、接头与外送至少跨三次结算。");
             var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,28,174,782,376,Mathf.Max(378,rows.Count*65));float y=0;
             foreach(var row in rows){var text=Label(content,row,0,y,756,50,18,row.Contains("未成")||row.Contains("暂停")||row.Contains("到期")?Red:TextColor);float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(756,h);y+=h+8;}
             content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(376,y));

@@ -141,7 +141,7 @@ namespace Minglu
             Log(s,a.name+" · "+job+"："+Skills[skill]+" "+dice+"骰 ["+string.Join(",",faces)+"]，"+success+"/"+required+"成功，"+(success>=required?"完成":"未成，保留机会至期限"));return success>=required;
         }
         static void AddRouteNote(CommandRoute r,string note){r.last=(r.last=="本夜待报"?"":r.last+"；")+note;}
-        static void AgeRoute(CommandRoute r){if(r.waiting+r.atRelay>0){r.age++;if(r.age>=7){r.waiting=0;r.atRelay=0;r.age=0;AddRouteNote(r,"连续6夜未送达，积压失效；请检查接头岗位");}}else r.age=0;}
+        static void AgeRoute(CommandRoute r){if(r.waiting+r.atRelay>0){r.age++;if(r.age>=7){r.waiting=0;r.atRelay=0;r.age=0;AddRouteNote(r,"积压达到7夜未送达，积压失效；请检查接头岗位");}}else r.age=0;}
         public static int FinalDeliveries(RunState s){EnsureExperience(s);return s.command.goalDeliveries;}
         public static int FinalScore(RunState s){EnsureExperience(s);return s.command.goalScore;}
         public static int FinalLevel(RunState s){EnsureExperience(s);return s.command.goalLevel;}
@@ -161,24 +161,27 @@ namespace Minglu
             if(s.ended||s.command.eventKind!=0)return;
             EnsureStrategy(s);
             ReconcileCampaignPackets(s);
+            var outcomes=CaptureNightOutcomes(s);
             ReleaseUnavailableAssignments(s);
-            var c=s.command;int oldMoney=s.money,oldIntel=s.intelligence,maintenancePaid=0,unpaidMembers=0;int firstTask=c.nextTask,oldDelivered=c.delivered,oldCompleted=c.completed,oldGate=c.gate;var oldLevels=c.people.ToDictionary(p=>p.id,p=>p.level);var priorStatus=c.tasks.ToDictionary(t=>t.id,t=>t.status);var taskActorsBefore=c.tasks.ToDictionary(t=>t.id,t=>t.actor);var busy=new HashSet<int>();Log(s,"—— 第"+s.turn+"夜 / 组织执行报告 ——");
+            RecordWithdrawnOutcomes(s,outcomes);
+            var c=s.command;int oldMoney=s.money,oldIntel=s.intelligence,maintenancePaid=0,unpaidMembers=0;var busy=new HashSet<int>();Log(s,"—— 第"+s.turn+"夜 / 组织执行报告 ——");
             foreach(var t in c.tasks.Where(t=>t.status==0&&t.actor>=0).ToList())
             {
-                int id=t.actor;string e=TaskError(s,id,t);if(e!=""){Log(s,t.title+"暂停："+e);t.actor=-1;continue;}
+                int id=t.actor;string e=TaskError(s,id,t);if(e!=""){Log(s,t.title+"暂停："+e);outcomes.results.Add(new TaskOutcome{task=t.id,body=Agent(s,id).name+" · 「"+t.title+"」未执行："+e+"。\n未扣除任务投入，原授权已撤回。"});t.actor=-1;continue;}
                 busy.Add(id);var a=Agent(s,id);
                 Log(s,"「"+t.title+"」采用"+Plans[t.plan]+"：扣除"+PlanCost(t)+"银两、"+(t.intelSupport?1:0)+"份情报。" );
                 s.money-=PlanCost(t);if(t.intelSupport)s.intelligence--;
                 bool taskSuccess=Roll(s,a,ActionSkill(t),ActionRequired(t),(t.reconnaissance?"目标调查 · ":"")+t.title,t);if(t.plan==2)s.pressure=Math.Min(100,s.pressure+2);
+                string attempt=t.lastResult;
                 if(t.reconnaissance)
                 {
                     if(taskSuccess){t.reconComplete=true;t.lastResult+="；目标调查完成：后续执行+1骰、暴露−3；未完成任务阶段，不产出库存情报。";}
                     else{a.exposure=Math.Min(100,a.exposure+2);s.pressure=Math.Min(100,s.pressure+1);t.lastResult+="；调查未成：额外暴露+2、压力+1；可改为执行或再次调查。";}
-                    Log(s,t.lastResult);Notice(s,new CommandNotice{title=taskSuccess?"目标调查有了结果":"目标调查未能完成",body=a.name+"提交「"+t.title+"」调查报告。\n"+(taskSuccess?"执行该目标时额外+1骰、暴露−3，效果保留至任务结束，可交给另一名成员执行。":"未获得调查优势，本夜投入已消耗；是否再次调查取决于剩余期限。")+"\n任务仍需授权执行，第"+t.deadline+"夜截止。",tab=0,task=t.id});
+                    Log(s,t.lastResult);outcomes.results.Add(new TaskOutcome{task=t.id,body=attempt+"\n"+(taskSuccess?"调查完成：目标执行+1骰、暴露−3；优势保留，可交给另一人接手。未推进任务阶段，也不产出库存情报。":"调查失败：未获得调查优势，本夜投入已消耗；可改为执行或再安排调查。")});
                     t.actor=-1;t.reconnaissance=false;continue;
                 }
-                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);}else{CompleteOperation(s,t);t.status=1;CampaignOnTaskCompleted(s,t);c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);c.strategy.trace=Math.Max(0,c.strategy.trace-t.traceRelief);c.strategy.hearts=Math.Min(100,c.strategy.hearts+t.heartsReward);GainSkillExperience(s,a,t.skill);Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
-                else{a.exposure=Math.Min(100,a.exposure+t.failExposure);s.pressure=Math.Min(100,s.pressure+2);t.lastResult+="；未成 · 额外暴露+"+t.failExposure+"、压力+2，期限内可重新授权";Log(s,t.lastResult);}
+                if(taskSuccess){t.stepsDone++;if(t.stepsDone<t.stepsRequired){t.lastResult+="；阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"，下夜另行授权";Log(s,t.lastResult);outcomes.results.Add(new TaskOutcome{task=t.id,body=attempt+"\n阶段完成 "+t.stepsDone+"/"+t.stepsRequired+"：进度已保留，尚未取得全部完成奖励。"});}else{CompleteOperation(s,t);t.status=1;CampaignOnTaskCompleted(s,t);c.completed++;s.progress+=t.reward;s.money+=t.money;s.pressure=Math.Max(0,s.pressure-t.pressureRelief);c.strategy.trace=Math.Max(0,c.strategy.trace-t.traceRelief);c.strategy.hearts=Math.Min(100,c.strategy.hearts+t.heartsReward);GainSkillExperience(s,a,t.skill);Log(s,"完成「"+t.title+"」："+TaskReward(t));t.lastResult+="；完成 · "+TaskReward(t);}}
+                else{a.exposure=Math.Min(100,a.exposure+t.failExposure);s.pressure=Math.Min(100,s.pressure+2);t.lastResult+="；未成 · 额外暴露+"+t.failExposure+"、压力+2，期限内可重新授权";Log(s,t.lastResult);outcomes.results.Add(new TaskOutcome{task=t.id,body=attempt+"\n任务失败：本夜投入已消耗，额外暴露+"+t.failExposure+"、压力+2；既有阶段未丢失。"});}
                 t.actor=-1;
             }
             foreach(var r in c.routes.Where(r=>!r.enabled)){int pending=r.waiting+r.atRelay;AgeRoute(r);ReconcileCampaignPackets(s);if(pending>0&&r.waiting+r.atRelay==0)Log(s,"情报链"+(r.id+1)+"：暂停期间积压失效，恢复前请重新安排。");}
@@ -195,7 +198,7 @@ namespace Minglu
                     if(!work)continue;
                     e=Availability(s,id);if(e!=""||busy.Contains(id)){AddRouteNote(r,Agent(s,id).name+"岗位暂停："+(e!=""?e:"优先执行已授权任务"));continue;}
                     var a=Agent(s,id);busy.Add(id);int skill=stage==0?1:stage==1?2:0;
-                    if(!Roll(s,a,skill,1,stage==0?"链条外送":stage==1?"链条接头":"内线观察")){AddRouteNote(r,a.name+"未通过判定，下夜自动重试");continue;}
+                    if(!Roll(s,a,skill,1,stage==0?"链条外送":stage==1?"链条接头":"内线观察")){AddRouteNote(r,a.name+"未通过判定，"+RouteFailureRetryText(s,r,stage==2?0:stage==1?1:2));continue;}
                     GainSkillExperience(s,a,skill);
                     if(stage==0){r.atRelay--;r.age=0;r.delivered++;c.delivered++;s.intelligence++;CampaignOnDelivery(s,r.source,r.id);s.progress+=2;s.money+=3;AddRouteNote(r,"送达1份：成果+2 / 银两+3");}
                     else if(stage==1){r.waiting--;r.atRelay++;CampaignOnRelay(s,r.id);AddRouteNote(r,"接头成功：进入中继，下夜可外送");}
@@ -222,21 +225,13 @@ namespace Minglu
             // members. Historical headcount must not end that recovery window.
             if(!s.agents.Any(a=>a.condition==Condition.Active)){s.ended=true;s.won=false;s.ending="组织无法维持最小联络链。";}
             if(!s.ended&&s.turn>=s.config.Value("turns")){s.ended=true;s.won=false;s.ending="行动窗口结束，未达成："+GateText(s);}
-            if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);return;}
+            if(s.ended){if(HasCommandCampaign(s))s.ending=CampaignEnding(s,s.won);PublishNightOutcomes(s,outcomes);return;}
             s.turn++;
             SpawnFollowups(s);
             if(s.turn%c.config.taskInterval==1){int before=c.nextTask;AddTask(s,"上级指示",-1);if(c.nextTask>before)Log(s,"上级发来新指示，请查看任务来源与人员需求。");}
             TryContextEvent(s);
             ArmRaid(s);
-            var messages=new List<string>();
-            var fresh=c.tasks.Where(t=>t.id>=firstTask).ToList();
-            foreach(var t in fresh)messages.Add(t.origin+"：「"+t.title+"」 · 第"+t.deadline+"夜截止");
-            foreach(var p in c.people.Where(p=>p.level>oldLevels[p.id]))messages.Add(Agent(s,p.id).name+"的表身份升至 Lv."+p.level+"，可承担更高门槛任务。");
-            if(c.delivered>oldDelivered)messages.Add("情报送达 "+(c.delivered-oldDelivered)+"份，上级已收到。成果与银两已结算。");
-            if(c.completed>oldCompleted)foreach(var t in c.tasks.Where(t=>t.status==1&&priorStatus.ContainsKey(t.id)&&priorStatus[t.id]==0))
-                messages.Add(Agent(s,taskActorsBefore[t.id]).name+"完成「"+t.title+"」："+TaskReward(t)+"。可重新安排该成员。");
-            if(c.gate>oldGate)messages.Add("阶段目标达成，新的上级要求已更新。");
-            if(messages.Count>0)Notice(s,new CommandNotice{title="夜间要报 · 第"+(s.turn-1)+"夜",night=s.turn-1,body=string.Join("\n\n",messages),tab=fresh.Count>0?0:4,task=fresh.Count>0?fresh[0].id:-1});
+            PublishNightOutcomes(s,outcomes);
         }
         public static void Notice(RunState s,CommandNotice notice,bool first=false)
         {
