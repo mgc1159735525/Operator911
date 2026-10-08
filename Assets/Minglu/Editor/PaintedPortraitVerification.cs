@@ -70,7 +70,7 @@ namespace Minglu.EditorTools
                     Check(beardSignatures.Add(SourceSignature(beards,PaintedPortraitLayout.Beard(look),style==0,"beard "+style)),"duplicate beard source");
                 }
                 var whiteShadow=PaintedPortraitLayout.HairShadow(3);var whiteLight=PaintedPortraitLayout.HairLight(3);
-                Check(whiteShadow.grayscale>.60f&&whiteLight.grayscale>.95f,"silver pigment reads as dark grey rather than white");
+                Check(whiteShadow.grayscale<.40f&&whiteLight.grayscale>.95f,"silver pigment loses dark roots or white highlights");
                 for(int color=0;color<4;color++)Check(PaintedPortraitLayout.HairLight(color).grayscale>PaintedPortraitLayout.HairShadow(color).grayscale+.20f,"hair pigment loses strand contrast");
                 Debug.Log("MINGLU_GROOMING_SOURCES_SUCCESS: 16 distinct nonempty hair sources, 7 distinct beards and one empty source, transparent source gutters, white hair/beard pigment with strand contrast");
             }

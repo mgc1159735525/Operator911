@@ -2,7 +2,7 @@
 [Setup]
 AppId={{31982D7D-14E4-4AE1-B273-EBCDC960DA63}
 AppName={#GameName}
-AppVersion=0.17.2
+AppVersion=0.17.3
 AppPublisher=Minglu
 DefaultDirName={code:DefaultInstallDir}
 DefaultGroupName={#GameName}

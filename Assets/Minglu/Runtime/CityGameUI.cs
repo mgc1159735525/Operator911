@@ -368,6 +368,7 @@ namespace Minglu
             if(Array.IndexOf(args,"--recon-only")>=0){yield return ReconDeskSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--map-desk-only")>=0){yield return MapDeskSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--minglu-modal-smoke")>=0){yield return ModalCommandSmoke(path);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--grooming-fit-only")>=0){yield return GroomingFitSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--grooming-only")>=0){yield return GroomingSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--portrait-catalog-only")>=0){yield return PortraitCatalogSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--painted-only")>=0){yield return PaintedPortraitSmoke(path);Application.Quit();yield break;}

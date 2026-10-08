@@ -24,7 +24,7 @@ namespace Minglu
             owned.SetVector("_BeardMouth",PaintedPortraitLayout.BeardMouth(look));
             owned.SetVector("_BeardChin",PaintedPortraitLayout.BeardChin(look));
             owned.SetVector("_BeardScales",PaintedPortraitLayout.BeardScales(look));
-            owned.SetFloat("_BeardJawWidth",PaintedPortraitLayout.BeardJawWidth(look));
+            owned.SetVector("_BeardSurface",PaintedPortraitLayout.BeardSurface(look));
             var bodyCell=PaintedPortraitLayout.Base(look);
             owned.SetTexture("_BodyTex",body);owned.SetVector("_BodyRect",new Vector4(bodyCell.x,bodyCell.y,bodyCell.width,bodyCell.height));
             owned.SetFloat("_CapCloth",look.sex==0&&look.parts[1]==3?1:0);

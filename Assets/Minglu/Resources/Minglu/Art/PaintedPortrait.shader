@@ -37,8 +37,8 @@ Shader "Minglu/PaintedPortrait"
    float4 _EyeShape,_BrowShape,_NoseShape,_MouthShape,_EarShape;
    float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
    float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_CollarAnchor3,_CollarAnchor4,_CollarAnchor5,_CollarAnchor6,_CollarAnchor7,_Jaw;
-   float4 _HairCanvas;
-   float _LayerMode,_BackHair,_CapCloth,_OutfitLeftTrim,_FarScalpPad,_BeardJawWidth;
+   float4 _HairCanvas,_BeardSurface;
+   float _LayerMode,_BackHair,_CapCloth,_OutfitLeftTrim,_FarScalpPad;
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 morph(float2 p,float4 feature,float2 size,float tilt)
    {
@@ -66,7 +66,7 @@ Shader "Minglu/PaintedPortrait"
     // The slightly more frontal male skull is wider at the far upper temple.
     // Fill only this arc on tied styles; all four registration anchors remain
     // outside the correction, including the hairline and the exposed ear.
-    float scalp=(1-smoothstep(_EyeFar.x+.055,_EyeNear.x-.015,p.x))*(1-smoothstep(_BrowFar.y-.055,_BrowFar.y-.010,p.y))*smoothstep(_CrownAdjust.y-.035,_CrownAdjust.y+.035,p.y);
+    float scalp=(1-smoothstep(_EyeFar.x+.055,_HairAnchor1.x-.010,p.x))*(1-smoothstep(_BrowFar.y-.055,_BrowFar.y-.010,p.y))*smoothstep(_CrownAdjust.y-.035,_CrownAdjust.y+.035,p.y);
     p.x+=scalp*_FarScalpPad;
     float influence=1-smoothstep(_CrownAdjust.y-.02,_CrownAdjust.y+.03,p.y);
     p=lerp(p,_CrownAdjust.xy+(p-_CrownAdjust.xy)/_CrownAdjust.z,influence);
@@ -75,10 +75,13 @@ Shader "Minglu/PaintedPortrait"
    }
    float2 beardSample(float2 p)
    {
+    float row=saturate((p.y-_BeardMouth.y)/(_BeardChin.y-_BeardMouth.y));
+    float axis=lerp(_BeardMouth.x,_BeardChin.x,row),cheek=p.x-axis;
+    p.y+=abs(cheek)*(cheek<0?_BeardSurface.z:_BeardSurface.w)*smoothstep(_BeardMouth.y-.012,_BeardChin.y,p.y);
     float t=saturate((p.y-_BeardMouth.y)/(_BeardChin.y-_BeardMouth.y));
     float center=lerp(_BeardMouth.x,_BeardChin.x,t),sourceCenter=lerp(_BeardMouth.z,_BeardChin.z,t);
     float sy=p.y<_BeardMouth.y?_BeardMouth.w+(p.y-_BeardMouth.y)/_BeardScales.z:p.y>_BeardChin.y?_BeardChin.w+(p.y-_BeardChin.y)/_BeardScales.w:lerp(_BeardMouth.w,_BeardChin.w,t);
-    float sx=lerp(p.x<center?_BeardScales.x:_BeardScales.y,_BeardJawWidth,t);
+    float sx=lerp(p.x<center?_BeardScales.x:_BeardScales.y,p.x<center?_BeardSurface.x:_BeardSurface.y,t);
     return float2(sourceCenter+(p.x-center)/sx,sy);
    }
    float2 outfitSample(float2 p)
@@ -149,10 +152,8 @@ Shader "Minglu/PaintedPortrait"
      }
      else
      {
-      // The beard sheet was painted on a brighter value range than the
-      // scalp hair. Normalize that source light before applying their shared
-      // pigment, retaining strand contrast instead of a flat white sticker.
-      if(_LayerMode>2.5)luminance=max(0,luminance-.10);
+      // The two current sheets share their luminance range. Preserve painted
+      // roots and highlights; a high ivory floor flattened them into a cap.
       float3 dyed=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.42));
       float preserve=0;
       if(_LayerMode<1.5)
@@ -196,6 +197,18 @@ Shader "Minglu/PaintedPortrait"
      // A beard may touch the lip edge but must not paint over the lip itself.
      float lip=1-smoothstep(.65,1,length((featurePoint-_Mouth.xy)/(_Mouth.zw*float2(.058/.089,.010/.033))));
      c.a*=1-lip;
+     // Feather only the growth line into the skin. The former rigid cheek
+     // spikes came from a frontal source; long free ends retain their alpha.
+     float side=smoothstep(.055,.14,abs(featurePoint.x-_Mouth.x));
+     float rootY=lerp(_Mouth.y-.026,_Mouth.y-.016,side);
+     c.a*=smoothstep(rootY-.007,rootY+.009,featurePoint.y);
+     // The beard atlas has a dense, light rim. Soften that source boundary
+     // in texels rather than screen pixels: large and small portraits must
+     // share the same roots, and thin free strands must not be hard-clipped.
+     float2 edgeTexel=_MainTex_TexelSize.xy*1.25;
+     float coverage=(tex2D(_MainTex,uv+float2(edgeTexel.x,0)).a+tex2D(_MainTex,uv-float2(edgeTexel.x,0)).a
+                    +tex2D(_MainTex,uv+float2(0,edgeTexel.y)).a+tex2D(_MainTex,uv-float2(0,edgeTexel.y)).a)*.25;
+     c.a*=lerp(.45,1,smoothstep(.15,.95,coverage));
     }
     c*=i.color;
     #ifdef UNITY_UI_CLIP_RECT
