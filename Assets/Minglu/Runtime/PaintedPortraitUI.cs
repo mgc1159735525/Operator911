@@ -5,16 +5,17 @@ namespace Minglu
 {
     public partial class CityGameUI
     {
-        Texture2D paintedBases,paintedHair,paintedOutfits,paintedBeards;
+        Texture2D paintedBases,paintedHair,paintedOutfits,paintedBeards,paintedFullBeard;
         void DrawPaintedLook(Transform parent,Appearance look,float x,float y,float w,float h,Color tint,bool headOnly=false)
         {
             if(paintedBases==null)paintedBases=Resources.Load<Texture2D>("Minglu/Art/Painted/portrait-bases");
             if(paintedHair==null)paintedHair=Resources.Load<Texture2D>("Minglu/Art/Painted/hair-styles");
             if(paintedOutfits==null)paintedOutfits=Resources.Load<Texture2D>("Minglu/Art/Painted/outfit-overlays");
             if(paintedBeards==null)paintedBeards=Resources.Load<Texture2D>("Minglu/Art/Painted/beard-styles");
+            if(paintedFullBeard==null)paintedFullBeard=Resources.Load<Texture2D>("Minglu/Art/Painted/beard-full-contour");
             var bg=Hex(new[]{"DDD0AB","A9B4B4","B8A186","E8DDC5"}[look.parts[9]])*tint;
             var frame=Box("PaintedPortrait",parent,x,y,w,h,bg);frame.GetComponent<Image>().raycastTarget=false;frame.gameObject.AddComponent<RectMask2D>();
-            if(paintedBases==null||paintedHair==null||paintedOutfits==null||paintedBeards==null||Resources.Load<Shader>("Minglu/Art/PaintedPortrait")==null)
+            if(paintedBases==null||paintedHair==null||paintedOutfits==null||paintedBeards==null||paintedFullBeard==null||Resources.Load<Shader>("Minglu/Art/PaintedPortrait")==null)
             {
                 Label(frame,"绘制立绘资源缺失",4,4,w-8,h-8,Mathf.Min(15,Mathf.RoundToInt(w/7)),Red,TextAnchor.MiddleCenter);return;
             }
@@ -23,7 +24,7 @@ namespace Minglu
             PaintedLayer(frame,look,paintedBases,PaintedPortraitLayout.Base(look),placement,PaintedPortraitLayer.Base,tint);
             PaintedLayer(frame,look,paintedOutfits,PaintedPortraitLayout.Outfit(look),placement,PaintedPortraitLayer.Outfit,tint);
             PaintedLayer(frame,look,paintedHair,PaintedPortraitLayout.Hair(look),placement,PaintedPortraitLayer.Hair,tint);
-            if(look.sex==0&&look.parts[6]>0)PaintedLayer(frame,look,paintedBeards,PaintedPortraitLayout.Beard(look),placement,PaintedPortraitLayer.Beard,tint);
+            if(look.sex==0&&look.parts[6]>0)PaintedLayer(frame,look,BeardContour.Enabled(look)?paintedFullBeard:paintedBeards,PaintedPortraitLayout.Beard(look),placement,PaintedPortraitLayer.Beard,tint);
         }
         void PaintedLayer(Transform parent,Appearance look,Texture2D atlas,UnityEngine.Rect cell,UnityEngine.Rect placement,PaintedPortraitLayer mode,Color tint,bool backHair=false)
         {

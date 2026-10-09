@@ -11,7 +11,7 @@ namespace Minglu.EditorTools
             var t=(TextureImporter)assetImporter;
             t.textureType=TextureImporterType.Default;t.alphaIsTransparency=true;
             t.mipmapEnabled=false;t.npotScale=TextureImporterNPOTScale.None;
-            t.maxTextureSize=4096;t.textureCompression=TextureImporterCompression.Uncompressed;
+            t.maxTextureSize=assetPath.EndsWith("/beard-full-contour.png")?512:4096;t.textureCompression=TextureImporterCompression.Uncompressed;
             t.wrapMode=TextureWrapMode.Clamp;t.filterMode=FilterMode.Bilinear;
         }
     }

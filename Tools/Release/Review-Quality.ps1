@@ -76,7 +76,7 @@ foreach ($file in @($builtEvidence + @($installer))) {
     }
 }
 $report = [PSCustomObject]@{
-    version='0.18.0'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
+    version='0.18.1'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
     sourceFreshness=[PSCustomObject]@{ latestPath=if ($null -ne $latestSourceFile) { $latestSourceFile.FullName } else { $null }; latestModifiedUtc=$latestSource.ToString('o'); sourceFiles=$sourceFiles.Count; scope='All Assets files (including shader/png/meta/font), ProjectSettings and package manifests' }
     artifacts=$artifacts
     automaticChecks=$rows; automaticPassed=@($rows | Where-Object passed).Count; automaticTotal=$rows.Count

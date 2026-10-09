@@ -17,6 +17,8 @@ namespace Minglu
         {return new[]{new Color(.35f,.31f,.27f),new Color(.48f,.34f,.23f),new Color(.78f,.78f,.74f),new Color(.99f,.985f,.95f)}[Mathf.Clamp(color,0,3)];}
         public static Color HairPigment(int color,float sourceLight)
         {return Color.Lerp(HairShadow(color),HairLight(color),Mathf.Clamp01(sourceLight*1.42f));}
+        public static Color BeardPigment(int color,float sourceLight,bool full)
+        {return Color.Lerp(HairShadow(color),HairLight(color),Mathf.Clamp01(full?(sourceLight-.05f)*2.6f:sourceLight*1.42f));}
         public static readonly Rect DetailCrop=new Rect(.055f,-.090f,.88f,.895f);
         // One common full-body frame for all headwear and outfits. Leave room
         // for the shoulder silhouette instead of fitting the frame to the head.
@@ -145,6 +147,7 @@ namespace Minglu
         {return look.parts[6]==2?new Rect(0,0,1,1.16f):look.parts[6]==6?new Rect(0,.17f,1,.83f):new Rect(0,0,1,1);}
         public static Rect Beard(Appearance look)
         {
+            if(BeardContour.Enabled(look))return new Rect(0,0,1,1);
             int index=look.parts[6]==0?7:Mathf.Clamp(look.parts[6]-1,0,6);
             var cell=Cell(index%4,index/4,4,2);var bounds=BeardCanvas(look);
             return new Rect(cell.x+bounds.x*cell.width,cell.y+(1-bounds.yMax)*cell.height,cell.width*bounds.width,cell.height*bounds.height);
@@ -279,6 +282,37 @@ namespace Minglu
             // only that skull arc; measured hairline, eye and ear stay fixed.
             return hair==0||hair==1||hair==4||hair==5?.055f:.016f;
         }
+        public static Vector4 HairFarTrim(Appearance look)
+        {
+            var f=Landmarks(look);
+            // Preserve the upper cranial arc; the lower temple follows the
+            // actual face outline instead of a shared overhanging silhouette.
+            return new Vector4(f.skull.y-.025f,f.skull.y+.020f,f.browFar.y-.073f,f.browFar.y-.016f);
+        }
+        public static Vector4 HairOutlineGuide(Appearance look)
+        {var f=Landmarks(look);return new Vector4(f.skull.y+.025f,f.skull.y+.130f,.055f,.010f);}
+        public static Vector2 HairOutlineOffset(Appearance look,float y)
+        {var g=HairOutlineGuide(look);float t=Smooth(g.x,g.y,y);return new Vector2(Mathf.Lerp(g.z,g.w,t),Mathf.Lerp(g.z,0,t));}
+        public static float HairHeadwearAlpha(Appearance look,Vector2 sample)
+        {
+            if(look.sex!=0||look.parts[1]!=3)return 0;
+            var canvas=HairCanvas(look);var source=new Vector2(canvas.x+sample.x*canvas.width,canvas.y+sample.y*canvas.height);
+            float edge=.552f+Mathf.Max(0,source.x-.383f)*.32f;
+            return Mathf.Max(1-Smooth(edge-.006f,edge+.012f,source.y),Smooth(.72f,.80f,source.x)*Smooth(.59f,.67f,source.y));
+        }
+        public static float HairFarSideAlpha(Appearance look,Vector2 p,float outlineAlpha,float headwear=0)
+        {
+            var f=Landmarks(look);var trim=HairFarTrim(look);
+            // The painted matte is slightly translucent even well inside skin.
+            // Treat its solid interior as coverage, not as a global hair fade.
+            outlineAlpha=Smooth(.05f,.95f,outlineAlpha);
+            float outline=(1-Smooth(f.skull.x-.050f,f.skull.x+.030f,p.x))*Smooth(trim.x,trim.y,p.y);
+            float boundary=Mathf.Lerp(f.eyeFar.x+.015f,f.chin.x+.100f,Smooth(f.mouth.y-.050f,f.chin.y+.020f,p.y));
+            float lockFade=(1-Smooth(boundary,boundary+.045f,p.x))*Smooth(trim.z,trim.w,p.y);
+            // Removing the unwanted far-side lock must not depend on whether
+            // it happens to overlap the body. Otherwise detached wisps survive.
+            return (1-outline*(1-outlineAlpha)*(1-headwear))*(1-lockFade*(1-headwear));
+        }
         static float Smooth(float a,float b,float v){float t=Mathf.Clamp01((v-a)/(b-a));return t*t*(3-2*t);}
         public static Vector2 HairSamplingPoint(Appearance look,Vector2 p)
         {
@@ -287,7 +321,7 @@ namespace Minglu
             p=EarSamplingPoint(look,p);
             var crown=CrownAdjustment(look);var center=new Vector2(crown.x,crown.y);
             var f=Landmarks(look);
-            float scalp=(1-Smooth(f.eyeFar.x+.055f,f.hairline.x-.010f,p.x))*(1-Smooth(f.browFar.y-.055f,f.browFar.y-.010f,p.y))*Smooth(crown.y-.035f,crown.y+.035f,p.y);
+            float scalp=(1-Smooth(f.eyeFar.x+.055f,f.hairline.x-.010f,p.x))*(1-Smooth(f.skull.y+.134f,f.browFar.y-.020f,p.y))*Smooth(crown.y-.035f,crown.y+.035f,p.y);
             p.x+=scalp*FarScalpPad(look);
             float influence=1-Smooth(crown.y-.02f,crown.y+.03f,p.y);
             p=Vector2.Lerp(p,center+(p-center)/crown.z,influence);
@@ -313,6 +347,7 @@ namespace Minglu
             new Vector4(.508f,.501f,.528f,.633f)};
         public static Vector2 BeardSource(Appearance look,int anchor)
         {
+            if(BeardContour.Enabled(look))return anchor==0?new Vector2(.350f,.602f):BeardContour.Sample(look,Landmarks(look).chin);
             var source=BeardSources[Mathf.Clamp(look.parts[6]-1,0,BeardSources.Length-1)];var canvas=BeardCanvas(look);
             var p=anchor==0?new Vector2(source.x,source.y):new Vector2(source.z,source.w);
             return new Vector2((p.x-canvas.x)/canvas.width,(p.y-canvas.y)/canvas.height);
@@ -351,6 +386,9 @@ namespace Minglu
         public static float BeardRootAlpha(Appearance look,Vector2 p)
         {
             p=FeatureSamplingPoint(look,p);var f=Landmarks(look);
+            // The registered full-beard sheet owns its cheek growth line.
+            // A mouth-height cut would remove its temple attachment again.
+            if(BeardContour.Enabled(look))return 1;
             float side=Smooth(.055f,.14f,Mathf.Abs(p.x-f.mouth.x));
             float rootY=Mathf.Lerp(f.mouth.y-.026f,f.mouth.y-.016f,side);
             return Smooth(rootY-.007f,rootY+.009f,p.y);
@@ -358,6 +396,7 @@ namespace Minglu
         public static Vector2 BeardSamplingPoint(Appearance look,Vector2 p)
         {
             p=FeatureSamplingPoint(look,p);
+            if(BeardContour.Enabled(look))return BeardContour.Sample(look,p);
             var m=BeardMouth(look);var c=BeardChin(look);var scale=BeardScales(look);var surface=BeardSurface(look);
             // Anchor the centre line exactly, then unfold each cheek plane.
             // This keeps lip/chin registration while the outer near jaw rises.

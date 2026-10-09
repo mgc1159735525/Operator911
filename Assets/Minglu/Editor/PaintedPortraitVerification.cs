@@ -30,6 +30,37 @@ namespace Minglu.EditorTools
             if(point.x<0||point.x>1||point.y<0||point.y>1)return 0;
             return texture.GetPixelBilinear(cell.x+point.x*cell.width,cell.y+(1-point.y)*cell.height).a;
         }
+        static float VisibleHairAlpha(Texture2D hair,Texture2D body,Appearance look,Vector2 point)
+        {
+            var sample=PaintedPortraitLayout.HairSamplingPoint(look,point);
+            float source=Alpha(hair,PaintedPortraitLayout.Hair(look),sample);
+            // Match the final surface, not just the texture registration. The
+            // old scalp tests could pass while the shader left a brow patch.
+            float outline=Alpha(body,PaintedPortraitLayout.Base(look),point+PaintedPortraitLayout.HairOutlineOffset(look,point.y));
+            return source*PaintedPortraitLayout.HairEarAlpha(look,point)*PaintedPortraitLayout.HairFarSideAlpha(look,point,outline,PaintedPortraitLayout.HairHeadwearAlpha(look,sample))*HairRootFeather(hair,body,look,point);
+        }
+        static float HairRootFeather(Texture2D hair,Texture2D body,Appearance look,Vector2 p)
+        {
+            var cell=PaintedPortraitLayout.Hair(look);var q=PaintedPortraitLayout.HairSamplingPoint(look,p);
+            var dx=new Vector2(2.4f/hair.width/cell.width,0);var dy=new Vector2(0,2.4f/hair.height/cell.height);
+            float coverage=(Alpha(hair,cell,q+dx)+Alpha(hair,cell,q-dx)+Alpha(hair,cell,q+dy)+Alpha(hair,cell,q-dy))*.25f;
+            float line=PaintedPortraitLayout.HairTarget(look,1).y;
+            float skin=Alpha(body,PaintedPortraitLayout.Base(look),p)*Smooth(line-.025f,line+.025f,p.y)*(1-PaintedPortraitLayout.HairHeadwearAlpha(look,q));
+            return Mathf.Lerp(1,Mathf.Lerp(.35f,1,Smooth(.1f,.98f,coverage)),skin);
+        }
+        static float Smooth(float from,float to,float value)
+        {float t=Mathf.Clamp01((value-from)/(to-from));return t*t*(3-2*t);}
+        static float LegacyFarHairAlpha(Texture2D body,Appearance look,Vector2 point)
+        {
+            // Negative control: the released far-lock mask waited until the
+            // brow and depended on overlap with the body. Use actual PNG alpha
+            // so empty test regions cannot claim to reproduce that defect.
+            var f=PaintedPortraitLayout.Landmarks(look);var cell=PaintedPortraitLayout.Base(look);
+            float silhouette=Mathf.Max(Alpha(body,cell,point),Alpha(body,cell,point+new Vector2(.09f,0)));
+            silhouette=Mathf.Max(silhouette,Smooth(f.mouth.y-.020f,f.chin.y-.005f,point.y));
+            float boundary=Mathf.Lerp(f.eyeFar.x+.015f,f.chin.x+.100f,Smooth(f.mouth.y-.050f,f.chin.y+.020f,point.y));
+            return 1-silhouette*(1-Smooth(boundary,boundary+.045f,point.x))*Smooth(f.browFar.y-.045f,f.browFar.y+.005f,point.y);
+        }
         static int SourceSignature(Texture2D texture,Rect cell,bool empty,string label)
         {
             int visible=0,hash=17;
@@ -55,7 +86,7 @@ namespace Minglu.EditorTools
         }
         static void VerifyGroomingSources()
         {
-            var hair=ReadAtlas("hair-styles");var beards=ReadAtlas("beard-styles");
+            var hair=ReadAtlas("hair-styles");var beards=ReadAtlas("beard-styles");var fullBeard=ReadAtlas("beard-full-contour");
             try
             {
                 var hairSignatures=new HashSet<int>();var beardSignatures=new HashSet<int>();
@@ -67,14 +98,14 @@ namespace Minglu.EditorTools
                 for(int style=0;style<PaintedPortraitLayout.BeardCount;style++)
                 {
                     var look=AppearanceRules.Randomize(17,0);look.parts[6]=style;
-                    Check(beardSignatures.Add(SourceSignature(beards,PaintedPortraitLayout.Beard(look),style==0,"beard "+style)),"duplicate beard source");
+                    Check(beardSignatures.Add(SourceSignature(BeardContour.Enabled(look)?fullBeard:beards,PaintedPortraitLayout.Beard(look),style==0,"beard "+style)),"duplicate beard source");
                 }
                 var whiteShadow=PaintedPortraitLayout.HairShadow(3);var whiteLight=PaintedPortraitLayout.HairLight(3);
                 Check(whiteShadow.grayscale<.40f&&whiteLight.grayscale>.95f,"silver pigment loses dark roots or white highlights");
                 for(int color=0;color<4;color++)Check(PaintedPortraitLayout.HairLight(color).grayscale>PaintedPortraitLayout.HairShadow(color).grayscale+.20f,"hair pigment loses strand contrast");
                 Debug.Log("MINGLU_GROOMING_SOURCES_SUCCESS: 16 distinct nonempty hair sources, 7 distinct beards and one empty source, transparent source gutters, white hair/beard pigment with strand contrast");
             }
-            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(beards);}
+            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(beards);UnityEngine.Object.DestroyImmediate(fullBeard);}
         }
         static void VerifyScalpAndHeadwear()
         {
@@ -104,7 +135,7 @@ namespace Minglu.EditorTools
                             if(Alpha(body,bodyCell,new Vector2(px,y))>.95f){edge=px;break;}
                         }
                         if(edge<0){if(!reportedArc)errors.Add("cannot locate far skull arc: "+sex+"/"+face);reportedArc=true;continue;}
-                        var p=new Vector2(edge+.006f,y);float coverage=Alpha(hair,hairCell,PaintedPortraitLayout.HairSamplingPoint(look,p));
+                        var p=new Vector2(edge+.006f,y);float coverage=VisibleHairAlpha(hair,body,look,p);
                         if(coverage<=.65f&&!reportedArc){errors.Add("exposed far-side scalp crescent: "+sex+"/"+face+"/"+style+" at "+p+" alpha "+coverage.ToString("F3"));reportedArc=true;}
                         scalpProbes++;
                     }
@@ -116,14 +147,153 @@ namespace Minglu.EditorTools
                         foreach(float inset in new[]{.004f,.010f})for(int x=0;x<=160;x++)
                         {
                             var p=new Vector2(.10f+x/160f,crop.yMin+inset);
-                            float alpha=Alpha(hair,hairCell,PaintedPortraitLayout.HairSamplingPoint(look,p));
+                            float alpha=VisibleHairAlpha(hair,body,look,p);
                             if(alpha>=.10f&&!reportedEdge){errors.Add("headwear touches portrait top mask: "+sex+"/"+face+"/"+style+" crop "+crop.yMin+" at "+p);reportedEdge=true;}
                         }
                         frameEdges++;
                     }
                 }
                 Check(errors.Count==0,"headwear silhouette regressions (one per arc/frame):\n"+string.Join("\n",errors.ToArray()));
-                Debug.Log("MINGLU_GROOMING_SILHOUETTE_SUCCESS: "+scalpProbes+" actual far-skull alpha probes covered, "+frameEdges+" full/detail frame edges clear of hair; portrait sheets still reviewed visually");
+                Debug.Log("MINGLU_GROOMING_SILHOUETTE_SUCCESS: "+scalpProbes+" actual far-skull probes covered after ear/temple masks, "+frameEdges+" full/detail frame edges clear of hair; portrait sheets still reviewed visually");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);}
+        }
+        static void VerifyFarTempleSurface()
+        {
+            var hair=ReadAtlas("hair-styles");var body=ReadAtlas("portrait-bases");
+            int combinations=0,browSamples=0,outlineSamples=0,protectedSamples=0,sourceWitnesses=0,legacyWitnesses=0;
+            int clothExclusions=0,capSamples=0,capRiskWitnesses=0,capHairWitnesses=0,capStrandSamples=0;
+            float maxBrow=0,maxOutside=0,maxProtectedChange=0,maxCapChange=0;
+            var errors=new List<string>();
+            try
+            {
+                for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int style=0;style<PaintedPortraitLayout.HairCount;style++)
+                {
+                    var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});look.parts[0]=face;look.parts[1]=style;
+                    var f=PaintedPortraitLayout.Landmarks(look);var trim=PaintedPortraitLayout.HairFarTrim(look);
+                    var hairCell=PaintedPortraitLayout.Hair(look);var bodyCell=PaintedPortraitLayout.Base(look);
+                    string label=sex+"/"+face+"/"+style;
+                    Check(trim.x<trim.y&&trim.z<trim.w&&trim.w<f.browFar.y,"unordered temple fade or lock surviving to the eyebrow: "+label);
+                    bool reportedBrow=false,reportedOutside=false,reportedProtected=false;
+                    // This forbidden region is tied to anatomy, not the new
+                    // trim constants: the far eyebrow/eye must be visible and
+                    // there must be no independent hair patch beside them.
+                    for(int y=0;y<=10;y++)for(int x=0;x<=18;x++)
+                    {
+                        var p=new Vector2(f.eyeFar.x-.140f+x*.008f,f.browFar.y-.012f+y*.006f);
+                        var sample=PaintedPortraitLayout.HairSamplingPoint(look,p);
+                        // A cloth cap owns its silhouette. Exclude only source
+                        // pixels classified as cloth, never the whole hairstyle;
+                        // the strands below that same cap must still be removed.
+                        if(PaintedPortraitLayout.HairHeadwearAlpha(look,sample)>.001f){clothExclusions++;continue;}
+                        float source=Alpha(hair,hairCell,sample)*PaintedPortraitLayout.HairEarAlpha(look,p);
+                        float visible=VisibleHairAlpha(hair,body,look,p);
+                        maxBrow=Mathf.Max(maxBrow,visible);browSamples++;
+                        if(source>.05f)sourceWitnesses++;
+                        if(sex==0&&style==3&&source>.05f)capHairWitnesses++;
+                        if(source*LegacyFarHairAlpha(body,look,p)>.05f)legacyWitnesses++;
+                        if(visible>.01f&&!reportedBrow){errors.Add("hair still covers far brow/eye: "+label+" at "+p+" alpha "+visible.ToString("F3"));reportedBrow=true;}
+                    }
+                    // Find the outside of the actual face painting. A common
+                    // hard-coded left X would miss older/narrower faces. Do not
+                    // test only points on skin, which hid the original defect.
+                    for(int y=0;y<=10;y++)
+                    {
+                        float py=f.browFar.y-.050f+y*.007f,edge=-1;
+                        for(int x=0;x<=160;x++)
+                        {
+                            float px=.10f+x*(f.skull.x-.10f)/160;
+                            if(Alpha(body,bodyCell,new Vector2(px,py))>.95f){edge=px;break;}
+                        }
+                        Check(edge>=0,"cannot locate lower temple outline: "+label+" at y "+py);
+                        for(int x=0;x<=20;x++)
+                        {
+                            var p=new Vector2(edge-.012f-x*.006f,py);
+                            if(p.x>f.eyeFar.x+.045f||Alpha(body,bodyCell,p+new Vector2(.010f,0))>.01f)continue;
+                            var sample=PaintedPortraitLayout.HairSamplingPoint(look,p);
+                            if(PaintedPortraitLayout.HairHeadwearAlpha(look,sample)>.001f){clothExclusions++;continue;}
+                            float source=Alpha(hair,hairCell,sample)*PaintedPortraitLayout.HairEarAlpha(look,p);
+                            float visible=VisibleHairAlpha(hair,body,look,p);
+                            maxOutside=Mathf.Max(maxOutside,visible);outlineSamples++;
+                            if(source>.05f)sourceWitnesses++;
+                            if(sex==0&&style==3&&source>.05f)capHairWitnesses++;
+                            if(source*LegacyFarHairAlpha(body,look,p)>.05f)legacyWitnesses++;
+                            if(visible>.02f&&!reportedOutside){errors.Add("detached hair remains outside lower temple: "+label+" at "+p+" alpha "+visible.ToString("F3"));reportedOutside=true;}
+                        }
+                    }
+                    // Protect nonempty source strands above the skull and on
+                    // the near/right side. A mask that deletes all hair, uses
+                    // the wrong side, or shaves the crown must not pass.
+                    for(int region=0;region<2;region++)
+                    {
+                        int opaque=0;
+                        for(int y=0;y<=20;y++)for(int x=0;x<=16;x++)
+                        {
+                            var p=region==0
+                                ?new Vector2(f.skull.x-.12f+x*.015f,f.skull.y-.05f+y*.006f)
+                                :new Vector2(f.earNear.x-.11f+x*.017f,Mathf.Lerp(f.skull.y+.055f,f.chin.y+.180f,y/20f));
+                            float source=Alpha(hair,hairCell,PaintedPortraitLayout.HairSamplingPoint(look,p))*PaintedPortraitLayout.HairEarAlpha(look,p);
+                            if(source<.5f)continue;
+                            // Deliberate skin-facing root feather is separate
+                            // from accidental loss caused by the far trim.
+                            float change=Mathf.Abs(VisibleHairAlpha(hair,body,look,p)-source*HairRootFeather(hair,body,look,p));
+                            maxProtectedChange=Mathf.Max(maxProtectedChange,change);opaque++;protectedSamples++;
+                            if(change>.001f&&!reportedProtected){errors.Add("far trim removes "+(region==0?"crown":"near/back hair")+": "+label+" at "+p+" loss "+change.ToString("F3"));reportedProtected=true;}
+                        }
+                        Check(opaque>=10,"protection region lacks real opaque "+(region==0?"crown":"near-side")+" source samples: "+label+" count "+opaque);
+                    }
+                    if(sex==0&&style==3)
+                    {
+                        // The source cap has no pure strands in some far-brow
+                        // windows. Check actual source hair below/behind the
+                        // cloth instead of requiring an invented forbidden lock.
+                        int strands=0;
+                        for(int sy=40;sy<100;sy++)for(int sx=0;sx<100;sx++)
+                        {
+                            var sample=new Vector2((sx+.5f)/100,(sy+.5f)/100);
+                            if(Alpha(hair,hairCell,sample)>.5f&&PaintedPortraitLayout.HairHeadwearAlpha(look,sample)<.001f)strands++;
+                        }
+                        Check(strands>=20,"headwear protection incorrectly labels the entire hair sheet as cloth: "+label);
+                        capStrandSamples+=strands;
+                        int rows=0,retained=0,vulnerable=0;bool reportedCap=false;
+                        // Locate the cap's real left contour, including the
+                        // upper part outside the skull. Interior crown probes
+                        // alone cannot detect a cap shaved down to a bald head.
+                        for(int y=0;y<=90;y++)
+                        {
+                            float py=Mathf.Lerp(f.skull.y-.160f,f.hairline.y+.015f,y/90f),left=-1;
+                            for(int x=0;x<=200;x++)
+                            {
+                                var p=new Vector2(Mathf.Lerp(f.eyeFar.x-.220f,f.skull.x-.045f,x/200f),py);
+                                var sample=PaintedPortraitLayout.HairSamplingPoint(look,p);
+                                if(Alpha(hair,hairCell,sample)>=.15f&&PaintedPortraitLayout.HairHeadwearAlpha(look,sample)>.99999f){left=p.x;break;}
+                            }
+                            if(left<0)continue;
+                            rows++;
+                            for(int inset=0;inset<4;inset++)
+                            {
+                                var p=new Vector2(left+inset*.003f,py);var sample=PaintedPortraitLayout.HairSamplingPoint(look,p);
+                                if(PaintedPortraitLayout.HairHeadwearAlpha(look,sample)<.99999f)continue;
+                                float source=Alpha(hair,hairCell,sample)*PaintedPortraitLayout.HairEarAlpha(look,p);
+                                if(source<.15f)continue;
+                                float change=Mathf.Abs(VisibleHairAlpha(hair,body,look,p)-source);
+                                maxCapChange=Mathf.Max(maxCapChange,change);retained++;capSamples++;
+                                if(change>.001f&&!reportedCap){errors.Add("left/upper cloth cap contour is shaved: "+label+" at "+p+" loss "+change.ToString("F4"));reportedCap=true;}
+                                float outline=Alpha(body,bodyCell,p+PaintedPortraitLayout.HairOutlineOffset(look,p.y));
+                                float withoutClothProtection=source*PaintedPortraitLayout.HairFarSideAlpha(look,p,outline,0);
+                                if(source-withoutClothProtection>.03f){vulnerable++;capRiskWitnesses++;}
+                            }
+                        }
+                        Check(rows>=12&&retained>=30,"cloth cap contour checks lack real source samples: "+label+" rows/samples "+rows+"/"+retained);
+                        Check(vulnerable>0,"cap regression has no real contour pixels at risk without material protection: "+label);
+                    }
+                    combinations++;
+                }
+                Check(outlineSamples>combinations*50,"outside-face scan was vacuous");
+                Check(sourceWitnesses>0&&legacyWitnesses>0,"negative control failed to expose the previous visible far-side hair defect in actual PNG samples");
+                Check(capRiskWitnesses>0&&capStrandSamples>0,"cloth/hair material separation was vacuous");
+                Check(errors.Count==0,"far-temple final alpha regressions (one per region/combination):\n"+string.Join("\n",errors.ToArray()));
+                Debug.Log("MINGLU_GROOMING_FAR_TEMPLE_SUCCESS: "+combinations+" face/hair pairs; "+browSamples+" brow/eye, "+outlineSamples+" outside-face and "+protectedSamples+" opaque crown/near-side samples; "+legacyWitnesses+" legacy-mask residual witnesses from "+sourceWitnesses+" populated forbidden samples; "+capSamples+" cloth-cap contour samples including "+capRiskWitnesses+" at-risk pixels, "+clothExclusions+" cloth exclusions and "+capHairWitnesses+" forbidden hair samples under that cap; max forbidden alpha "+maxBrow.ToString("F4")+"/"+maxOutside.ToString("F4")+", max protected loss "+maxProtectedChange.ToString("F4")+"/"+maxCapChange.ToString("F4")+". Source-surface checks, not a replacement for render review.");
             }
             finally{UnityEngine.Object.DestroyImmediate(hair);UnityEngine.Object.DestroyImmediate(body);}
         }
@@ -186,12 +356,16 @@ namespace Minglu.EditorTools
                     look.parts[6]=beard;look.parts[5]=mouth;look.parts[4]=nose;
                     var center=new Vector2(f.mouth.x,f.mouth.y);
                     Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,center),PaintedPortraitLayout.BeardSource(look,0))<.0001f,"edited mouth loses beard anchor");
-                    Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,f.chin),PaintedPortraitLayout.BeardSource(look,1))<.0001f,"edited mouth displaces beard from the chin");
+                    if(!BeardContour.Enabled(look))Check(Vector2.Distance(PaintedPortraitLayout.BeardSamplingPoint(look,f.chin),PaintedPortraitLayout.BeardSource(look,1))<.0001f,"edited mouth displaces beard from the chin");
                     Check(PaintedPortraitLayout.BeardLipAlpha(look,center)==0,"beard paints over the lip opening");
                     float previous=-10;
                     for(int y=0;y<=60;y++)
                     {
                         var q=PaintedPortraitLayout.BeardSamplingPoint(look,center+new Vector2(0,-.055f+y*.004f));
+                        // The short full beard is a bounded facial mesh. Its
+                        // transparent exterior is not a fold or a long tip.
+                        // Triangle continuity/actual roots are tested separately.
+                        if(BeardContour.Enabled(look)&&q.x<0)continue;
                         Check(q.y>previous,"nose or mouth edit folds the beard");previous=q.y;
                     }
                     beardPairs++;
@@ -255,11 +429,12 @@ namespace Minglu.EditorTools
                         var atMouth=PaintedPortraitLayout.BeardSamplingPoint(look,mouth);
                         var atChin=PaintedPortraitLayout.BeardSamplingPoint(look,feature.chin);
                         Check(Vector2.Distance(atMouth,PaintedPortraitLayout.BeardSource(look,0))<.0001f,"beard mouth anchor drift");
-                        Check(Vector2.Distance(atChin,PaintedPortraitLayout.BeardSource(look,1))<.0001f,"beard chin anchor drift");
+                        if(!BeardContour.Enabled(look))Check(Vector2.Distance(atChin,PaintedPortraitLayout.BeardSource(look,1))<.0001f,"beard chin anchor drift");
                         float last=-10;
                         for(int sample=0;sample<=40;sample++)
                         {
                             float y=mouth.y-.06f+sample*.008f;var q=PaintedPortraitLayout.BeardSamplingPoint(look,new Vector2(mouth.x,y));
+                            if(BeardContour.Enabled(look)&&q.x<0)continue;
                             Check(q.y>last,"beard folds between lips and jaw");last=q.y;
                         }
                     }
@@ -281,10 +456,12 @@ namespace Minglu.EditorTools
         public static void Verify()
         {
             CheckAtlas("portrait-bases",4,4);CheckAtlas("hair-styles",4,4);CheckAtlas("outfit-overlays",4,4,1);CheckAtlas("beard-styles",4,2);
+            CheckAtlas("beard-full-contour",1,1,1);
             var shader=Resources.Load<Shader>("Minglu/Art/PaintedPortrait");
             Check(shader!=null&&!ShaderUtil.ShaderHasError(shader),"shader compilation");
             VerifyGroomingSources();
             VerifyScalpAndHeadwear();
+            VerifyFarTempleSurface();
             VerifyRegistration();
             VerifyFeatureFitting();
             int combinations=0;

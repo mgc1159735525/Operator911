@@ -25,6 +25,7 @@ Shader "Minglu/PaintedPortrait"
    CGPROGRAM
    #pragma vertex vert
    #pragma fragment frag
+   #pragma target 3.0
    #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
    #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
    #include "UnityCG.cginc"
@@ -37,8 +38,9 @@ Shader "Minglu/PaintedPortrait"
    float4 _EyeShape,_BrowShape,_NoseShape,_MouthShape,_EarShape;
    float4 _HairAnchor0,_HairAnchor1,_HairAnchor2,_HairAnchor3,_CrownAdjust,_BeardMouth,_BeardChin,_BeardScales;
    float4 _CollarAnchor0,_CollarAnchor1,_CollarAnchor2,_CollarAnchor3,_CollarAnchor4,_CollarAnchor5,_CollarAnchor6,_CollarAnchor7,_Jaw;
-   float4 _HairCanvas,_BeardSurface;
+   float4 _HairCanvas,_BeardSurface,_HairFarTrim,_HairOutlineGuide;
    float _LayerMode,_BackHair,_CapCloth,_OutfitLeftTrim,_FarScalpPad;
+   float _FullBeard;float4 _BeardContour[30];
    output vert(input v){output o;o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float2 morph(float2 p,float4 feature,float2 size,float tilt)
    {
@@ -66,15 +68,34 @@ Shader "Minglu/PaintedPortrait"
     // The slightly more frontal male skull is wider at the far upper temple.
     // Fill only this arc on tied styles; all four registration anchors remain
     // outside the correction, including the hairline and the exposed ear.
-    float scalp=(1-smoothstep(_EyeFar.x+.055,_HairAnchor1.x-.010,p.x))*(1-smoothstep(_BrowFar.y-.055,_BrowFar.y-.010,p.y))*smoothstep(_CrownAdjust.y-.035,_CrownAdjust.y+.035,p.y);
+    float scalp=(1-smoothstep(_EyeFar.x+.055,_HairAnchor1.x-.010,p.x))*(1-smoothstep(_CrownAdjust.y+.146,_BrowFar.y-.020,p.y))*smoothstep(_CrownAdjust.y-.035,_CrownAdjust.y+.035,p.y);
     p.x+=scalp*_FarScalpPad;
     float influence=1-smoothstep(_CrownAdjust.y-.02,_CrownAdjust.y+.03,p.y);
     p=lerp(p,_CrownAdjust.xy+(p-_CrownAdjust.xy)/_CrownAdjust.z,influence);
     float3 blend=hairAnchor(p,_HairAnchor0)+hairAnchor(p,_HairAnchor1)+hairAnchor(p,_HairAnchor2)+hairAnchor(p,_HairAnchor3);
     return (p-blend.xy/blend.z-_LayerRect.xy)/_LayerRect.zw;
    }
+   float cross2(float2 a,float2 b){return a.x*b.y-a.y*b.x;}
+   bool beardTriangle(float2 p,float4 a,float4 b,float4 c,out float2 source)
+   {
+    float2 ab=b.xy-a.xy,ac=c.xy-a.xy,ap=p-a.xy;
+    float det=cross2(ab,ac),u=cross2(ap,ac)/det,v=cross2(ab,ap)/det;
+    source=a.zw+u*(b.zw-a.zw)+v*(c.zw-a.zw);
+    return u>=-.00001&&v>=-.00001&&u+v<=1.00001;
+   }
    float2 beardSample(float2 p)
    {
+    if(_FullBeard>.5)
+    {
+     float2 sample;
+     [loop] for(int row=0;row<4;row++)[loop] for(int col=0;col<5;col++)
+     {
+      int a=row*6+col,b=a+1,c=a+6,d=c+1;
+      if(beardTriangle(p,_BeardContour[a],_BeardContour[b],_BeardContour[d],sample))return sample;
+      if(beardTriangle(p,_BeardContour[a],_BeardContour[d],_BeardContour[c],sample))return sample;
+     }
+     return float2(-1,-1);
+    }
     float row=saturate((p.y-_BeardMouth.y)/(_BeardChin.y-_BeardMouth.y));
     float axis=lerp(_BeardMouth.x,_BeardChin.x,row),cheek=p.x-axis;
     p.y+=abs(cheek)*(cheek<0?_BeardSurface.z:_BeardSurface.w)*smoothstep(_BeardMouth.y-.012,_BeardChin.y,p.y);
@@ -115,6 +136,7 @@ Shader "Minglu/PaintedPortrait"
     // Bilinear sampling must never borrow pixels from the neighbouring person.
     uv=clamp(uv,_AtlasRect.xy+_MainTex_TexelSize.xy*.75,_AtlasRect.xy+_AtlasRect.zw-_MainTex_TexelSize.xy*.75);
     fixed4 c=tex2D(_MainTex,uv);c.a*=sourceInside;
+    float headwear=0;
     if(_LayerMode<.5)
     {
      // The source is a connected head/neck painting with an under-robe.
@@ -154,13 +176,24 @@ Shader "Minglu/PaintedPortrait"
      {
       // The two current sheets share their luminance range. Preserve painted
       // roots and highlights; a high ivory floor flattened them into a cap.
-      float3 dyed=lerp(_HairShadow.rgb,_HairLight.rgb,saturate(luminance*1.42));
+      float tone=_LayerMode>2.5&&_FullBeard>.5?saturate((luminance-.05)*2.6):saturate(luminance*1.42);
+      float3 dyed=lerp(_HairShadow.rgb,_HairLight.rgb,tone);
+      if(_LayerMode>2.5)
+      {
+       // The beard receives the same facial light as the skin beneath it.
+       // A palette tint alone made white hair into an evenly lit mesh.
+       float faceLight=dot(bodyAt(featurePoint).rgb,float3(.299,.587,.114));
+       dyed*=lerp(.73,1.02,smoothstep(.22,.68,faceLight));
+       // Allow sparse dark roots to reveal the underlying painted volume.
+       c.a*=lerp(.68,1,smoothstep(.12,.58,tone));
+      }
       float preserve=0;
       if(_LayerMode<1.5)
       {
        float2 source=_HairCanvas.xy+q*_HairCanvas.zw;
        float capEdge=.552+max(0,source.x-.383)*.32;
        float cap=max(1-smoothstep(capEdge-.006,capEdge+.012,source.y),smoothstep(.72,.80,source.x)*smoothstep(.59,.67,source.y));
+       headwear=_CapCloth*cap;
        // A white-haired elder keeps a cloth cap and coloured hair ornaments;
        // those materials are not strands and must not turn ivory with age.
        preserve=max(_CapCloth*cap,smoothstep(.10,.18,c.r-c.b));
@@ -170,26 +203,36 @@ Shader "Minglu/PaintedPortrait"
     }
     if(_LayerMode>.5&&_LayerMode<1.5)
     {
-     // Length behind the collar, upper hair in front of the skull. The two
-     // passes are alpha-over compensated to avoid doubled dark edge strands.
-     float front=1-smoothstep(.590,.700,p.y);
-     c.a*=_BackHair>.5?(1-front)/max(.001,1-c.a*front):front;
      // Preserve the painted opening of the near ear. Ear edits and age no
      // longer leave an opaque lock across the concha after hair registration.
      float ear=1-smoothstep(.45,1,length((featurePoint-_EarNear.xy)/(_EarNear.zw*float2(.58,.65))));
      c.a*=1-ear;
-     // Follow the whole far-side front lock down to the garment. Ending this
-     // cut at the jaw leaves a detached black tuft that looks like a beard.
-     // The near-side/back mass remains beyond this face-derived boundary.
-     float silhouette=max(bodyAt(p).a,bodyAt(p+float2(.09,0)).a);
-     // Below the lips this is the same removed front lock even where it
-     // hangs outside the body's alpha silhouette. Clear that tail completely
-     // rather than leaving a detached strand floating beside the neck.
-     silhouette=max(silhouette,smoothstep(_Mouth.y-.020,_Jaw.y-.005,p.y));
+     // Fit the lower far temple to this face's real outline. A small allowance
+     // keeps a painted edge; the upper skull and near/back mass remain intact.
+     float outline=(1-smoothstep(_CrownAdjust.x-.050,_CrownAdjust.x+.030,p.x))*smoothstep(_HairFarTrim.x,_HairFarTrim.y,p.y);
+     float arc=smoothstep(_HairOutlineGuide.x,_HairOutlineGuide.y,p.y);
+     float2 allowance=float2(lerp(_HairOutlineGuide.z,_HairOutlineGuide.w,arc),lerp(_HairOutlineGuide.z,0,arc));
+     // Cloth headwear has its own silhouette and must not be shaved down to
+     // the scalp like strands; retain the source cap and its hanging cloth.
+     float outlineCoverage=smoothstep(.05,.95,bodyAt(p+allowance).a);
+     c.a*=1-outline*(1-outlineCoverage)*(1-headwear);
+     // Hide the far-side front lock before the eyebrow, including free wisps
+     // outside the base silhouette. Both hair passes use the identical mask.
      float farBoundary=lerp(_EyeFar.x+.015,_Jaw.x+.10,smoothstep(_Mouth.y-.05,_Jaw.y+.020,p.y));
      float farSide=1-smoothstep(farBoundary,farBoundary+.045,p.x);
-     float height=smoothstep(_BrowFar.y-.045,_BrowFar.y+.005,p.y);
-     c.a*=1-silhouette*farSide*height;
+     float height=smoothstep(_HairFarTrim.z,_HairFarTrim.w,p.y);
+     c.a*=1-farSide*height*(1-headwear);
+     // Only the skin-facing roots receive the soft transition, not the
+     // outer crown, cloth cap or free ends behind the shoulders.
+     float2 rootTexel=_MainTex_TexelSize.xy*2.4;
+     float rootCoverage=(tex2D(_MainTex,uv+float2(rootTexel.x,0)).a+tex2D(_MainTex,uv-float2(rootTexel.x,0)).a
+                        +tex2D(_MainTex,uv+float2(0,rootTexel.y)).a+tex2D(_MainTex,uv-float2(0,rootTexel.y)).a)*.25;
+     float skinRoot=bodyAt(p).a*smoothstep(_HairAnchor1.y-.025,_HairAnchor1.y+.025,p.y)*(1-headwear);
+     c.a*=lerp(1,lerp(.35,1,smoothstep(.1,.98,rootCoverage)),skinRoot);
+     // Split only the final clipped alpha. Applying the masks after splitting
+     // darkens feathered edges where front and back layers overlap.
+     float front=1-smoothstep(.590,.700,p.y);
+     c.a*=_BackHair>.5?(1-front)/max(.001,1-c.a*front):front;
     }
     if(_LayerMode>2.5)
     {
@@ -201,14 +244,14 @@ Shader "Minglu/PaintedPortrait"
      // spikes came from a frontal source; long free ends retain their alpha.
      float side=smoothstep(.055,.14,abs(featurePoint.x-_Mouth.x));
      float rootY=lerp(_Mouth.y-.026,_Mouth.y-.016,side);
-     c.a*=smoothstep(rootY-.007,rootY+.009,featurePoint.y);
+     c.a*=lerp(smoothstep(rootY-.007,rootY+.009,featurePoint.y),1,_FullBeard);
      // The beard atlas has a dense, light rim. Soften that source boundary
      // in texels rather than screen pixels: large and small portraits must
      // share the same roots, and thin free strands must not be hard-clipped.
-     float2 edgeTexel=_MainTex_TexelSize.xy*1.25;
+     float2 edgeTexel=_FullBeard>.5?_AtlasRect.zw*.020:_MainTex_TexelSize.xy*3;
      float coverage=(tex2D(_MainTex,uv+float2(edgeTexel.x,0)).a+tex2D(_MainTex,uv-float2(edgeTexel.x,0)).a
                     +tex2D(_MainTex,uv+float2(0,edgeTexel.y)).a+tex2D(_MainTex,uv-float2(0,edgeTexel.y)).a)*.25;
-     c.a*=lerp(.45,1,smoothstep(.15,.95,coverage));
+     c.a*=lerp(.18,1,smoothstep(.10,.97,coverage));
     }
     c*=i.color;
     #ifdef UNITY_UI_CLIP_RECT
