@@ -34,7 +34,7 @@ namespace Minglu
             if(retryEndingSave&&!retry)return false;
             try
             {
-                var candidate=JsonUtility.FromJson<PlayerProfile>(JsonUtility.ToJson(profile));
+                var candidate=RunLifecycle.CopyProfile(profile);
                 if(RunLifecycle.Record(candidate,State)){RunLifecycle.WriteProfile(candidate,ProfilePath);profile=candidate;retryProfileSave=false;}
                 retryEndingSave=false;ClearResolvedPersistenceFailure();return true;
             }

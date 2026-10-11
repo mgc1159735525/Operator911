@@ -11,6 +11,7 @@ namespace Minglu
     {
         public Appearance chiefLook;
         public Appearance[] lookSlots=new Appearance[3];
+        public int lookSlotRevision,lookSlotMask;
         public int version=1;
         public bool sound=true, fullscreen;
         public float volume=.7f;
@@ -64,11 +65,38 @@ namespace Minglu
             if(p.lookSlots==null)p.lookSlots=new Appearance[3];
             if(p.lookSlots.Length!=3)throw new InvalidDataException("外观预设数量无效。");
             foreach(var look in p.lookSlots)AppearanceRules.Validate(look);
+            if(p.lookSlotRevision<0||p.lookSlotRevision>1||p.lookSlotMask<0||p.lookSlotMask>7)throw new InvalidDataException("外观预设占用数据无效。");
+            for(int i=0;i<3;i++)
+                if(p.lookSlotRevision==1?(p.lookSlotMask&(1<<i))==0:IsEmptyLookSlot(p.lookSlots[i]))p.lookSlots[i]=null;
             return p;
+        }
+        public static bool IsEmptyLookSlot(Appearance a)
+        {
+            // JsonUtility materializes null class entries as an all-default
+            // object. Only this exact untouched legacy placeholder is empty.
+            return a==null||(!a.enabled&&a.portraitVersion==0&&a.style==0&&a.sex==0&&a.ears==0&&!a.featureEditing&&!a.groomingEditing&&a.parts!=null&&a.parts.All(n=>n==0));
+        }
+        public static PlayerProfile CopyProfile(PlayerProfile source)
+        {
+            if(source==null)throw new ArgumentNullException(nameof(source));
+            // Never serialize the live profile as a copying mechanism:
+            // Unity's inline class serialization can materialize null slots.
+            // Also normalize placeholders left by an earlier serialization.
+            return new PlayerProfile
+            {
+                version=source.version,sound=source.sound,fullscreen=source.fullscreen,volume=source.volume,
+                lookSlotRevision=source.lookSlotRevision,lookSlotMask=source.lookSlotMask,
+                chiefLook=source.chiefLook==null?null:AppearanceRules.Copy(source.chiefLook),
+                lookSlots=source.lookSlots==null?new Appearance[3]:source.lookSlots.Select(look=>IsEmptyLookSlot(look)?null:AppearanceRules.Copy(look)).ToArray(),
+                records=source.records==null?null:source.records.Select(record=>record==null?null:new RunRecord
+                {id=record.id,date=record.date,doctrine=record.doctrine,seed=record.seed,difficulty=record.difficulty,progress=record.progress,turn=record.turn,won=record.won}).ToList()
+            };
         }
         public static void WriteProfile(PlayerProfile p,string path)
         {
-            SaveFileRecovery.Write(p,path,ReadProfileStrict);
+            var snapshot=CopyProfile(p);snapshot.lookSlotRevision=1;snapshot.lookSlotMask=0;
+            for(int i=0;i<snapshot.lookSlots.Length;i++)if(snapshot.lookSlots[i]!=null)snapshot.lookSlotMask|=1<<i;
+            SaveFileRecovery.Write(snapshot,path,ReadProfileStrict);
         }
         public static bool Record(PlayerProfile p,RunState s)
         {

@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Minglu
 {
@@ -15,169 +17,149 @@ namespace Minglu
             public float[] uiRect;
             public bool headOnly;
         }
-
         [Serializable] sealed class GroomingFitPage
         {
-            public string file, comparison;
+            public string file,comparison;
             public List<GroomingFitCase> cases=new List<GroomingFitCase>();
         }
-
         [Serializable] sealed class GroomingFitManifest
         {
-            public string gameVersion, capturedUtc;
-            public string result="Rendered comparisons only; visual review is required. No aesthetic pass is inferred from resource or state checks.";
-            public string indices="All IDs, face/hair/beard/feature indices in this manifest are zero-based.";
-            public string fixturePolicy="Hair pages change only hair within each face. Beard pages change only beard, including a clean-shaven baseline. Male matrices use eyes2/brows1/nose5/mouth0/ears2; female matrices use native features. Elder faces3/7 use silver. Matrix clothing is0; approximate user male clothing is7, female clothing is5.";
-            public int screenWidth, screenHeight, hairPairs, beardedPairs, cleanShavenBaselines, approximateUserCases, renderCount;
-            public bool profileUnchanged, runUnchanged, editorDraftUnchanged, isolatedFilesUnchanged;
+            public string gameVersion,capturedUtc;
+            public string renderer="ClassicPortrait";
+            public string result="Actual Unity render coverage, not aesthetic acceptance; every page requires visual review.";
+            public string indices="Zero based. Complete head includes face outline, hair, ears and neck. No independent hair or ear channel.";
+            public int screenWidth,screenHeight,headPairs,beardedPairs,cleanShavenBaselines,outfitSamples,featureSamples,heroCases,renderCount;
+            public bool profileUnchanged,runUnchanged,editorDraftUnchanged,isolatedFilesUnchanged;
             public List<GroomingFitPage> pages=new List<GroomingFitPage>();
         }
-
-        Appearance GroomingFitLook(int sex,int face,int hair,int beard=0)
+        Appearance ClassicProofLook(int sex,int head,int beard=0)
         {
             var look=AppearanceRules.AsRealistic(new Appearance{enabled=true,sex=sex});
-            look.parts[0]=face;look.parts[1]=hair;look.parts[6]=sex==0?beard:0;
-            look.parts[7]=0;look.parts[9]=3;look.parts[10]=0;look.parts[11]=0;
-            if(sex==0)
-            {
-                // Assign after normalization so portrait migration cannot reset
-                // the specific facial edits from the reported male example.
-                look.parts[2]=2;look.parts[3]=1;look.parts[4]=5;look.parts[5]=0;look.ears=2;
-            }
-            AppearanceRules.ApplyAgeHairColor(look);
-            AppearanceRules.Validate(look);
-            return look;
+            look.parts[0]=head;look.parts[6]=sex==0?beard:0;look.parts[7]=0;look.parts[9]=3;
+            look.parts[10]=0;look.parts[11]=0;AppearanceRules.ApplyAgeHairColor(look);AppearanceRules.Validate(look);return look;
         }
-
+        void RequireClassicPortrait(Transform frame,Appearance appearance)
+        {
+            if(frame==null||frame.name!="ClassicPortrait")throw new Exception("The actual classic portrait renderer was not used");
+            var look=AppearanceRules.AsRealistic(appearance);
+            var backdrop=frame.GetComponentsInChildren<RawImage>().FirstOrDefault(t=>t.name=="ClassicBackdrop");
+            if(backdrop==null||backdrop.texture==null)throw new Exception("Classic painted backdrop is missing");
+            var names=new List<string>{"ClassicNeck","ClassicHead","ClassicEyes","ClassicBrows","ClassicNose","ClassicMouth","ClassicOutfit"};
+            if(look.sex==0&&look.parts[6]>0)names.Add("ClassicBeard");
+            if(look.parts[8]>0)names.Add("ClassicAdornment");
+            foreach(string name in names)
+            {
+                var layer=frame.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name==name);
+                var graphic=layer==null?null:layer.GetComponent<Graphic>();
+                if(graphic==null||graphic.mainTexture==null||graphic.material==null||graphic.material.shader==null||!graphic.material.shader.isSupported)
+                    throw new Exception("Classic portrait layer is absent or cannot render: "+name);
+                if(graphic.material.shader.name!="Minglu/ClassicPortrait")throw new Exception("Classic portrait silently fell back to a different material: "+name);
+            }
+            if(frame.GetComponentsInChildren<Transform>().Any(t=>t.name=="PaintedPortrait"||t.name=="RealisticPortrait"))throw new Exception("Legacy portrait hierarchy remains active");
+        }
+        void RequireVisibleClassicPortraits()
+        {
+            var frames=root.GetComponentsInChildren<Transform>().Where(t=>t.name=="ClassicPortrait").ToArray();
+            if(frames.Length==0)throw new Exception("No classic portraits appear in this actual game view");
+            foreach(var frame in frames)
+            {
+                var head=frame.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name=="ClassicHead");
+                if(head==null||head.GetComponent<Graphic>()==null||head.GetComponent<Graphic>().mainTexture==null)throw new Exception("Game view contains a missing classic head");
+            }
+        }
         RectTransform GroomingFitSheet(string title,string subtitle)
         {
-            Draw();
-            var sheet=Box("GroomingFitProof",root,0,0,1600,900,Paper);
-            Label(sheet,title,20,15,1560,34,25,PaperInk);
-            Label(sheet,subtitle,20,54,1560,30,17,PaperMuted);
-            return sheet;
+            Draw();var sheet=Box("GroomingFitProof",root,0,0,1600,900,Paper);
+            Label(sheet,title,20,15,1560,34,25,PaperInk);Label(sheet,subtitle,20,54,1560,30,17,PaperMuted);return sheet;
         }
-
         void GroomingFitRender(Transform parent,GroomingFitPage page,string id,Appearance look,float x,float y,float w,float h,bool headOnly)
         {
-            string before=JsonUtility.ToJson(look);
-            int previous=parent.GetComponentsInChildren<PaintedPortraitGraphic>().Length;
-            // This is the game's actual UI renderer and shader, not a separate
-            // image compositor. Use its detail framing to expose the seams.
+            string before=JsonUtility.ToJson(look);int previous=parent.childCount;
             DrawRealisticLook(parent,look,x,y,w,h,Color.white,headOnly);
-            var layers=parent.GetComponentsInChildren<PaintedPortraitGraphic>();
-            int expected=look.sex==0&&look.parts[6]>0?5:4;
-            if(layers.Length-previous!=expected)throw new Exception("Grooming fit missing portrait layers: "+id);
-            for(int i=previous;i<layers.Length;i++)
-                if(layers[i].texture==null||layers[i].material==null||layers[i].material.shader==null||!layers[i].material.shader.isSupported)
-                    throw new Exception("Grooming fit resource/shader unavailable: "+id);
-            if(JsonUtility.ToJson(look)!=before)throw new Exception("Portrait drawing mutated the fixture: "+id);
+            var added=new List<Transform>();for(int i=previous;i<parent.childCount;i++)added.Add(parent.GetChild(i));
+            var frame=added.FirstOrDefault(t=>t.name=="ClassicPortrait");RequireClassicPortrait(frame,look);
+            if(JsonUtility.ToJson(look)!=before)throw new Exception("Drawing changed the appearance fixture: "+id);
             page.cases.Add(new GroomingFitCase{id=id,look=AppearanceRules.Copy(look),uiRect=new[]{x,y,w,h},headOnly=headOnly});
         }
-
         IEnumerator GroomingFitCapture(string path,string suffix,GroomingFitPage page,GroomingFitManifest manifest)
         {
-            yield return null;
-            yield return new WaitForEndOfFrame();
-            string output=Path.ChangeExtension(path,suffix+".png");
-            Capture(output);
-            if(!File.Exists(output)||new FileInfo(output).Length==0)throw new Exception("Grooming fit capture missing: "+output);
-            page.file=Path.GetFileName(output);
-            manifest.pages.Add(page);manifest.renderCount+=page.cases.Count;
+            yield return null;yield return new WaitForEndOfFrame();string output=Path.ChangeExtension(path,suffix+".png");Capture(output);
+            if(!File.Exists(output)||new FileInfo(output).Length==0)throw new Exception("Classic rendering capture missing: "+output);
+            page.file=Path.GetFileName(output);manifest.pages.Add(page);manifest.renderCount+=page.cases.Count;
         }
-
         static string GroomingFitSnapshot(object value){return value==null?"null":JsonUtility.ToJson(value);}
-
         IEnumerator GroomingFitSmoke(string path)
         {
-            if(string.IsNullOrEmpty(smokeSave)||ProfilePath!=smokeSave+".profile"||!atTitle)
-                throw new Exception("Grooming fit smoke requires --minglu-capture and its isolated title profile");
-            var profileBefore=GroomingFitSnapshot(profile);
-            var runBefore=GroomingFitSnapshot(State);
-            var draftBefore=GroomingFitSnapshot(lookDraft);
-            // No profile, preset or run writes are needed for this comparison.
-            // Preserve even pre-existing isolated files exactly, rather than
-            // deleting them and hiding an accidental save by the renderer.
-            string[] isolatedFiles={SavePath,SavePath+".bak",SavePath+".tmp",ProfilePath,ProfilePath+".bak",ProfilePath+".tmp"};
+            if(string.IsNullOrEmpty(smokeSave)||ProfilePath!=smokeSave+".profile"||!atTitle)throw new Exception("Classic render coverage requires the isolated title-screen capture session");
+            string profileBefore=GroomingFitSnapshot(profile),runBefore=GroomingFitSnapshot(State),draftBefore=GroomingFitSnapshot(lookDraft);
             var filesBefore=new Dictionary<string,string>();
-            foreach(string file in isolatedFiles)filesBefore[file]=File.Exists(file)?Convert.ToBase64String(File.ReadAllBytes(file)):null;
+            foreach(string file in new[]{smokeSave,smokeSave+".bak",smokeSave+".tmp",ProfilePath,ProfilePath+".bak",ProfilePath+".tmp"})filesBefore[file]=File.Exists(file)?Convert.ToBase64String(File.ReadAllBytes(file)):null;
             var manifest=new GroomingFitManifest{gameVersion=Application.version,capturedUtc=DateTime.UtcNow.ToString("o"),screenWidth=Screen.width,screenHeight=Screen.height};
-
-            // Produce the two reported combinations first so a reviewer can
-            // inspect their portrait and head detail before the larger matrix.
             for(int sex=0;sex<2;sex++)
             {
-                var look=GroomingFitLook(sex,sex==0?0:3,sex==0?2:1,sex==0?4:0);
-                look.parts[7]=sex==0?7:5;
-                string title=(sex==0?"男性":"女性")+" · 用户截图近似组合 / 原图比例与头部细节";
-                var sheet=GroomingFitSheet(title,"截图未包含的选项采用固定基线；这里只复现绘制，不应用、保存或替换玩家外观。所有下列索引从 0 开始。");
-                var page=new GroomingFitPage{comparison="Approximate user example, same look rendered full portrait and head detail; screenshot identification is not exact."};
-                GroomingFitRender(sheet,page,"user-s"+sex+"-portrait",look,20,100,460,730,false);
-                GroomingFitRender(sheet,page,"user-s"+sex+"-detail",look,502,100,680,730,true);
-                string hair=(sex==0?AppearanceRules.MaleHairNames:AppearanceRules.FemaleHairNames)[look.parts[1]];
-                string description="性别 "+sex+" / 脸型 "+look.parts[0]+"\n\n发型 "+look.parts[1]+" · "+hair+
-                    "\n胡须 "+look.parts[6]+" · "+AppearanceRules.BeardNames[look.parts[6]]+
-                    "\n服装 "+look.parts[7]+" · "+AppearanceRules.Names[7][look.parts[7]]+
-                    "\n须发色 "+look.parts[12]+" · "+AppearanceRules.Names[12][look.parts[12]]+
-                    "\n\n眼睛 "+look.parts[2]+" / 眉形 "+look.parts[3]+"\n鼻形 "+look.parts[4]+" / 嘴形 "+look.parts[5]+"\n耳朵 "+look.ears+
-                    "\n\n检查重点\n发际线与额头\n鬓角与耳朵\n胡须与嘴角、下颌\n颈部与衣领\n\n需逐图人工判断协调程度。";
-                Label(sheet,description,1210,110,370,692,21,PaperInk);
-                Label(sheet,"完整立绘",20,846,460,28,18,PaperInk);
-                Label(sheet,"同一组合 · 游戏原生头部裁切",502,846,680,28,18,PaperInk);
-                yield return GroomingFitCapture(path,"fit-user-"+(sex==0?"male":"female"),page,manifest);
-                manifest.approximateUserCases++;
+                var look=ClassicProofLook(sex,sex==0?1:9,sex==0?4:0);look.parts[7]=sex==0?7:5;
+                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · 全新绘卷 / 半身与面容", "独立绘制完整头部；不再组合旧发型与旧脸型。仅生成验收图片，不应用到任何角色。");
+                var page=new GroomingFitPage{comparison="New complete-head examples, rendered through the game renderer at full portrait and detail size; not a reconstruction of the deleted art."};
+                GroomingFitRender(sheet,page,"hero-s"+sex+"-portrait",look,20,100,460,730,false);GroomingFitRender(sheet,page,"hero-s"+sex+"-detail",look,502,100,680,730,true);
+                Label(sheet,"性别 "+sex+" / 完整头部 "+look.parts[0]+"\n\n胡须 "+look.parts[6]+" / 衣服 "+look.parts[7]+"\n须发色 "+look.parts[12]+"\n\n实际游戏绘制\n头部、五官、衣饰\n\n需人工判断自然度。",1210,120,370,650,21,PaperInk);
+                yield return GroomingFitCapture(path,"fit-user-"+(sex==0?"male":"female"),page,manifest);manifest.heroCases++;
             }
-
-            // Four tall detail panels per page keep the hairline and ear edges
-            // readable. Each face uses two pages covering all eight hairstyles.
-            for(int sex=0;sex<2;sex++)for(int face=0;face<8;face++)for(int half=0;half<2;half++)
+            for(int sex=0;sex<2;sex++)for(int batch=0;batch<3;batch++)
             {
-                string fixedParts=sex==0?"固定五官：眼2 / 眉1 / 鼻5 / 嘴0 / 耳2":"固定原生五官";
-                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · 脸型 "+face+" / 发型局部对照 "+(half+1)+" / 2",
-                    "同脸、同衣、同色、同构图；本页只换发型。"+fixedParts+"。"+(AppearanceRules.IsElderFace(face)?"长者银白。":"乌黑。")+"索引从 0 开始。");
-                var page=new GroomingFitPage{comparison="Only hair changes within this page and its paired page; facial edits, face, beard0, outfit0 and age palette remain fixed."};
+                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · 完整头部 "+(batch*4)+"–"+(batch*4+3),"同衣服、固定五官；每款头部包含各自脸廓、发式、耳廓与颈部。旁图为名册尺寸。索引从 0 开始。");
+                var page=new GroomingFitPage{comparison="Complete heads, each at portrait and roster size; clothing/features fixed. Elder heads9–11 use silver."};
                 for(int col=0;col<4;col++)
                 {
-                    int hair=half*4+col;float x=20+col*394;
-                    var look=GroomingFitLook(sex,face,hair);
-                    GroomingFitRender(sheet,page,"hair-s"+sex+"-face"+face+"-hair"+hair,look,x,100,376,704,true);
-                    string name=(sex==0?AppearanceRules.MaleHairNames:AppearanceRules.FemaleHairNames)[hair];
-                    Label(sheet,"H"+hair+" · "+name+"\n"+AppearanceRules.Names[12][look.parts[12]]+" / 无须 / 交领袍",x,816,376,65,20,PaperInk);
-                    manifest.hairPairs++;
+                    int head=batch*4+col;float x=20+col*394;var look=ClassicProofLook(sex,head);
+                    GroomingFitRender(sheet,page,"head-s"+sex+"-h"+head,look,x,100,282,704,false);GroomingFitRender(sheet,page,"roster-s"+sex+"-h"+head,look,x+288,470,78,117,false);
+                    Label(sheet,"H"+head+" · "+AppearanceRules.HeadNames(sex)[head],x,815,376,34,19,PaperInk);manifest.headPairs++;
                 }
-                yield return GroomingFitCapture(path,"fit-hair-s"+sex+"-face"+face+"-page"+(half+1),page,manifest);
+                yield return GroomingFitCapture(path,"fit-head-s"+sex+"-page"+(batch+1),page,manifest);
             }
-
-            // Include a clean-shaven baseline. Unlike the old proof, changing
-            // beard must never also change the mouth or nose being compared.
-            for(int face=0;face<8;face++)for(int half=0;half<2;half++)
+            for(int head=0;head<12;head++)for(int batch=0;batch<2;batch++)
             {
-                var sheet=GroomingFitSheet("男性 · 脸型 "+face+" / 胡须局部对照 "+(half+1)+" / 2",
-                    "只换胡须；固定短束、交领袍、眼2 / 眉1 / 鼻5 / 嘴0 / 耳2。"+(AppearanceRules.IsElderFace(face)?"长者白发白须。":"黑发黑须。")+"索引从 0 开始。");
-                var page=new GroomingFitPage{comparison="Only beard changes within this page and its paired page. Hair1, eyes2/brows1/nose5/mouth0/ears2, outfit0 and age palette remain fixed; beard0 is the clean-shaven baseline."};
+                var sheet=GroomingFitSheet("男性 · 完整头部 "+head+" / 胡须对照 "+(batch+1)+" / 2","同头部、同五官、同衣、同色；本页只替换胡须。检查嘴角、颊面和下颌。索引从 0 开始。");
+                var page=new GroomingFitPage{comparison="Only beard changes on each fixed complete head. B0 clean-shaven reference; older heads use silver."};
                 for(int col=0;col<4;col++)
                 {
-                    int beard=half*4+col;float x=20+col*394;
-                    var look=GroomingFitLook(0,face,1,beard);
-                    GroomingFitRender(sheet,page,"beard-face"+face+"-beard"+beard,look,x,100,376,704,true);
-                    Label(sheet,"B"+beard+" · "+AppearanceRules.BeardNames[beard]+"\n"+AppearanceRules.Names[12][look.parts[12]]+" / 鼻5 / 嘴0",x,816,376,65,20,PaperInk);
+                    int beard=batch*4+col;float x=20+col*394;var look=ClassicProofLook(0,head,beard);
+                    GroomingFitRender(sheet,page,"beard-h"+head+"-b"+beard,look,x,100,376,704,true);
+                    Label(sheet,"B"+beard+" · "+AppearanceRules.BeardNames[beard],x,814,376,34,19,PaperInk);
                     if(beard==0)manifest.cleanShavenBaselines++;else manifest.beardedPairs++;
                 }
-                yield return GroomingFitCapture(path,"fit-beard-face"+face+"-page"+(half+1),page,manifest);
+                yield return GroomingFitCapture(path,"fit-beard-head"+head+"-page"+(batch+1),page,manifest);
             }
-
-            manifest.profileUnchanged=GroomingFitSnapshot(profile)==profileBefore;
-            manifest.runUnchanged=GroomingFitSnapshot(State)==runBefore;
-            manifest.editorDraftUnchanged=GroomingFitSnapshot(lookDraft)==draftBefore;
-            manifest.isolatedFilesUnchanged=true;
-            foreach(string file in isolatedFiles)
-                if((File.Exists(file)?Convert.ToBase64String(File.ReadAllBytes(file)):null)!=filesBefore[file])manifest.isolatedFilesUnchanged=false;
+            for(int sex=0;sex<2;sex++)for(int batch=0;batch<2;batch++)
+            {
+                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · 衣服衔接 "+(batch+1)+" / 2","固定完整头部；只换衣服。检查颈部和衣领、肩膀宽度；另含饰物抽样。");
+                var page=new GroomingFitPage{comparison="Eight clothing samples per sex, head held fixed; four adornments repeat across clothing samples."};
+                for(int col=0;col<4;col++)
+                {
+                    int outfit=batch*4+col;float x=20+col*394;var look=ClassicProofLook(sex,sex==0?4:7);look.parts[7]=outfit;look.parts[8]=outfit%4;
+                    GroomingFitRender(sheet,page,"outfit-s"+sex+"-o"+outfit,look,x,100,376,704,false);
+                    Label(sheet,"服装 "+outfit+" / 饰物 "+look.parts[8],x,814,376,34,19,PaperInk);manifest.outfitSamples++;
+                }
+                yield return GroomingFitCapture(path,"fit-outfit-s"+sex+"-page"+(batch+1),page,manifest);
+            }
+            for(int sex=0;sex<2;sex++)for(int category=2;category<=5;category++)for(int batch=0;batch<2;batch++)
+            {
+                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · "+AppearanceRules.Labels[category]+"部件 "+(batch+1)+" / 2","固定头部与其他五官；本页仅更换这一项实际部件。索引从 0 开始。");
+                var page=new GroomingFitPage{comparison="Only one authored facial feature changes. Same head, other features, clothing and palette."};
+                for(int col=0;col<4;col++)
+                {
+                    int option=batch*4+col;float x=20+col*394;var look=ClassicProofLook(sex,0);look.parts[category]=option;
+                    GroomingFitRender(sheet,page,"feature-s"+sex+"-c"+category+"-o"+option,look,x,100,376,704,true);
+                    Label(sheet,AppearanceRules.Labels[category]+" "+option+" · "+AppearanceRules.Names[category][option],x,814,376,34,19,PaperInk);manifest.featureSamples++;
+                }
+                yield return GroomingFitCapture(path,"fit-feature-s"+sex+"-c"+category+"-page"+(batch+1),page,manifest);
+            }
+            Draw();yield return null;
+            manifest.profileUnchanged=GroomingFitSnapshot(profile)==profileBefore;manifest.runUnchanged=GroomingFitSnapshot(State)==runBefore;manifest.editorDraftUnchanged=GroomingFitSnapshot(lookDraft)==draftBefore;
+            manifest.isolatedFilesUnchanged=filesBefore.All(pair=>(File.Exists(pair.Key)?Convert.ToBase64String(File.ReadAllBytes(pair.Key)):null)==pair.Value);
             File.WriteAllText(Path.ChangeExtension(path,"fit-manifest.json"),JsonUtility.ToJson(manifest,true));
-            if(!manifest.profileUnchanged||!manifest.runUnchanged||!manifest.editorDraftUnchanged||!manifest.isolatedFilesUnchanged)
-                throw new Exception("Grooming fit renderer changed profile/run/editor draft or wrote an isolated save; inspect fit-manifest.json");
-            if(manifest.pages.Count!=50||manifest.hairPairs!=128||manifest.beardedPairs!=56||manifest.cleanShavenBaselines!=8||manifest.approximateUserCases!=2||manifest.renderCount!=196)
-                throw new Exception("Grooming fit comparison coverage incomplete; inspect fit-manifest.json");
-            Debug.Log("MINGLU_GROOMING_FIT_RENDER_SUCCESS: 50 actual Unity screenshots, 128 face/hair pairs, 56 face/beard pairs plus 8 clean-shaven baselines, 2 approximate user looks at portrait/detail sizes; profile/run/draft/files unchanged. This verifies rendering coverage only; visual review is required.");
+            if(!manifest.profileUnchanged||!manifest.runUnchanged||!manifest.editorDraftUnchanged||!manifest.isolatedFilesUnchanged)throw new Exception("Classic render coverage mutated state or isolated files");
+            if(manifest.pages.Count!=52||manifest.headPairs!=24||manifest.beardedPairs!=84||manifest.cleanShavenBaselines!=12||manifest.outfitSamples!=16||manifest.featureSamples!=64||manifest.heroCases!=2||manifest.renderCount!=228)throw new Exception("Classic render coverage incomplete; inspect fit-manifest.json");
+            Debug.Log("MINGLU_GROOMING_FIT_RENDER_SUCCESS: ClassicPortrait only; 52 actual Unity screenshots, 24 complete heads at portrait/roster size, 84 head/beard pairs plus12 clean-shaven references, 16 outfits/adornments, 64 feature samples, 2 hero examples; profile/run/draft/files unchanged. Render coverage does not establish aesthetic acceptance.");
         }
     }
 }

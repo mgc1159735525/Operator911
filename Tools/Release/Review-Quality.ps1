@@ -47,6 +47,8 @@ $rows += Read-Gate 'keyboard-scroll-visibility' 'Logs/qa-scroll-ui.log' 'MINGLU_
 $rows += Read-Gate 'work-overview-1600x900' 'Logs/qa-work-ui.log' 'MINGLU_WORK_OVERVIEW_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'work-overview-1280x720' 'Logs/qa-work-ui-720.log' 'MINGLU_WORK_OVERVIEW_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'grooming-fit-render-coverage' 'Logs/qa-grooming-fit.log' 'MINGLU_GROOMING_FIT_RENDER_SUCCESS' $buildTime
+$rows += Read-Gate 'classic-editor-1600x900' 'Logs/qa-classic-studio.log' 'MINGLU_STUDIO_UI_SUCCESS' $buildTime
+$rows += Read-Gate 'classic-editor-1280x720' 'Logs/qa-classic-studio-720.log' 'MINGLU_STUDIO_UI_SUCCESS' $buildTime
 $installed = $InstalledPath
 $matching = Test-Path -LiteralPath $binary
 foreach ($relative in @('MingluCity.exe','MingluCity_Data/Managed/Assembly-CSharp.dll','MingluCity_Data/resources.assets','MingluCity_Data/resources.assets.resS')) {
@@ -59,7 +61,10 @@ $rows += [PSCustomObject]@{ id='installed-files-match-build'; passed=$matching; 
 $baseline = Join-Path $output 'saves-before.json'
 $preserved = Test-Path -LiteralPath $baseline
 if ($preserved) {
-    foreach ($save in @(Get-Content -LiteralPath $baseline -Raw -Encoding UTF8 | ConvertFrom-Json)) {
+    # On Windows PowerShell 5.1 a JSON array is one pipeline output object.
+    # Assign it first so foreach visits saves, not one nested array of saves.
+    $saveEntries = Get-Content -LiteralPath $baseline -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($save in $saveEntries) {
         if (!(Test-Path -LiteralPath $save.path) -or (Get-FileHash -LiteralPath $save.path -Algorithm SHA256).Hash -ne $save.sha256) { $preserved=$false }
     }
 }
@@ -76,7 +81,7 @@ foreach ($file in @($builtEvidence + @($installer))) {
     }
 }
 $report = [PSCustomObject]@{
-    version='0.18.1'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
+    version='0.19.0'; checkedAtUtc=[DateTime]::UtcNow.ToString('o'); gitHead=$head
     sourceFreshness=[PSCustomObject]@{ latestPath=if ($null -ne $latestSourceFile) { $latestSourceFile.FullName } else { $null }; latestModifiedUtc=$latestSource.ToString('o'); sourceFiles=$sourceFiles.Count; scope='All Assets files (including shader/png/meta/font), ProjectSettings and package manifests' }
     artifacts=$artifacts
     automaticChecks=$rows; automaticPassed=@($rows | Where-Object passed).Count; automaticTotal=$rows.Count

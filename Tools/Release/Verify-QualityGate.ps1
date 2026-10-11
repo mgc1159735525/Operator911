@@ -37,7 +37,7 @@ try {
     $sourceTime = $stamp.AddMinutes(-5)
     $buildTime = $stamp.AddMinutes(-3)
     $evidenceTime = $stamp.AddMinutes(-1)
-    foreach ($relative in @('Assets/Minglu/Runtime/Fixture.cs','Assets/Minglu/Resources/Minglu/Art/PaintedPortrait.shader','Assets/Minglu/Resources/Minglu/Art/Painted/hair-styles.png','Assets/Minglu/Resources/Minglu/Art/Painted/hair-styles.png.meta','Assets/Fonts/fixture.ttf','ProjectSettings/ProjectSettings.asset','Packages/manifest.json','Packages/packages-lock.json')) {
+    foreach ($relative in @('Assets/Minglu/Runtime/Fixture.cs','Assets/Minglu/Resources/Minglu/Art/Classic/Portrait.shader','Assets/Minglu/Resources/Minglu/Art/Classic/heads-male.png','Assets/Minglu/Resources/Minglu/Art/Classic/heads-male.png.meta','Assets/Fonts/fixture.ttf','ProjectSettings/ProjectSettings.asset','Packages/manifest.json','Packages/packages-lock.json')) {
         $null = Write-FixtureFile $relative 'Synthetic source for timestamp verification only.' $sourceTime
     }
     foreach ($relative in @('MingluCity.exe','MingluCity_Data/Managed/Assembly-CSharp.dll','MingluCity_Data/resources.assets','MingluCity_Data/resources.assets.resS')) {
@@ -60,16 +60,32 @@ try {
         'Logs/qa-work-ui.log'='MINGLU_WORK_OVERVIEW_UI_SUCCESS'
         'Logs/qa-work-ui-720.log'='MINGLU_WORK_OVERVIEW_UI_SUCCESS'
         'Logs/qa-grooming-fit.log'='MINGLU_GROOMING_FIT_RENDER_SUCCESS'
+        'Logs/qa-classic-studio.log'='MINGLU_STUDIO_UI_SUCCESS'
+        'Logs/qa-classic-studio-720.log'='MINGLU_STUDIO_UI_SUCCESS'
     }
     foreach ($entry in $logMarkers.GetEnumerator()) { $null = Write-FixtureFile $entry.Key $entry.Value $evidenceTime }
     $save = Write-FixtureFile 'SyntheticSave.json' '{"fixture":true}' $sourceTime
-    $baseline = @([PSCustomObject]@{path=$save;sha256=(Get-FileHash -LiteralPath $save -Algorithm SHA256).Hash}) | ConvertTo-Json
+    $secondSaveText = '{"fixture":true,"slot":2}'
+    $secondSave = Write-FixtureFile 'SyntheticSaveSecond.json' $secondSaveText $sourceTime
+    # Read-FixtureReport uses Windows PowerShell 5.1. Keep at least two entries:
+    # its ConvertFrom-Json returns the JSON array as one pipeline output object.
+    $baseline = ConvertTo-Json -InputObject @(
+        [PSCustomObject]@{path=$save;sha256=(Get-FileHash -LiteralPath $save -Algorithm SHA256).Hash},
+        [PSCustomObject]@{path=$secondSave;sha256=(Get-FileHash -LiteralPath $secondSave -Algorithm SHA256).Hash}
+    )
     $null = Write-FixtureFile 'outputs/release-current/saves-before.json' $baseline $sourceTime
 
     $report = Read-FixtureReport
+    Assert-Gate (Gate-Passed $report 'existing-user-saves-preserved') 'Windows PowerShell 5.1 must compare each unchanged entry in a two-save JSON array.'
     Assert-Gate ($report.automaticPassed -eq $report.automaticTotal) 'A fresh complete fixture should pass every automatic check.'
     Assert-Gate (!$report.commerciallyApproved) 'Synthetic automatic success must not approve commercial release.'
-    foreach ($relative in @('Assets/Minglu/Resources/Minglu/Art/PaintedPortrait.shader','Assets/Minglu/Resources/Minglu/Art/Painted/hair-styles.png','Assets/Minglu/Resources/Minglu/Art/Painted/hair-styles.png.meta','Assets/Fonts/fixture.ttf','Packages/manifest.json')) {
+    $null = Write-FixtureFile 'SyntheticSaveSecond.json' '{"fixture":true,"slot":2,"changed":true}' $sourceTime
+    $report = Read-FixtureReport
+    Assert-Gate (!(Gate-Passed $report 'existing-user-saves-preserved')) 'Changing only the second baseline entry must fail save preservation in Windows PowerShell 5.1.'
+    $null = Write-FixtureFile 'SyntheticSaveSecond.json' $secondSaveText $sourceTime
+    $report = Read-FixtureReport
+    Assert-Gate (Gate-Passed $report 'existing-user-saves-preserved') 'Restoring the second save must make the same two-entry baseline pass again.'
+    foreach ($relative in @('Assets/Minglu/Resources/Minglu/Art/Classic/Portrait.shader','Assets/Minglu/Resources/Minglu/Art/Classic/heads-male.png','Assets/Minglu/Resources/Minglu/Art/Classic/heads-male.png.meta','Assets/Fonts/fixture.ttf','Packages/manifest.json')) {
         $path = Join-Path $fixture $relative
         [IO.File]::SetLastWriteTimeUtc($path,$stamp)
         $report = Read-FixtureReport
@@ -110,6 +126,27 @@ try {
         $null = Write-FixtureFile $tutorial.file $logMarkers[$tutorial.file] $evidenceTime
         $report = Read-FixtureReport
         Assert-Gate (Gate-Passed $report $tutorial.id) ('Current tutorial marker should satisfy its own gate: ' + $tutorial.id)
+    }
+    foreach ($studio in @(
+        @{id='classic-editor-1600x900';file='Logs/qa-classic-studio.log'},
+        @{id='classic-editor-1280x720';file='Logs/qa-classic-studio-720.log'}
+    )) {
+        $path = Join-Path $fixture $studio.file
+        Remove-Item -LiteralPath $path
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $studio.id)) ('Missing classic editor evidence cannot pass: ' + $studio.id)
+        $null = Write-FixtureFile $studio.file 'MINGLU_STUDIO_UI_SUCCESS' $sourceTime
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $studio.id)) ('Classic editor evidence before the build is stale: ' + $studio.id)
+        $null = Write-FixtureFile $studio.file 'MINGLU_GROOMING_UI_SUCCESS' $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $studio.id)) ('Grooming coverage cannot substitute for the full editor workflow: ' + $studio.id)
+        $null = Write-FixtureFile $studio.file "MINGLU_STUDIO_UI_SUCCESS`nException: synthetic classic editor failure" $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (!(Gate-Passed $report $studio.id)) ('Classic editor success must not hide an exception: ' + $studio.id)
+        $null = Write-FixtureFile $studio.file 'MINGLU_STUDIO_UI_SUCCESS' $evidenceTime
+        $report = Read-FixtureReport
+        Assert-Gate (Gate-Passed $report $studio.id) ('Current classic editor marker should pass its own resolution: ' + $studio.id)
     }
     Write-Output ('MINGLU_QUALITY_GATE_VERIFY_SUCCESS: ' + $checks + ' checks using isolated synthetic evidence; no game or player files modified.')
 }

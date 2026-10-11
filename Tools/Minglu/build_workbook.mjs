@@ -15,7 +15,7 @@ Settings: [
 ],
 Agents: [
 ['id','name','role','bio','intel','stealth','handler','portrait'],
-['#唯一编号','姓名','表身份','人物小传','情报骰数1—8','潜行骰数1—8','上线ID；-1为领导者','头像图集列0—3'],
+['#唯一编号','姓名','表身份','人物小传','情报骰数1—8','潜行骰数1—8','上线ID；-1为领导者','旧档兼容编号0—3；不再对应头像图集'],
 [0,'沈默','联络员','昔日衙门书吏，熟悉城中暗巷。他将每封密信背熟，再焚于灯下。顾青是他唯一的下线。',3,4,-1,0],
 [1,'顾青','书坊伙计','替人抄书谋生，记得每一位客人的口音。她相信文字可以改变这座城，也正在学会保守秘密。',4,3,0,1],
 [2,'陈砚','行商','凭一杆秤走遍南北，惯于把真话藏在闲谈里。曾受林叔救命之恩，愿替他挡一阵风。',3,3,-1,2],
@@ -50,8 +50,7 @@ Events: [
 Assets: [
 ['id','resource','kind','description'],
 ['#资源ID','Resources相对路径，不带扩展名','资源类型','用途'],
-['city','Minglu/Art/city-v02','Texture2D','六区域工笔城市底图；节点由Districts坐标定位'],
-['portraits','Minglu/Art/portraits-v02','Texture2D','四列人物胸像图集；Agents.portrait指定列']
+['city','Minglu/Art/city-v02','Texture2D','六区域工笔城市底图；节点由Districts坐标定位']
 ]
 };
 await fs.mkdir(out, {recursive:true});
@@ -59,7 +58,7 @@ await fs.mkdir(path.join(out,'csv'), {recursive:true});
 const wb=Workbook.create();
 const guide=wb.worksheets.add('使用说明');
 guide.showGridLines=false;
-const instructions=[['明路·地下 游戏配置 v0.2',''],['步骤','操作'],['1 编辑','修改各表第3行以后的数据；第1行为程序字段，第2行为说明。'],['2 保存','保存xlsx；数值列只填整数或小数，不能填公式。'],['3 校验','Unity菜单 Minglu / 配置表工具，选择本工作簿，点击预览与校验。'],['4 导入','校验通过后点击重新读取并导入。错误不会覆盖当前运行配置。'],['5 生效','新开局加载新配置；读档继续使用存档里的配置快照。'],['CSV入口','也可选择csv目录批量导入，六张表必须齐全。'],['主键','ID不可重复；角色上线需存在且不能成环。'],['地图','坐标为0—1，从左上角计算；修改节点坐标不改变底图建筑。'],['角色','支持2—8人；portrait为0—3，复用四列立绘。'],['行动','五种行为ID固定。Rest免费；CutContact不消耗情报。'],['事件','每回合最多一条；从第2回合开始；资源不足的选项会禁用。'],['范围','本版为单城八回合体验；参数为设计初值，不是已验证的平衡结果。'],['来源','依据用户系统策划和原型规则整合；区域与密报为本轮新增设计。']];
+const instructions=[['明路·地下 游戏配置 v0.2',''],['步骤','操作'],['1 编辑','修改各表第3行以后的数据；第1行为程序字段，第2行为说明。'],['2 保存','保存xlsx；数值列只填整数或小数，不能填公式。'],['3 校验','Unity菜单 Minglu / 配置表工具，选择本工作簿，点击预览与校验。'],['4 导入','校验通过后点击重新读取并导入。错误不会覆盖当前运行配置。'],['5 生效','新开局加载新配置；读档继续使用存档里的配置快照。'],['CSV入口','也可选择csv目录批量导入，六张表必须齐全。'],['主键','ID不可重复；角色上线需存在且不能成环。'],['地图','坐标为0—1，从左上角计算；修改节点坐标不改变底图建筑。'],['角色','支持2—8人；portrait为旧档兼容编号0—3。新人物使用完整头部与独立五官目录，不再加载四列头像图集。'],['行动','五种行为ID固定。Rest免费；CutContact不消耗情报。'],['事件','每回合最多一条；从第2回合开始；资源不足的选项会禁用。'],['范围','本版为单城八回合体验；参数为设计初值，不是已验证的平衡结果。'],['来源','依据用户系统策划和原型规则整合；区域与密报为本轮新增设计。']];
 guide.getRange(`A1:B${instructions.length}`).values=instructions;
 guide.getRange(`A1:B${instructions.length}`).format.font={name:'Microsoft YaHei',size:11,color:'#253B3C'};
 guide.getRange('A1:B1').format.font={name:'Microsoft YaHei',size:16,bold:true,color:'#203E42'};
@@ -91,7 +90,7 @@ console.log((await wb.inspect({kind:'table',range:'Settings!A1:C7',include:'valu
 console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A',options:{useRegex:true,maxResults:10},maxChars:1000})).ndjson);
 await (await SpreadsheetFile.exportXlsx(wb)).save(path.join(out,'明路地下_游戏配置.xlsx'));
 for(const name of ['使用说明',...Object.keys(tables)]){
- const blob=await wb.render({sheetName:name,range:name==='使用说明'?'A1:B15': name==='Settings'?'A1:C19':name==='Agents'?'A1:H6':name==='Districts'?'A1:J8':name==='Actions'?'A1:L7':name==='Events'?'A1:L5':'A1:D4',scale:1,format:'png'});
+ const blob=await wb.render({sheetName:name,range:name==='使用说明'?'A1:B15': name==='Settings'?'A1:C19':name==='Agents'?'A1:H6':name==='Districts'?'A1:J8':name==='Actions'?'A1:L7':name==='Events'?'A1:L5':'A1:D3',scale:1,format:'png'});
  await fs.writeFile(path.join(out,name+'-preview.png'),new Uint8Array(await blob.arrayBuffer()));
 }
 console.log('WORKBOOK_READY '+out);

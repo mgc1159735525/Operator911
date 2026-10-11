@@ -106,7 +106,7 @@ namespace Minglu
             if (c.events.Select(x => x.turn).Distinct().Count() != c.events.Count) throw new InvalidOperationException("每回合最多一个剧情事件。");
             if (c.events.Any(e => (e.intelA < 0 || e.progressA < 0) && (e.intelB < 0 || e.progressB < 0))) throw new InvalidOperationException("每个事件至少保留一个无需消耗情报/成果的选项，避免资源不足时卡死。");
             DispatchRules.Validate(c);
-            foreach (string id in new[] { "city", "portraits" })
+            foreach (string id in new[] { "city" })
                 if (!c.assets.Any(x => x.id == id && !string.IsNullOrWhiteSpace(x.resource))) throw new InvalidOperationException("Assets 缺少 " + id);
             if (c.assets.Any(x => x.resource.Contains("..") || x.resource.Contains(":") || x.resource.StartsWith("/"))) throw new InvalidOperationException("资源必须使用Resources相对路径。");
         }

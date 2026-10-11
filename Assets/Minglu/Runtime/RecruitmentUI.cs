@@ -21,7 +21,7 @@ namespace Minglu
             if(recruitPreview==null){modal="";return;}
             var a=recruitPreview.agent;var person=recruitPreview.person;
             var p=CommandModal("接纳新成员 / 先了解，再安排",690);
-            DrawLook(p,a.appearance,28,112,166,244);
+            DrawLook(p,EffectiveMemberLook(a),28,112,166,244);
             Label(p,a.name,224,104,648,42,29,Gold);
             Label(p,person.age+"岁 · "+person.profession+" "+person.level+"级 · "+person.temper,224,158,648,30,20);
             Label(p,"任职："+CommandRules.Employment(person),224,205,648,29,19);

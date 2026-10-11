@@ -7,7 +7,7 @@ namespace Minglu
         {
             var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,selectedAgent);
             var p=CommandModal(a.name+" / 人物档案",850);
-            DrawLook(p,a.appearance,28,99,192,280);
+            DrawLook(p,EffectiveMemberLook(a),28,99,192,280);
             Label(p,member.profession+" · "+member.level+"级 / "+member.age+"岁 / "+MemberStatus(a),248,99,624,29,21,Gold);
             Label(p,"任职："+CommandRules.Employment(member)+" · 地下岗位："+CommandRole(a.id),248,140,624,27,18);
             Label(p,"情报 "+a.intel+" / 潜行 "+a.stealth+" / 说服 "+a.persuade+" / 组织 "+a.organize,248,179,624,28,20);

@@ -325,12 +325,6 @@
             "resource": "Minglu/Art/city-v02",
             "kind": "Texture2D",
             "description": "六区域工笔城市底图；节点由Districts坐标定位"
-        },
-        {
-            "id": "portraits",
-            "resource": "Minglu/Art/portraits-v02",
-            "kind": "Texture2D",
-            "description": "四列人物胸像图集；Agents.portrait指定列"
         }
     ],
     "missions": [

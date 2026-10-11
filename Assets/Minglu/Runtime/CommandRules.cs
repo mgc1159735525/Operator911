@@ -45,7 +45,7 @@ namespace Minglu
             // Keep the existing single simulation-RNG draw so this cosmetic
             // preference does not shift professions, stats or later events.
             a.appearance.parts[12]=AppearanceRules.IsElderFace(a.appearance.parts[0])?(Next(s,100)<85?3:2):Next(s,2);
-            var p=new CommandPerson{id=id,profession=Professions[Next(s,Professions.Length)],code="灯影"+(Next(s,800)+100),age=new[]{22,32,44,58}[a.appearance.parts[0]%4]+Next(s,10),loyalty=60+Next(s,31),level=1+Next(s,2),life=new[]{"照顾家人","经营铺面","进修学业","偿还旧债","照顾病亲","维系同乡"}[Next(s,6)],temper=new[]{"谨慎","热心","果断"}[Next(s,3)],originalLook=AppearanceRules.Copy(a.appearance)};
+            var p=new CommandPerson{id=id,profession=Professions[Next(s,Professions.Length)],code="灯影"+(Next(s,800)+100),age=new[]{22,32,44,58}[AppearanceRules.AgeBand(a.appearance.parts[0])]+Next(s,10),loyalty=60+Next(s,31),level=1+Next(s,2),life=new[]{"照顾家人","经营铺面","进修学业","偿还旧债","照顾病亲","维系同乡"}[Next(s,6)],temper=new[]{"谨慎","热心","果断"}[Next(s,3)],originalLook=AppearanceRules.Copy(a.appearance)};
             p.institution=id==0?1+Next(s,4):(Next(s,100)<25?1+Next(s,4):0);
             a.coverRole=p.profession;s.agents.Add(a);s.command.people.Add(p);
             s.config.agents.Add(new AgentRow{id=id,name=name,role=p.profession,bio=p.age+"岁，平日"+p.life+"。性情"+p.temper+"，地下代号「"+p.code+"」。",intel=a.intel,stealth=a.stealth,handler=-1,portrait=id%4});

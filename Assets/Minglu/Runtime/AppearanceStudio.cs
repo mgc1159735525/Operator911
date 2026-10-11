@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 namespace Minglu
 {
     public partial class CityGameUI
@@ -11,24 +12,39 @@ namespace Minglu
         readonly bool[] lookLocks=new bool[14];
         int lookGroup;
         bool lookZoom,lookCompare;
-        string lookPopup="",lookReturnModal="";
+        string lookPopup="",lookReturnModal="",lookSaveError="";
+        static readonly Color ClassicPaper=Hex("E9E2CA"),ClassicLight=Hex("F2EDD9"),ClassicInset=Hex("DCD5BE"),ClassicInk=Hex("2D4035"),ClassicEdge=Hex("637461"),ClassicQuiet=Hex("727761"),ClassicGreen=Hex("3C5A43"),ClassicOchre=Hex("865D3F");
+
         bool LookDirty(){return JsonUtility.ToJson(lookDraft)!=JsonUtility.ToJson(lookOriginal);}
         void ChangeLook(Action change)
         {
-            var before=AppearanceRules.Copy(lookDraft);change();lookDraft=AppearanceRules.AsRealistic(lookDraft);lookDraft.enabled=true;if(lookDraft.sex==1)lookDraft.parts[6]=0;
+            var before=AppearanceRules.Copy(lookDraft);change();
+            // A female head has no beard channel; clear it before the current
+            // save schema validates the edited draft during normalization.
+            if(lookDraft.sex==1)lookDraft.parts[6]=0;
+            lookDraft=AppearanceRules.AsRealistic(lookDraft);lookDraft.enabled=true;
             bool changed=JsonUtility.ToJson(before)!=JsonUtility.ToJson(lookDraft);
             if(changed){lookUndo.Push(before);lookRedo.Clear();}
-            lookCompare=false;lookNotice=changed?"预览已更新，应用后生效。":"外观未改变。保留的部件不会参与随机。";Draw();
+            lookCompare=false;lookNotice=changed?"预览已更新，确认后保存。":"外观未改变；已保留的部件不参与随机。";Draw();
         }
         void UndoLook(bool redo)
         {
             var from=redo?lookRedo:lookUndo;var to=redo?lookUndo:lookRedo;if(from.Count==0)return;
-            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;lookCompare=false;lookNotice=redo?"已重做，应用后生效。":"已撤销，应用后生效。";Draw();
+            to.Push(AppearanceRules.Copy(lookDraft));lookDraft=from.Pop();if(lookDraft.sex==1&&lookCategory==6)lookCategory=2;
+            lookCompare=false;lookNotice=redo?"已重做，确认后保存。":"已撤销，确认后保存。";Draw();
         }
         void RandomizeLook()
         {
-            if(LookEditableCategories().All(category=>lookLocks[category])){lookNotice="已保留全部部件，外观未改变。";Draw();return;}
-            ChangeLook(()=>{var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex,lookLocks[0]?old.parts[0]:-1);for(int n=0;n<13;n++)if(n==8||lookLocks[n])next.parts[n]=old.parts[n];if(lookLocks[13])next.ears=old.ears;lookDraft=next;});
+            var categories=LookEditableCategories();
+            if(categories.All(category=>lookLocks[category])){lookNotice="已保留全部部件，外观未改变。";Draw();return;}
+            ChangeLook(()=>
+            {
+                var old=lookDraft;var next=AppearanceRules.Randomize(Guid.NewGuid().GetHashCode(),old.sex,lookLocks[0]?old.parts[0]:-1);
+                // Only current, visible choices can be locked. The removed hair
+                // and ear channels stay under the save migration's control.
+                foreach(int category in categories)if(lookLocks[category])next.parts[category]=old.parts[category];
+                lookDraft=next;
+            });
         }
         void RequestCloseAppearance()
         {
@@ -37,110 +53,191 @@ namespace Minglu
         }
         void DrawAppearanceOverlay()
         {
-            var shade=Box("AppearanceShade",root,0,0,1600,900,new Color(0,0,0,.85f));
-            var p=Box("AppearanceStudio",shade,240,30,1120,840,Paper);SurfaceTheme(p,true);DrawAppearance(p);
+            var shade=Box("AppearanceShade",root,0,0,1600,900,new Color(.06f,.09f,.07f,.88f));
+            var p=Box("AppearanceStudio",shade,240,30,1120,840,ClassicPaper);p.GetComponent<Image>().color=ClassicPaper;SurfaceTheme(p,true);DrawAppearance(p);
         }
         void SelectLookCategory(int category){lookCategory=category;Draw();FocusLookControl("LookCategory_"+category);}
         void FocusLookControl(string control)
         {
             var events=UnityEngine.EventSystems.EventSystem.current;if(events==null)return;
-            var target=root.GetComponentsInChildren<UnityEngine.UI.Button>().FirstOrDefault(button=>button.name==control&&button.interactable);
+            var target=root.GetComponentsInChildren<Button>().FirstOrDefault(button=>button.name==control&&button.interactable);
             if(target!=null)events.SetSelectedGameObject(target.gameObject);
         }
-        int[] LookGroupCategories(){return lookGroup==0?new[]{0,1,7}:lookGroup==1?(lookDraft.sex==0?new[]{2,3,4,5,13,6}:new[]{2,3,4,5,13}):new[]{10,12,11,9};}
+        int[] LookGroupCategories(){return lookGroup==1?(lookDraft.sex==0?new[]{2,3,4,5,6}:new[]{2,3,4,5}):new[]{0,7,8,10,11,12,9};}
+        int[] LookEditableCategories(){return lookDraft.sex==0?new[]{0,7,8,10,11,12,9,2,3,4,5,6}:new[]{0,7,8,10,11,12,9,2,3,4,5};}
         void CycleLookOption(int category,int direction,string control)
         {
-            lookCategory=category;int count=LookOptions(category).Length;
+            lookCategory=category;int count=LookOptions(category).Length;if(count==0)return;
             int next=(LookIndex(category)+direction+count)%count;
             ChangeLook(()=>SetLookOption(category,next));
-            // The editor redraws after each choice. Restore focus to the new
-            // control so repeated keyboard Submit does not lose its target.
             FocusLookControl(control);
+        }
+        void ClassicLookRule(Transform parent,float x,float y,float w,Color? color=null)
+        {
+            var r=Rect("ClassicRule",parent,x,y,w,1);var image=r.gameObject.AddComponent<Image>();image.color=color??ClassicEdge;image.raycastTarget=false;
+        }
+        void ClassicLookFrame(Transform parent,float x,float y,float w,float h,bool doubled=false)
+        {
+            ClassicLookRule(parent,x,y,w);ClassicLookRule(parent,x,y+h-1,w);
+            var left=Rect("ClassicRule",parent,x,y,1,h).gameObject.AddComponent<Image>();left.color=ClassicEdge;left.raycastTarget=false;
+            var right=Rect("ClassicRule",parent,x+w-1,y,1,h).gameObject.AddComponent<Image>();right.color=ClassicEdge;right.raycastTarget=false;
+            if(doubled)ClassicLookFrame(parent,x+4,y+4,w-8,h-8);
+        }
+        Text ClassicLookLabel(Transform parent,string value,float x,float y,float w,float h,int size=18,Color? color=null,TextAnchor align=TextAnchor.MiddleLeft)
+        {
+            var label=Label(parent,value,x,y,w,h,size,color??ClassicInk,align);label.color=color??ClassicInk;return label;
+        }
+        // The portrait editor has its own restrained palette. Keep the same
+        // tutorial observer and keyboard focus behavior as normal game buttons.
+        Button ClassicLookButton(string name,Transform parent,string value,float x,float y,float w,float h,Action action,bool enabled=true,bool selected=false,int tone=0,int size=18)
+        {
+            var r=Rect(name,parent,x,y,w,h);SurfaceTheme(r,true);
+            var image=r.gameObject.AddComponent<Image>();image.color=Color.white;
+            var button=r.gameObject.AddComponent<Button>();button.targetGraphic=image;button.interactable=enabled;
+            Color normal=tone==1?ClassicGreen:tone==2?ClassicOchre:selected?Hex("D5DDBF"):ClassicLight;
+            Color foreground=tone>0?ClassicLight:ClassicInk;
+            var colors=button.colors;colors.normalColor=normal;colors.highlightedColor=tone==1?Hex("506E50"):tone==2?Hex("9B7150"):Hex("E0E4CB");
+            colors.pressedColor=tone==1?Hex("2B4431"):tone==2?Hex("6F4933"):Hex("CBD3B6");colors.selectedColor=normal;colors.disabledColor=Hex("DAD6C5");colors.fadeDuration=.08f;button.colors=colors;
+            ClassicLookFrame(r,0,0,w,h);
+            if(tone>0){ClassicLookRule(r,3,3,w-6,new Color(.94f,.92f,.79f,.5f));ClassicLookRule(r,3,h-4,w-6,new Color(.15f,.20f,.14f,.5f));}
+            ClassicLookLabel(r,value,7,0,w-14,h,size,enabled?foreground:Hex("858775"),TextAnchor.MiddleCenter);
+            var outline=r.gameObject.AddComponent<Outline>();outline.effectColor=Hex("AA824B");outline.effectDistance=new Vector2(1,-1);outline.enabled=false;r.gameObject.AddComponent<UIFocusOutline>();
+            image.CrossFadeColor(enabled?normal:colors.disabledColor,0,true,true);
+            button.onClick.AddListener(()=>{Sound();var before=State;string priorModal=modal;int priorPage=commandTab;action();ObserveTutorialAction(name,before,priorModal,priorPage);});
+            return button;
         }
         void DrawLookCycleRow(Transform parent,int category,float y)
         {
-            var options=LookOptions(category);int option=LookIndex(category);bool active=lookCategory==category;
-            Button("LookCategory_"+category,parent,LookCategoryName(category),424,y,104,48,()=>SelectLookCategory(category),true,active);
-            Button("LookPrevious_"+category,parent,"‹",536,y,40,48,()=>CycleLookOption(category,-1,"LookPrevious_"+category));
-            var current=Button("LookCurrent_"+category,parent,"",584,y,320,48,()=>CycleLookOption(category,1,"LookCurrent_"+category),true,active);
-            Label(current.transform,options[option],16,0,212,48,18,active?Red:TextColor,TextAnchor.MiddleLeft);
-            Label(current.transform,(option+1)+" / "+options.Length,232,0,72,48,14,Muted,TextAnchor.MiddleRight);
-            Button("LookNext_"+category,parent,"›",912,y,40,48,()=>CycleLookOption(category,1,"LookNext_"+category));
-            Button("LookLock_"+category,parent,lookLocks[category]?"已保留":"随机时保留",968,y,120,48,()=>{lookLocks[category]=!lookLocks[category];lookCategory=category;Draw();FocusLookControl("LookLock_"+category);},true,lookLocks[category]);
+            var options=LookOptions(category);int option=Mathf.Clamp(LookIndex(category),0,Mathf.Max(0,options.Length-1));bool active=lookCategory==category;
+            ClassicLookButton("LookCategory_"+category,parent,LookCategoryName(category),488,y,104,44,()=>SelectLookCategory(category),true,active);
+            ClassicLookButton("LookPrevious_"+category,parent,"◀",600,y,44,44,()=>CycleLookOption(category,-1,"LookPrevious_"+category),options.Length>1,false,0,20);
+            var current=ClassicLookButton("LookCurrent_"+category,parent,"",650,y,368,44,()=>CycleLookOption(category,1,"LookCurrent_"+category),options.Length>1,active);
+            ClassicLookLabel(current.transform,options.Length==0?"暂无":options[option],14,0,263,44,20);
+            ClassicLookLabel(current.transform,(option+1)+" / "+options.Length,280,0,74,44,15,ClassicQuiet,TextAnchor.MiddleRight);
+            ClassicLookButton("LookNext_"+category,parent,"▶",1024,y,44,44,()=>CycleLookOption(category,1,"LookNext_"+category),options.Length>1,false,0,20);
+        }
+        void SelectClassicLookGroup(int group)
+        {
+            lookGroup=group;lookCategory=group==0?0:2;Draw();FocusLookControl("LookGroup_"+group);
+        }
+        void SetClassicLookSex(int sex)
+        {
+            ChangeLook(()=>{lookDraft.sex=sex;lookCategory=0;lookGroup=0;});FocusLookControl(sex==0?"LookMale":"LookFemale");
         }
         void DrawAppearance(Transform p)
         {
+            lookGroup=lookGroup==1?1:0;
+            var categories=LookGroupCategories();if(!categories.Contains(lookCategory))lookCategory=categories[0];
             string who=lookTarget<0?"地区负责人":State.agents.First(x=>x.id==lookTarget).name;
-            Label(p,"人物绘卷",32,24,360,38,27,Gold);
-            Label(p,who+"  /  外观不影响能力",32,68,440,26,15,Muted);
-            Button("LookMale",p,"男性",836,30,82,34,()=>ChangeLook(()=>{lookDraft.sex=0;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==0);
-            Button("LookFemale",p,"女性",926,30,82,34,()=>ChangeLook(()=>{lookDraft.sex=1;lookCategory=0;lookGroup=0;}),true,lookDraft.sex==1);
-            Button("LookClose",p,"关闭",1016,30,72,34,RequestCloseAppearance);
-            var preview=Box("StudioPreview",p,32,112,344,516,PaperInset);
-            DrawRealisticLook(preview,lookCompare?lookOriginal:lookDraft,0,0,344,516,Color.white,lookZoom);
-            Label(p,lookCompare?"原貌对照":"当前形象",32,638,344,24,15,Muted,TextAnchor.MiddleCenter);
-            Button("LookZoom",p,lookZoom?"查看半身":"查看面容",32,674,164,36,()=>{lookZoom=!lookZoom;Draw();});
-            Button("LookCompare",p,lookCompare?"返回预览":"对照原貌",212,674,164,36,()=>{lookCompare=!lookCompare;Draw();});
-            Button("LookUndo",p,"撤销",32,718,104,32,()=>UndoLook(false),lookUndo.Count>0);
-            Button("LookRedo",p,"重做",152,718,104,32,()=>UndoLook(true),lookRedo.Count>0);
-            Button("LookReset",p,"还原",272,718,104,32,()=>ChangeLook(()=>lookDraft=AppearanceRules.Copy(lookOriginal)),LookDirty());
-            string[] groups={"形貌","五官","设色"};
-            for(int i=0;i<3;i++){int g=i;Button("LookGroup_"+i,p,groups[i],424+i*226,112,212,40,()=>{lookGroup=g;SelectLookCategory(g==0?0:g==1?2:10);},true,lookGroup==i);}
-            Label(p,"点击款名或左右箭头切换；保留的部件不参与随机。",424,178,664,34,16,Muted);
-            var categories=LookGroupCategories();
-            for(int i=0;i<categories.Length;i++)DrawLookCycleRow(p,categories[i],232+i*68);
-            if(lookGroup==2)
+            ClassicLookFrame(p,8,8,1104,824,true);
+            ClassicLookLabel(p,"人物绘卷",32,22,304,42,30);
+            ClassicLookLabel(p,who+"  /  外观不影响能力",350,29,588,31,16,ClassicQuiet);
+            ClassicLookButton("LookClose",p,"关闭",1004,26,84,34,RequestCloseAppearance,true,false,2,16);
+            ClassicLookRule(p,28,78,1064);
+
+            var preview=Box("StudioPreview",p,36,102,404,606,ClassicInset);preview.GetComponent<Image>().color=ClassicInset;preview.GetComponent<Image>().raycastTarget=false;preview.gameObject.AddComponent<RectMask2D>();
+            DrawRealisticLook(preview,lookCompare?lookOriginal:lookDraft,0,0,404,606,Color.white,lookZoom);
+            ClassicLookFrame(p,28,94,420,622,true);
+            ClassicLookLabel(p,lookCompare?"原貌对照":"当前形象",36,710,404,28,17,ClassicQuiet,TextAnchor.MiddleCenter);
+            ClassicLookButton("LookZoom",p,lookZoom?"查看半身":"查看面容",32,742,202,32,()=>{lookZoom=!lookZoom;Draw();},true,false,0,16);
+            ClassicLookButton("LookCompare",p,lookCompare?"返回预览":"对照原貌",242,742,202,32,()=>{lookCompare=!lookCompare;Draw();},true,lookCompare,0,16);
+
+            ClassicLookButton("LookGroup_0",p,"选择容貌",466,96,308,48,()=>SelectClassicLookGroup(0),true,lookGroup==0,lookGroup==0?1:0,24);
+            ClassicLookButton("LookGroup_1",p,"选择部件",778,96,310,48,()=>SelectClassicLookGroup(1),true,lookGroup==1,lookGroup==1?1:0,24);
+            ClassicLookFrame(p,466,150,622,524,true);
+            if(lookGroup==0)
             {
-                Label(p,"头发与胡须同步设色。长者默认银白，也可手动选择。",424,522,664,30,16,Muted);
-                Button("LookAgeColor",p,"按年龄配色",424,568,208,40,()=>ChangeLook(()=>AppearanceRules.ApplyAgeHairColor(lookDraft)));
-                Label(p,"保留须发色后，随机与更换面容都会沿用该颜色。",648,570,440,46,15,Muted);
+                ClassicLookLabel(p,"性别",502,168,84,36,20);
+                ClassicLookButton("LookMale",p,"男性",600,164,230,42,()=>SetClassicLookSex(0),true,lookDraft.sex==0);
+                ClassicLookButton("LookFemale",p,"女性",838,164,230,42,()=>SetClassicLookSex(1),true,lookDraft.sex==1);
+                for(int i=0;i<categories.Length;i++)DrawLookCycleRow(p,categories[i],218+i*54);
+                ClassicLookButton("LookAgeColor",p,"按年龄设色",488,610,156,34,()=>ChangeLook(()=>AppearanceRules.ApplyAgeHairColor(lookDraft)),true,false,0,16);
+                ClassicLookLabel(p,"容貌包含发式、耳廓与颈部。",662,608,406,28,15,ClassicQuiet);
+                ClassicLookLabel(p,"点击款名或箭头，可逐款翻选。",662,636,406,26,15,ClassicQuiet);
             }
-            Rule(p,424,658,664);
-            Button("LookRandom",p,"随机形象",424,674,208,36,RandomizeLook);
-            Button("LookPresets",p,"收藏预设",648,674,208,36,()=>{lookPopup="presets";Draw();});
+            else
+            {
+                for(int i=0;i<categories.Length;i++)DrawLookCycleRow(p,categories[i],176+i*68);
+                ClassicLookRule(p,488,536,580);
+                var heads=LookOptions(0);int head=Mathf.Clamp(LookIndex(0),0,Mathf.Max(0,heads.Length-1));
+                ClassicLookLabel(p,"当前容貌  ·  "+(heads.Length==0?"":heads[head]),488,552,580,31,20);
+                ClassicLookLabel(p,"点击款名或箭头替换部件；\n左侧可放大面容，查看五官搭配。",488,590,580,60,17,ClassicQuiet);
+            }
+            ClassicLookButton("LookRandom",p,"随机形象",466,690,184,38,RandomizeLook,true,false,0,17);
+            ClassicLookButton("LookPresets",p,"收藏预设",658,690,184,38,()=>{lookPopup="presets";Draw();},true,false,0,17);
             int locked=LookEditableCategories().Count(n=>lookLocks[n]);
-            Button("LookRandomSettings",p,"随机设定"+(locked>0?" · 保留 "+locked:""),872,674,216,36,()=>{lookPopup="random";Draw();});
-            Label(p,string.IsNullOrEmpty(lookNotice)?"所有部件都可循环切换，在左侧查看完整搭配。":lookNotice,424,722,664,24,14,Muted);
-            Rule(p,32,768,1056);
-            Button("LookCancel",p,"取消",704,780,112,44,RequestCloseAppearance);
-            Button("LookApply",p,lookCompare?"先返回预览":atTitle?"保存为开局外观":"应用并保存",840,780,248,44,CommitAppearance,!lookCompare,true);
+            ClassicLookButton("LookRandomSettings",p,"随机设定"+(locked>0?" · 保留 "+locked:""),850,690,238,38,()=>{lookPopup="random";Draw();},true,false,0,17);
+            ClassicLookButton("LookUndo",p,"撤销",466,742,86,32,()=>UndoLook(false),lookUndo.Count>0,false,0,16);
+            ClassicLookButton("LookRedo",p,"重做",560,742,86,32,()=>UndoLook(true),lookRedo.Count>0,false,0,16);
+            ClassicLookButton("LookReset",p,"还原",654,742,86,32,()=>ChangeLook(()=>lookDraft=AppearanceRules.Copy(lookOriginal)),LookDirty(),false,0,16);
+            ClassicLookLabel(p,string.IsNullOrEmpty(lookNotice)?"修改只在确认后保存。":lookNotice,756,738,332,39,14,ClassicQuiet);
+            ClassicLookRule(p,28,782,1064);
+            ClassicLookLabel(p,"点选款名或箭头翻选  /  Esc 返回",32,792,572,28,14,ClassicQuiet);
+            ClassicLookButton("LookCancel",p,"返回",704,792,144,32,RequestCloseAppearance,true,false,2,17);
+            ClassicLookButton("LookApply",p,lookCompare?"先返回预览":atTitle?"确定 · 开局外观":"确定 · 保存外观",860,790,228,36,CommitAppearance,!lookCompare,false,1,18);
             if(lookPopup!="")DrawLookPopup();
+        }
+        RectTransform ClassicLookPopup(float x,float y,float w,float h)
+        {
+            var shade=Box("LookPopupShade",root,0,0,1600,900,new Color(.06f,.09f,.07f,.82f));var p=Box("LookPopup",shade,x,y,w,h,ClassicPaper);p.GetComponent<Image>().color=ClassicPaper;SurfaceTheme(p,true);ClassicLookFrame(p,7,7,w-14,h-14,true);return p;
         }
         void DrawLookPopup()
         {
             if(lookPopup=="random"){DrawLookRandomSettings();return;}
-            var shade=Box("LookPopupShade",root,0,0,1600,900,new Color(0,0,0,.82f));var p=Box("LookPopup",shade,430,215,740,470,Paper);SurfaceTheme(p,true);
-            Label(p,lookPopup=="presets"?"绘卷收藏":lookPopup=="overwrite"?"覆盖当前预设？":"放弃尚未应用的外观？",26,25,685,44,27,Gold);
+            if(lookPopup=="applyError"||lookPopup=="presetError"){DrawLookSaveError();return;}
+            var p=ClassicLookPopup(430,215,740,470);
+            ClassicLookLabel(p,lookPopup=="presets"?"绘卷收藏":lookPopup=="overwrite"?"覆盖当前预设？":"放弃尚未应用的外观？",28,24,684,44,27);
+            ClassicLookRule(p,28,79,684);
             if(lookPopup=="presets")
             {
-                for(int i=0;i<3;i++){int slot=i;bool exists=profile.lookSlots!=null&&profile.lookSlots.Length>i&&profile.lookSlots[i]!=null;var b=Button("LookSlot_"+i,p,"",26+i*234,92,220,180,()=>{lookSlot=slot;Draw();},true,lookSlot==i);if(exists)DrawLook(b.transform,profile.lookSlots[i],10,10,86,132);Label(b.transform,"预设 "+(i+1)+"\n"+(exists?"已收藏":"空槽"),109,32,100,80,18,lookSlot==i?Red:TextColor);}
-                Button("LookSaveSlot",p,"保存当前预览",26,297,329,46,()=>{if(profile.lookSlots!=null&&profile.lookSlots.Length>lookSlot&&profile.lookSlots[lookSlot]!=null){lookPopup="overwrite";Draw();}else SaveLookSlot();});
-                Button("LookLoadSlot",p,"读取到预览",373,297,341,46,()=>{lookPopup="";ChangeLook(()=>{lookDraft=AppearanceRules.AsRealistic(profile.lookSlots[lookSlot]);lookCategory=0;lookGroup=0;});},profile.lookSlots!=null&&profile.lookSlots.Length>lookSlot&&profile.lookSlots[lookSlot]!=null);
-                Label(p,lookNotice,26,356,688,35,16,Muted);Button("LookPopupBack",p,"返回编辑",26,405,688,40,()=>{lookPopup="";Draw();});
+                for(int i=0;i<3;i++)
+                {
+                    int slot=i;bool exists=HasLookSlot(i);
+                    var b=ClassicLookButton("LookSlot_"+i,p,"",28+i*232,98,220,180,()=>{lookSlot=slot;Draw();},true,lookSlot==i);
+                    if(exists)DrawLook(b.transform,profile.lookSlots[i],10,10,86,132);
+                    ClassicLookLabel(b.transform,"预设 "+(i+1)+"\n"+(exists?"已收藏":"空槽"),108,30,104,84,18);
+                }
+                ClassicLookButton("LookSaveSlot",p,"保存当前预览",28,297,332,42,()=>{if(HasLookSlot(lookSlot)){lookPopup="overwrite";Draw();}else SaveLookSlot();},true,false,1);
+                ClassicLookButton("LookLoadSlot",p,"读取到预览",374,297,338,42,()=>{lookPopup="";ChangeLook(()=>{lookDraft=AppearanceRules.AsRealistic(profile.lookSlots[lookSlot]);lookCategory=0;lookGroup=0;});},HasLookSlot(lookSlot));
+                ClassicLookLabel(p,lookNotice,28,352,684,40,16,ClassicQuiet);
+                ClassicLookButton("LookPopupBack",p,"返回编辑",28,406,684,38,()=>{lookPopup="";Draw();},true,false,2);
             }
             else
             {
-                Label(p,lookPopup=="overwrite"?"将用当前预览替换预设 "+(lookSlot+1)+"。已应用到角色的外观不受影响。":"已应用的角色外观保持不变。继续编辑可以保留这次预览。",26,113,688,150,23);
-                Button("LookPopupKeep",p,"返回编辑",26,364,329,52,()=>{lookPopup="";Draw();});
-                Button("LookPopupConfirm",p,lookPopup=="overwrite"?"确认覆盖":"放弃修改",373,364,341,52,()=>{if(lookPopup=="overwrite"){lookPopup="presets";SaveLookSlot();}else{lookPopup="";CloseAppearance();}});
+                ClassicLookLabel(p,lookPopup=="overwrite"?"将用当前预览替换预设 "+(lookSlot+1)+"。\n已应用到角色的外观不受影响。":"继续编辑可保留当前预览。\n放弃修改后，角色恢复已保存的外观。",28,110,684,176,23);
+                ClassicLookButton("LookPopupKeep",p,"返回编辑",28,365,332,52,()=>{lookPopup="";Draw();},true,false,2);
+                ClassicLookButton("LookPopupConfirm",p,lookPopup=="overwrite"?"确认覆盖":"放弃修改",374,365,338,52,()=>{if(lookPopup=="overwrite"){lookPopup="presets";SaveLookSlot();}else{lookPopup="";CloseAppearance();}},true,false,1);
             }
         }
-        int[] LookEditableCategories(){return lookDraft.sex==0?new[]{0,1,7,2,3,4,5,13,6,10,12,11,9}:new[]{0,1,7,2,3,4,5,13,10,12,11,9};}
+        void DrawLookSaveError()
+        {
+            bool preset=lookPopup=="presetError";
+            var p=ClassicLookPopup(430,215,740,470);
+            ClassicLookLabel(p,preset?"预设未保存":"外观未保存",28,24,684,44,27);
+            ClassicLookRule(p,28,79,684);
+            ClassicLookLabel(p,"当前预览已保留，可以重试或返回编辑。",28,91,684,35,18);
+            var content=Scroll(p,"LookSaveFailureText",28,136,684,200,200);
+            var message=ClassicLookLabel(content,lookSaveError,0,0,664,200,17,ClassicQuiet,TextAnchor.UpperLeft);
+            float height=Mathf.Max(200,message.preferredHeight+8);message.rectTransform.sizeDelta=new Vector2(664,height);content.sizeDelta=new Vector2(672,height);
+            ClassicLookButton("LookPopupKeep",p,"返回编辑",28,365,332,52,()=>{lookPopup="";Draw();},true,false,2);
+            ClassicLookButton("LookPopupRetry",p,"重试保存",374,365,338,52,()=>{lookPopup=preset?"presets":"";if(preset)SaveLookSlot();else CommitAppearance();},true,false,1);
+        }
         void DrawLookRandomSettings()
         {
-            var shade=Box("LookPopupShade",root,0,0,1600,900,new Color(0,0,0,.82f));var p=Box("LookPopup",shade,400,153,800,594,Paper);SurfaceTheme(p,true);
-            Label(p,"随机设定",28,23,744,43,29,Gold);
-            Label(p,"锁定的部件会在随机时保留；逐项点选仍可修改。",28,83,744,32,18,Muted);
+            var p=ClassicLookPopup(400,153,800,594);
+            ClassicLookLabel(p,"随机设定",28,24,744,43,29);
+            ClassicLookRule(p,28,80,744);
+            ClassicLookLabel(p,"选择要保留的部件；逐项翻选仍可修改。",28,93,744,32,18,ClassicQuiet);
             var categories=LookEditableCategories();
             for(int i=0;i<categories.Length;i++)
             {
-                int category=categories[i];Button("LookRandomLock_"+category,p,(lookLocks[category]?"保留 · ":"随机 · ")+LookCategoryName(category),28+i%3*252,137+i/3*51,238,42,()=>{lookLocks[category]=!lookLocks[category];Draw();},true,lookLocks[category]);
+                int category=categories[i];ClassicLookButton("LookRandomLock_"+category,p,(lookLocks[category]?"保留 · ":"随机 · ")+LookCategoryName(category),28+i%3*252,143+i/3*56,238,44,()=>{lookLocks[category]=!lookLocks[category];Draw();},true,lookLocks[category]);
             }
-            Button("LookLockAll",p,"全部保留",28,416,238,39,()=>{foreach(int n in categories)lookLocks[n]=true;Draw();});
-            Button("LookUnlockAll",p,"全部随机",280,416,238,39,()=>{foreach(int n in categories)lookLocks[n]=false;Draw();});
-            Label(p,"随机保留当前性别，外观不会改变角色能力。",28,475,744,28,17,Muted);
-            Button("LookPopupBack",p,"返回编辑",28,527,360,43,()=>{lookPopup="";Draw();});
-            Button("LookRandomFromSettings",p,"随机并查看",408,527,364,43,()=>{lookPopup="";RandomizeLook();});
+            ClassicLookButton("LookLockAll",p,"全部保留",28,395,238,39,()=>{foreach(int n in categories)lookLocks[n]=true;Draw();});
+            ClassicLookButton("LookUnlockAll",p,"全部随机",280,395,238,39,()=>{foreach(int n in categories)lookLocks[n]=false;Draw();});
+            ClassicLookLabel(p,"随机保留当前性别，外观不会改变角色能力。",28,458,744,32,17,ClassicQuiet);
+            ClassicLookButton("LookPopupBack",p,"返回编辑",28,526,360,43,()=>{lookPopup="";Draw();},true,false,2);
+            ClassicLookButton("LookRandomFromSettings",p,"随机并查看",408,526,364,43,()=>{lookPopup="";RandomizeLook();},true,false,1);
         }
     }
 }

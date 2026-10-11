@@ -16,7 +16,7 @@ namespace Minglu
         RectTransform root;
         Canvas canvas;
         Camera viewCamera;
-        Texture2D map, portraits;
+        Texture2D map;
         int selectedAgent = 1, selectedDistrict, rescueTarget = -1, tab = 3;
         Duty selectedDuty = Duty.Recon;
         string toast = "先选择成员，再选择区域与行动。未派遣的成员将自动休整。", modal = "";
@@ -57,7 +57,7 @@ namespace Minglu
             }
             catch (Exception e) { Debug.LogException(e); enabled = false; }
         }
-        void LoadArt() { map = Resources.Load<Texture2D>(State.config.Asset("city").resource); portraits = Resources.Load<Texture2D>(State.config.Asset("portraits").resource); }
+        void LoadArt() { map = Resources.Load<Texture2D>(State.config.Asset("city").resource); }
         void Update()
         {
             if (State == null) return;
@@ -75,7 +75,7 @@ namespace Minglu
             if (Input.GetKeyDown(KeyCode.F5)) Save();
             if (Input.GetKeyDown(KeyCode.F9)) Load();
         }
-        void OnDestroy() { RemoveQuitGuard();if (clickSound != null) Destroy(clickSound); }
+        void OnDestroy() { DisposeClassicPortraits();RemoveQuitGuard();if (clickSound != null) Destroy(clickSound); }
         void Sound() { if (sound && audioSource != null) audioSource.PlayOneShot(clickSound,profile.volume); }
         static Color Hex(string value) { Color c; ColorUtility.TryParseHtmlString("#" + value, out c); return c; }
         RectTransform Rect(string name, Transform parent, float x, float y, float w, float h)
@@ -102,11 +102,8 @@ namespace Minglu
         }
         void Portrait(Transform parent, Agent a, float x, float y, float w, float h)
         {
-            if(a.appearance!=null&&a.appearance.enabled){DrawLook(parent,a.appearance,x,y,w,h,a.condition==Condition.Lost?new Color(.3f,.35f,.35f):a.condition==Condition.Captured?new Color(.65f,.65f,.65f):Color.white);return;}
-            var raw = Rect("Portrait",parent,x,y,w,h).gameObject.AddComponent<RawImage>(); raw.texture = portraits;
-            int index = State.config.agents.First(d => d.id == a.id).portrait;
-            raw.uvRect = new UnityEngine.Rect(index * .25f, 0, .25f, 1);
-            raw.color = a.condition == Condition.Lost ? new Color(.3f,.35f,.35f) : a.condition == Condition.Captured ? new Color(.65f,.65f,.65f) : Color.white; raw.raycastTarget = false;
+            var look=EffectiveMemberLook(a);
+            DrawLook(parent,look,x,y,w,h,a.condition==Condition.Lost?new Color(.3f,.35f,.35f):a.condition==Condition.Captured?new Color(.65f,.65f,.65f):Color.white);
         }
         void Bar(Transform p, float x, float y, float w, int val, int max, Color color)
         {
@@ -368,26 +365,19 @@ namespace Minglu
             if(Array.IndexOf(args,"--task-layout-only")>=0){yield return TaskLayoutSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--recruitment-only")>=0){yield return RecruitmentSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--assignment-only")>=0){yield return AssignmentSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--portrait-combinations-only")>=0){yield return PortraitCombinationsSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--recon-only")>=0){yield return ReconDeskSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--map-desk-only")>=0){yield return MapDeskSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--minglu-modal-smoke")>=0){yield return ModalCommandSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--grooming-fit-only")>=0){yield return GroomingFitSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--grooming-only")>=0){yield return GroomingSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--portrait-catalog-only")>=0){yield return PortraitCatalogSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--painted-only")>=0){yield return PaintedPortraitSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--institution-only")>=0){yield return InstitutionSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--button-art-only")>=0){yield return ButtonArtSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--design-only")>=0){yield return DesignSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--producer-only")>=0){yield return ProducerSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--studio-only")>=0){yield return AppearanceStudioSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--strategy-only")>=0){yield return StrategySmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--portrait-repair")>=0){yield return PortraitRepairSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--command-only")>=0){yield return CommandSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--guidance-only")>=0){yield return GuidanceSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--features-only")>=0){yield return FeatureAppearanceSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--realistic-only")>=0){yield return RealisticAppearanceSmoke(path);Application.Quit();yield break;}
-            if(Array.IndexOf(args,"--appearance-only")>=0){yield return AppearanceSmoke(path);Application.Quit();yield break;}
             yield return Click("HomeSettings");yield return Click("VolumeDown");yield return Click("HomeBack");
             if(Mathf.Abs(RunLifecycle.ReadProfile(ProfilePath).volume-.6f)>.01f)throw new Exception("Settings did not persist");
             yield return Click("HomeHelp");yield return Click("HomeBack");

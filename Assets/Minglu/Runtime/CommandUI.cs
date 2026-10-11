@@ -179,7 +179,7 @@ namespace Minglu
         void DrawCommandPeople(Transform panel)
         {
             var a=CommandRules.Agent(State,selectedAgent);var p=CommandRules.Person(State,a.id);
-            DrawLook(panel,a.appearance,28,28,208,312);
+            DrawLook(panel,EffectiveMemberLook(a),28,28,208,312);
             Label(panel,a.name,264,28,546,42,32,Gold);
             Label(panel,"代号「"+p.code+"」 · "+p.profession+" "+p.level+"级",264,84,546,26,18,Muted);
             Label(panel,CommandRules.Employment(p),264,122,546,27,19,TextColor);
