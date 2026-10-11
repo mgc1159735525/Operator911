@@ -6,7 +6,7 @@ namespace Minglu
     public static class ClassicPortraitCatalog
     {
         public const int HeadCount=12;
-        public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops"};
+        public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops","Minglu/Art/Classic/brows"};
         public static readonly Rect HeadRect=new Rect(40,12,320,320),OutfitRect=new Rect(0,185,400,400);
         // Measurements in each 362-pixel head cell: centre x, eye line, mouth.
         static readonly Vector3[] Male={new Vector3(173,191,266),new Vector3(173,190,266),new Vector3(173,203,272),new Vector3(173,191,266),new Vector3(173,191,268),new Vector3(174,192,268),new Vector3(173,204,272),new Vector3(174,192,268),new Vector3(173,194,270),new Vector3(175,194,270),new Vector3(175,194,270),new Vector3(173,204,272)};
@@ -28,10 +28,10 @@ namespace Minglu
         public static Rect FeatureRect(Appearance a,int part)
         {
             var p=Landmarks(a);
-            switch(part){case 2:return FromHead(new Rect(p.x-68,p.y-23,136,51));
-                case 3:return FromHead(new Rect(p.x-69,p.y-27,138,25));
-                case 4:return FromHead(new Rect(p.x-30,p.y+1,61,p.z-p.y-11));
-                default:return FromHead(new Rect(p.x-40,p.z-20,80,39));}
+            switch(part){case 2:return FromHead(new Rect(p.x-68,p.y-28,136,61));
+                case 3:return FromHead(new Rect(p.x-69,p.y-25,138,19));
+                case 4:return FromHead(new Rect(p.x-33,p.y-4,67,p.z-p.y-6));
+                default:return FromHead(new Rect(p.x-40,p.z-25,80,49));}
         }
         public static Rect FeatureCell(Appearance a,int part)
         {

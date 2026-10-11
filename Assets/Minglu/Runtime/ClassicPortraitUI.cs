@@ -57,7 +57,7 @@ namespace Minglu
             ClassicLayer(art,"Head",look,look.sex,ClassicPortraitCatalog.Cell(look.parts[0],4,3),ClassicPortraitCatalog.HeadRect,scale,0,tint);
             ClassicLayer(art,"Outfit",look,3,ClassicPortraitCatalog.OutfitUV(look),ClassicPortraitCatalog.GarmentRect(look),scale,3,tint);
             string[] names={"Eyes","Brows","Nose","Mouth"};
-            for(int p=2;p<=5;p++)ClassicLayer(art,names[p-2],look,2,ClassicPortraitCatalog.FeatureCell(look,p),ClassicPortraitCatalog.FeatureRect(look,p),scale,p==2?1:p==3?2:p==4?5:6,tint);
+            for(int p=2;p<=5;p++)ClassicLayer(art,names[p-2],look,p==3?6:2,ClassicPortraitCatalog.FeatureCell(look,p),ClassicPortraitCatalog.FeatureRect(look,p),scale,p==2?1:p==3?2:p==4?5:6,tint);
             if(look.sex==0&&look.parts[6]>0)ClassicLayer(art,"Beard",look,4,ClassicPortraitCatalog.DetailUV(look.parts[6]-1),ClassicPortraitCatalog.BeardRect(look),scale,7,tint);
             if(look.parts[8]==2)
             {

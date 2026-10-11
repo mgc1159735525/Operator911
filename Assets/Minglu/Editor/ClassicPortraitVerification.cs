@@ -51,6 +51,11 @@ namespace Minglu.EditorTools
             }
             else if(index==4)for(int detail=0;detail<10;detail++)VerifyCell(source,ClassicPortraitCatalog.DetailUV(detail),"beard/adornment "+detail,variants);
             else if(index==5)for(int background=0;background<4;background++)VerifyCell(source,ClassicPortraitCatalog.Cell(background,2,2),"backdrop "+background,variants);
+            else if(index==6)for(int sex=0;sex<2;sex++)
+            {
+                variants.Clear();var look=AppearanceRules.Randomize(430,sex,0);
+                for(int option=0;option<8;option++){look.parts[3]=option;VerifyCell(source,ClassicPortraitCatalog.FeatureCell(look,3),"painted brow "+sex+"/"+option,variants);}
+            }
         }
         static void VerifyTexture(string resource,HashSet<ulong> signatures)
         {

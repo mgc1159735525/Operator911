@@ -5,6 +5,12 @@
   "geometry": "Complete head contains hair, face outline, ears and neck. Authored facial feature sprites, clothing, beards and accessories. Source cell positions are measured in ClassicPortraitCatalog; prompt coordinates alone are not treated as a rig.",
   "assets": [
     {
+      "file": "brows.png",
+      "finalOutput": "exec-a00da229-755b-467a-a5b8-b21168e85903.png",
+      "usage": "Follow-up repaint. Only eyebrow rows 2 and 6 are consumed; all eye, nose and mouth sprites continue to use features.png, so incidental generation changes outside the requested rows do not alter those parts.",
+      "finalPrompt": "Edit this exact game facial-feature atlas. This is a production sprite sheet, NOT a preview illustration. Preserve the exact square canvas dimensions (1254x1254) and exact invisible 8 columns x8 rows layout, feature positions, sizes, orientations, full transparent alpha background. Make changes ONLY in ROW2 and ROW6 (the two eyebrow-pair rows). Keep all eyes, noses, mouths in other six rows pixel-aligned and visually unchanged. Repaint the sixteen eyebrow pairs with delicate traditional East Asian hand-painted historical strategy-game portrait brushwork, like Taiko Risshiden V portraits: natural individual thin hair strokes, wispy irregular tapering at both ends, soft sparse roots and finer tips, varied density. They must NOT be solid thick geometric wedges, smooth strips, or painted skin patches. No skin at all behind eyebrows. Each pair retains its existing eight choices of contour and exact placement; near-frontal very slight turn to viewer's left. Masculine row2 moderate natural thickness, feminine row6 softer slimmer forms. First7 columns use medium dark brown strokes with muted highlights suitable for runtime recolouring, NOT opaque pure-black blocks. Last column in each eyebrow row depicts sparse elder brows in soft neutral grey with individually readable strands, not a dense white strip. Keep calm painterly texture and limited soft contrast; no photoreal microhair/no sharp metallic strands. Preserve transparent spaces between thin hairs. Do not move, resize, recolour, or redraw any eyes/noses/mouths in other rows; do not add labels, frames, grids, heads, faces, accessories, or backgrounds."
+    },
+    {
       "file": "heads-male.png",
       "initialOutput": "exec-f4aecb74-4c4b-44e1-adf6-449afef6bea3.png",
       "finalOutput": "exec-7f68ced5-52c0-426b-beea-0c70dd084248.png",
