@@ -11,7 +11,14 @@ namespace Minglu
         // Measurements in each 362-pixel head cell: centre x, eye line, mouth.
         static readonly Vector3[] Male={new Vector3(173,191,266),new Vector3(173,190,266),new Vector3(173,203,272),new Vector3(173,191,266),new Vector3(173,191,268),new Vector3(174,192,268),new Vector3(173,204,272),new Vector3(174,192,268),new Vector3(173,194,270),new Vector3(175,194,270),new Vector3(175,194,270),new Vector3(173,204,272)};
         static readonly Vector3[] Female={new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(172,191,266),new Vector3(172,191,266),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(174,196,271),new Vector3(174,196,271),new Vector3(174,196,271)};
-        public static Vector3 Landmarks(Appearance look){return (look.sex==0?Male:Female)[look.parts[0]];}
+        // Shift the whole facial assembly together in source-head pixels:
+        // eyes, brows, nose, mouth, beards and face-attached adornments.
+        // Eye and mouth lines share the same offset, preserving proportions.
+        public static Vector3 Landmarks(Appearance look)
+        {
+            var anchors=(look.sex==0?Male:Female)[look.parts[0]];
+            return anchors+new Vector3(-8,-6,-6);
+        }
         public static Rect Cell(int index,int columns,int rows)
         {return new Rect((index%columns)/(float)columns,1-(index/columns+1)/(float)rows,1f/columns,1f/rows);}
         public static Rect SourcePixels(float x,float y,float w,float h,float tw,float th)
