@@ -27,6 +27,15 @@ Shader "Minglu/ClassicPortrait"
    float3 FacialHair(float l,float whiteSource){float t=saturate(whiteSource>.5?(l-.36)/.50:(l-.18)/.42);t=smoothstep(0,1,t);if(_HairIndex<.5)return lerp(float3(.05,.044,.036),float3(.28,.24,.185),t);if(_HairIndex<1.5)return lerp(float3(.10,.06,.034),float3(.43,.29,.17),t);float silver=saturate(whiteSource>.5?(l-.30)/.65:(l-.12)/.78);if(_HairIndex<2.5)return lerp(float3(.20,.22,.20),float3(.66,.68,.63),silver);return lerp(float3(.40,.42,.38),float3(.94,.94,.87),silver);}
    float Feather(float2 p,float2 centre,float2 radius){return 1-smoothstep(.60,1.12,length((p-centre)/radius));}
    fixed4 frag(v2f i):SV_Target {
+    float2 placementUV=i.uv;
+    if(_Mode>4.5&&_Mode<5.5){
+      // Keep the root near the inner eye corners while the lower nose
+      // projects towards the head's turn. Moving a whole frontal crop
+      // cannot establish this relationship.
+      float2 shape=(i.uv-_FeatureUV.xy)/_FeatureUV.zw;
+      float turn=smoothstep(.10,.80,1-shape.y);
+      i.uv.x+=lerp(-.03,.085,turn)*_FeatureUV.z;
+    }
     fixed4 c=tex2D(_MainTex,i.uv);float l=dot(c.rgb,float3(.299,.587,.114));
     c.a=saturate((c.a-.055)/.945);
     if(_Mode<.5||_Mode>7.5){float skin=smoothstep(.016,.061,c.r-c.g)*smoothstep(.16,.31,l);float2 cell=saturate((i.uv-_BaseUV.xy)/_BaseUV.zw);cell.y=1-cell.y;c.a*=smoothstep(.018,.042,cell.x)*(1-smoothstep(.975,.993,cell.x));if(_Mode<.5){float neckBand=smoothstep(.28,.34,cell.x)*(1-smoothstep(.66,.72,cell.x));c.a*=1-neckBand*smoothstep(.87,.96,cell.y);}float hairArea=max(1-smoothstep(.34,.41,cell.y),max(1-smoothstep(.23,.27,cell.x),smoothstep(.68,.74,cell.x)));float cap=(_Cap>.5&&cell.y<.49)?1:0;float3 hair=Hair(l,_SourceWhite);c.rgb=lerp(c.rgb*lerp(float3(1,1,1),_Skin.rgb,skin),hair,hairArea*(1-skin)*(1-cap));}
@@ -36,7 +45,8 @@ Shader "Minglu/ClassicPortrait"
     else if(_Mode>4.5&&_Mode<6.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=_Mode<5.5?Feather(p,float2(.50,.49),float2(.32,.61)):Feather(p,float2(.50,.51),float2(.46,.24));c.a*=mask;float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);}
     else if(_Mode>6.5){c.rgb=FacialHair(l,0);c.a*=lerp(.82,1,smoothstep(.16,.40,l));}
     if((_Mode>.5&&_Mode<1.5)||(_Mode>4.5&&_Mode<6.5)){
-      float2 local=(i.uv-_FeatureUV.xy)/_FeatureUV.zw;local.y=1-local.y;
+      // Skin is sampled at the displayed point, not the deformed source.
+      float2 local=(placementUV-_FeatureUV.xy)/_FeatureUV.zw;local.y=1-local.y;
       float2 head=_FeatureTarget.xy+local*_FeatureTarget.zw;
       float3 underlying=tex2D(_BaseTex,_BaseUV.xy+float2(head.x,1-head.y)*_BaseUV.zw).rgb*_Skin.rgb;
       float warm=tex2D(_MainTex,i.uv).r-tex2D(_MainTex,i.uv).g;

@@ -9,7 +9,7 @@ namespace Minglu
         public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops","Minglu/Art/Classic/brows"};
         public static readonly Rect HeadRect=new Rect(40,12,320,320),OutfitRect=new Rect(0,185,400,400);
         // Measurements in each 362-pixel head cell: centre x, eye line, mouth.
-        static readonly Vector3[] Male={new Vector3(173,191,266),new Vector3(173,190,266),new Vector3(173,203,272),new Vector3(173,191,266),new Vector3(173,191,268),new Vector3(174,192,268),new Vector3(173,204,272),new Vector3(174,192,268),new Vector3(173,194,270),new Vector3(175,194,270),new Vector3(175,194,270),new Vector3(173,204,272)};
+        static readonly Vector3[] Male={new Vector3(173,191,266),new Vector3(173,190,266),new Vector3(173,196,269),new Vector3(173,191,266),new Vector3(173,191,268),new Vector3(174,192,268),new Vector3(173,197,269),new Vector3(174,192,268),new Vector3(173,194,270),new Vector3(175,194,270),new Vector3(175,194,270),new Vector3(173,197,269)};
         static readonly Vector3[] Female={new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(172,191,266),new Vector3(172,191,266),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(174,196,271),new Vector3(174,196,271),new Vector3(174,196,271)};
         // Shift the whole facial assembly together in source-head pixels:
         // eyes, brows, nose, mouth, beards and face-attached adornments.
@@ -29,10 +29,22 @@ namespace Minglu
         {
             var p=Landmarks(a);
             switch(part){case 2:return FromHead(new Rect(p.x-68,p.y-28,136,61));
-                case 3:return FromHead(new Rect(p.x-69,p.y-25,138,19));
-                case 4:return FromHead(new Rect(p.x-33,p.y-4,67,p.z-p.y-6));
-                default:return FromHead(new Rect(p.x-40,p.z-25,80,49));}
+                case 3:return FromHead(new Rect(p.x-69,p.y-22,138,19));
+                // Source nose base is at 87% of the crop height. Register
+                // that visible landmark, not the transparent crop bottom.
+                // Leave room for the philtrum instead of stretching to lips.
+                case 4:
+                    float top=p.y-4, noseBase=p.z-22;
+                    return FromHead(new Rect(p.x-38,top,67,(noseBase-top)/.87f));
+                default:
+                    var lip=MouthAnchor(a);
+                    return FromHead(new Rect(lip.x-40,lip.y-49*.44f,80,49));}
         }
+        // The painted head turns slightly towards the viewer's left. The
+        // protruding nose shifts further than the mouth. Beards use the same
+        // actual lip anchor as the mouth, independently of either crop size.
+        public static Vector2 MouthAnchor(Appearance a)
+        {var p=Landmarks(a);return new Vector2(p.x-3,p.z);}
         public static Rect FeatureCell(Appearance a,int part)
         {
             int row=a.sex*4+part-2,col=a.parts[part];float cell=1254f/8;
@@ -46,7 +58,7 @@ namespace Minglu
         public static Rect OutfitUV(Appearance a)
         {int i=a.sex*8+a.parts[7];return SourcePixels(i%4*313.5f+9,OutfitTop[i],295.5f,OutfitBottom[i]-OutfitTop[i],1254,1254);}
         public static Rect GarmentRect(Appearance a)
-        {int i=a.sex*8+a.parts[7];return new Rect(10,275,380,(OutfitBottom[i]-OutfitTop[i])*380/295.5f);}
+        {int i=a.sex*8+a.parts[7];return new Rect(10,267,380,(OutfitBottom[i]-OutfitTop[i])*380/295.5f);}
         public static Rect NeckUV(Appearance a)
         {int i=a.parts[0];return SourcePixels(i%4*362+117,i/4*362+302,130,48,1448,1086);}
         public static readonly Rect NeckRect=FromHead(new Rect(117,302,130,132));
@@ -57,9 +69,9 @@ namespace Minglu
         public static Rect DetailUV(int index){var r=DetailPixels[index];return SourcePixels(r.x,r.y,r.width,r.height,1448,1086);}
         public static Rect BeardRect(Appearance a)
         {
-            int i=a.parts[6]-1;var r=DetailPixels[i];var m=BeardMouth[i];var p=Landmarks(a);float s=BeardScale[i];
+            int i=a.parts[6]-1;var r=DetailPixels[i];var m=BeardMouth[i];var p=MouthAnchor(a);float s=BeardScale[i];
             float lift=i==2?8:i==6?9:0;
-            return FromHead(new Rect(p.x+(r.x-m.x)*s,p.z+(r.y-m.y)*s-lift,r.width*s,r.height*s));
+            return FromHead(new Rect(p.x+(r.x-m.x)*s,p.y+(r.y-m.y)*s-lift,r.width*s,r.height*s));
         }
         public static Rect AdornmentRect(Appearance a)
         {
