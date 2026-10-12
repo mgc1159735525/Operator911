@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-13",
+  "tool": "image_gen builtin",
+  "kind": "style-transfer",
+  "assets": [
+    {
+      "sex": "male",
+      "prompt": "Use case: style-transfer. Asset type: transparent modular historical game portrait HEAD BASE texture atlas. Image 1 is the exact EDIT TARGET. Redraw surface rendering of this same atlas into beautifully realistic historical painted character art, natural mature East Asian people, subtle and refined museum portrait rendering, no cartoon/anime outlines or plastic flatness. CRITICAL TECHNICAL LOCKS: output the same 4 columns by 3 rows atlas, same 4:3 overall aspect ratio, exactly 12 heads in the same original cell positions, scale, crop, silhouettes, hairline, hairstyle, ear positions, neck shape, and subtle three-quarter viewing angle facing screen-left. Do not move, enlarge, rotate, replace, or rearrange any head. Heads and all hair remain one continuous coherent drawing. Preserve the existing hairstyles and headwear per cell and all existing hair colours, including white elderly hair in bottom row. Preserve transparent alpha outside each head; genuinely transparent background, no black backdrop. ALL CENTRAL FACIAL FEATURES MUST REMAIN ABSENT: no eyeballs, eyelids, eyebrows, nose or nostrils, lips, mouth, teeth, moustache or beard; these are runtime overlay sockets and must stay empty just like the reference. You may paint subtle broad anatomical cheekbone planes, gentle orbital-area shading and lower-jaw volume without drawing any facial features or localized hard socket lines. Replace flat uniform skin with softly modelled natural skin, nuanced warm/cool transitions, restrained pore texture, gentle directional diffuse lighting from upper screen-left, natural temple depth, realistic neck tendons and ear cartilage; ears must remain present. Young heads are handsome adults with normal anatomical proportions, middle aged heads show restrained age texture, elder heads show fine genuine aged skin, without dark marks over blank sockets. Hair should have natural layered clumps and a few fine strands instead of repetitive painted streaks, with controlled highlights. Hats show real matte fabric. Avoid HDR, wax, airbrushing, noisy grain, excessive wrinkles, sharpening halos, dramatic cinematic black shadows, makeup. Do not add shoulders, garments, labels, borders, gridlines, text or any extra asset. Increase resolution to a crisp detailed 2048 by 1536 canvas while keeping every grid cell and every silhouette in exactly the same proportional coordinates. Preserve proportions over decorative detail.",
+      "source": "D:/UnityProjects/Operator911/Assets/Minglu/Resources/Minglu/Art/Classic/heads-male.png",
+      "generated": "C:/Users/11597/.codex/generated_images/01a130f7-f565-7a53-b70d-821408ea8637/exec-614a07f6-89e1-4db5-860c-64059d0eb81d.png",
+      "candidate": "D:/UnityProjects/Operator911/outputs/qa-current/realism-heads-male.png"
+    },
+    {
+      "sex": "female",
+      "prompt": "Use case: style-transfer. Asset type: transparent modular historical game portrait HEAD BASE texture atlas. Image 1 is the exact EDIT TARGET. Redraw surface rendering of this same atlas into beautifully realistic historical painted character art, natural mature East Asian people, subtle and refined museum portrait rendering, no cartoon/anime outlines or plastic flatness. CRITICAL TECHNICAL LOCKS: output the same 4 columns by 3 rows atlas, same 4:3 overall aspect ratio, exactly 12 female heads in the same original cell positions, scale, crop, silhouettes, hairline, hairstyle, ear positions, neck shape, and subtle three-quarter viewing angle facing screen-left. Do not move, enlarge, rotate, replace, or rearrange any head. Heads and all hair remain one continuous coherent drawing. Preserve the existing hairstyles, buns, hair accessories per cell and all existing hair colours, including white elderly hair in bottom row. Preserve transparent alpha outside each head; genuinely transparent background, no black backdrop. ALL CENTRAL FACIAL FEATURES MUST REMAIN ABSENT: no eyeballs, eyelids, eyebrows, nose or nostrils, lips, mouth, teeth, moustache or beard; these are runtime overlay sockets and must stay empty just like the reference. You may paint subtle broad anatomical cheekbone planes, gentle orbital-area shading and lower-jaw volume without drawing any facial features or localized hard socket lines. Replace flat uniform skin with softly modelled natural skin, nuanced warm/cool transitions, restrained pore texture, gentle directional diffuse lighting from upper screen-left, natural temple depth, realistic neck tendons and ear cartilage; ears must remain present. Young heads are beautiful adult women with normal natural anatomical proportions and no glamour makeup, middle aged heads show restrained age texture, elder heads show fine genuine aged skin, without dark marks over blank sockets. Hair should have natural layered clumps and a few fine strands instead of repetitive painted streaks, with controlled highlights. Accessories show tactile material. Avoid HDR, wax, airbrushing, noisy grain, excessive wrinkles, sharpening halos, dramatic cinematic black shadows, makeup. Do not add shoulders, garments, labels, borders, gridlines, text or any extra asset. Increase resolution to a crisp detailed 2048 by 1536 canvas while keeping every grid cell and every silhouette in exactly the same proportional coordinates. Preserve proportions over decorative detail.",
+      "source": "D:/UnityProjects/Operator911/Assets/Minglu/Resources/Minglu/Art/Classic/heads-female.png",
+      "generated": "C:/Users/11597/.codex/generated_images/01a130f7-f565-7a53-b70d-821408ea8637/exec-f90f1a89-d322-46f6-878e-181e48f9e8a3.png",
+      "candidate": "D:/UnityProjects/Operator911/outputs/qa-current/realism-heads-female.png"
+    }
+  ],
+  "validation": {
+    "actualDimensions": "1448x1086",
+    "requestedDimensions": "2048x1536",
+    "resolutionRequestHonored": false,
+    "layout": "4 columns by 3 rows, 12 heads per sex",
+    "alpha": "Both Format32bppArgb, transparent outside heads",
+    "centralFeatures": "Remain absent: eyes, brows, nose and mouth to be composited by runtime",
+    "viewed": true,
+    "appearanceObservation": "More skin surface variation and cheek, temple, ear and neck modelling. Hair refined while hairstyles and elderly white hair retained.",
+    "remainingCheck": "Runtime compositing required. Mild generated outline drift must be checked against neck, clothes and overlays."
+  }
+}

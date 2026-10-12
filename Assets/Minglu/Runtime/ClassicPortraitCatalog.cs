@@ -21,6 +21,13 @@ namespace Minglu
         }
         public static Rect Cell(int index,int columns,int rows)
         {return new Rect((index%columns)/(float)columns,1-(index/columns+1)/(float)rows,1f/columns,1f/rows);}
+        // Repainted lower atlas rows contain a few pixels from the preceding
+        // neck. Keep the full head coordinate frame and exclude its gutter.
+        static readonly float[] FemaleTopTrim={0,0,0,0,4,10,7,8,0,5,4,6};
+        public static float HeadTopTrim(Appearance a)
+        {return a.sex==1?FemaleTopTrim[a.parts[0]]/362f:0;}
+        public static float HeadLeftTrim(Appearance a)
+        {return (a.parts[0]==11?28:a.sex==1&&a.parts[0]==2?22:a.sex==1&&a.parts[0]==6?30:0)/362f;}
         public static Rect SourcePixels(float x,float y,float w,float h,float tw,float th)
         {return new Rect(x/tw,1-(y+h)/th,w/tw,h/th);}
         public static Rect FromHead(Rect r)
@@ -29,7 +36,7 @@ namespace Minglu
         {
             var p=Landmarks(a);
             switch(part){case 2:return FromHead(new Rect(p.x-68,p.y-28,136,61));
-                case 3:return FromHead(new Rect(p.x-69,p.y-22,138,19));
+                case 3:return FromHead(new Rect(p.x-69,p.y-17,138,19));
                 // Source nose base is at 87% of the crop height. Register
                 // that visible landmark, not the transparent crop bottom.
                 // Leave room for the philtrum instead of stretching to lips.
@@ -51,6 +58,19 @@ namespace Minglu
             var crop=part==2?new Rect(2,60,152,64):part==3?new Rect(2,48,152,54):part==4?new Rect(9,0,140,148):new Rect(5,25,147,119);
             return SourcePixels(col*cell+crop.x,row*cell+crop.y,crop.width,crop.height,1254,1254);
         }
+        // Measured bare-skin midtones in the 2026-10-13 feature atlas.
+        // Six groups: male eyes/nose/mouth, female eyes/nose/mouth; eight each.
+        // Transparent pixels and dark organs were excluded before sampling.
+        static readonly Color32[] FeatureSkinReferences={
+            new Color32(201,162,145,255),new Color32(198,158,141,255),new Color32(200,161,144,255),new Color32(195,156,139,255),new Color32(197,158,142,255),new Color32(202,163,147,255),new Color32(193,154,137,255),new Color32(194,157,139,255),
+            new Color32(205,166,143,255),new Color32(204,164,142,255),new Color32(205,166,144,255),new Color32(204,165,143,255),new Color32(204,165,143,255),new Color32(206,168,146,255),new Color32(204,164,143,255),new Color32(202,163,141,255),
+            new Color32(199,159,139,255),new Color32(197,157,139,255),new Color32(195,155,137,255),new Color32(195,155,137,255),new Color32(200,160,141,255),new Color32(198,158,140,255),new Color32(198,158,140,255),new Color32(196,157,136,255),
+            new Color32(201,161,146,255),new Color32(201,161,145,255),new Color32(201,162,146,255),new Color32(199,159,143,255),new Color32(199,160,145,255),new Color32(201,163,148,255),new Color32(197,157,140,255),new Color32(198,159,141,255),
+            new Color32(209,167,146,255),new Color32(205,164,142,255),new Color32(208,166,146,255),new Color32(206,164,144,255),new Color32(206,166,145,255),new Color32(206,166,145,255),new Color32(204,164,143,255),new Color32(201,160,139,255),
+            new Color32(199,160,142,255),new Color32(197,156,138,255),new Color32(196,155,137,255),new Color32(197,156,138,255),new Color32(200,161,143,255),new Color32(197,157,139,255),new Color32(197,158,140,255),new Color32(194,155,135,255)
+        };
+        public static Color FeatureSkin(Appearance a,int part)
+        {int group=part==2?0:part==4?1:2;return FeatureSkinReferences[a.sex*24+group*8+a.parts[part]];}
         // The source sheet has unequal top gutters. Register each garment at
         // its own collar, instead of using a nominal grid origin as anatomy.
         static readonly float[] OutfitTop={52,54,51,48,343,342,346,342,650,651,655,651,946,946,946,947};

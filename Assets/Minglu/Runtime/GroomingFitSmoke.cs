@@ -28,7 +28,7 @@ namespace Minglu
             public string renderer="ClassicPortrait";
             public string result="Actual Unity render coverage, not aesthetic acceptance; every page requires visual review.";
             public string indices="Zero based. Complete head includes face outline, hair, ears and neck. No independent hair or ear channel.";
-            public int screenWidth,screenHeight,headPairs,beardedPairs,cleanShavenBaselines,outfitSamples,featureSamples,heroCases,renderCount;
+            public int screenWidth,screenHeight,headPairs,beardedPairs,cleanShavenBaselines,outfitSamples,featureSamples,paletteSamples,heroCases,renderCount;
             public bool profileUnchanged,runUnchanged,editorDraftUnchanged,isolatedFilesUnchanged;
             public List<GroomingFitPage> pages=new List<GroomingFitPage>();
         }
@@ -153,13 +153,37 @@ namespace Minglu
                 }
                 yield return GroomingFitCapture(path,"fit-feature-s"+sex+"-c"+category+"-page"+(batch+1),page,manifest);
             }
+            for(int sex=0;sex<2;sex++)for(int age=0;age<2;age++)for(int palette=0;palette<2;palette++)
+            {
+                int category=palette==0?10:12;
+                var baseline=ClassicProofLook(sex,age==0?0:9,sex==0?4:0);
+                if(age==1)
+                {
+                    // This fixture deliberately uses authored older features;
+                    // the original female hero retains its independent choices.
+                    baseline.parts[2]=7;baseline.parts[3]=7;baseline.parts[4]=7;baseline.parts[5]=7;
+                }
+                AppearanceRules.Validate(baseline);
+                string ageName=age==0?"青年":"长者";
+                var sheet=GroomingFitSheet((sex==0?"男性":"女性")+" · "+ageName+" / "+AppearanceRules.Labels[category]+"对照","固定头部、五官、胡须和衣服；本页仅切换所列色板。检查肤色贴片、鼻翼明暗、眉须纹理及白发边缘。");
+                var page=new GroomingFitPage{comparison="Only "+(palette==0?"skin":"hair/brow/beard")+" palette changes; fixed "+(age==0?"young":"elder")+" head and authored features. Male fixture uses B4 full beard; elder eyes/brows/nose/mouth use option7. All four palette options appear."};
+                for(int col=0;col<4;col++)
+                {
+                    float x=20+col*394;var look=AppearanceRules.Copy(baseline);look.parts[category]=col;AppearanceRules.Validate(look);
+                    if(look.sex!=baseline.sex||Enumerable.Range(0,look.parts.Length).Any(i=>i!=category&&look.parts[i]!=baseline.parts[i]))
+                        throw new Exception("Palette rendering fixture changed a non-palette choice");
+                    GroomingFitRender(sheet,page,"palette-s"+sex+"-age"+age+"-c"+category+"-o"+col,look,x,100,376,704,true);
+                    Label(sheet,AppearanceRules.Labels[category]+" "+col+" · "+AppearanceRules.Names[category][col],x,814,376,34,19,PaperInk);manifest.paletteSamples++;
+                }
+                yield return GroomingFitCapture(path,"fit-palette-s"+sex+"-age"+age+"-c"+category,page,manifest);
+            }
             Draw();yield return null;
             manifest.profileUnchanged=GroomingFitSnapshot(profile)==profileBefore;manifest.runUnchanged=GroomingFitSnapshot(State)==runBefore;manifest.editorDraftUnchanged=GroomingFitSnapshot(lookDraft)==draftBefore;
             manifest.isolatedFilesUnchanged=filesBefore.All(pair=>(File.Exists(pair.Key)?Convert.ToBase64String(File.ReadAllBytes(pair.Key)):null)==pair.Value);
             File.WriteAllText(Path.ChangeExtension(path,"fit-manifest.json"),JsonUtility.ToJson(manifest,true));
             if(!manifest.profileUnchanged||!manifest.runUnchanged||!manifest.editorDraftUnchanged||!manifest.isolatedFilesUnchanged)throw new Exception("Classic render coverage mutated state or isolated files");
-            if(manifest.pages.Count!=52||manifest.headPairs!=24||manifest.beardedPairs!=84||manifest.cleanShavenBaselines!=12||manifest.outfitSamples!=16||manifest.featureSamples!=64||manifest.heroCases!=2||manifest.renderCount!=228)throw new Exception("Classic render coverage incomplete; inspect fit-manifest.json");
-            Debug.Log("MINGLU_GROOMING_FIT_RENDER_SUCCESS: ClassicPortrait only; 52 actual Unity screenshots, 24 complete heads at portrait/roster size, 84 head/beard pairs plus12 clean-shaven references, 16 outfits/adornments, 64 feature samples, 2 hero examples; profile/run/draft/files unchanged. Render coverage does not establish aesthetic acceptance.");
+            if(manifest.pages.Count!=60||manifest.headPairs!=24||manifest.beardedPairs!=84||manifest.cleanShavenBaselines!=12||manifest.outfitSamples!=16||manifest.featureSamples!=64||manifest.paletteSamples!=32||manifest.heroCases!=2||manifest.renderCount!=260)throw new Exception("Classic render coverage incomplete; inspect fit-manifest.json");
+            Debug.Log("MINGLU_GROOMING_FIT_RENDER_SUCCESS: ClassicPortrait only; 60 actual Unity screenshots, 24 complete heads at portrait/roster size, 84 head/beard pairs plus12 clean-shaven references, 16 outfits/adornments, 64 feature samples, 32 palette samples, 2 hero examples; profile/run/draft/files unchanged. Render coverage does not establish aesthetic acceptance.");
         }
     }
 }

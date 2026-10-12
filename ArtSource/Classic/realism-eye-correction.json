@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-13",
+  "tool": "built-in image_gen.imagegen",
+  "file": "features.png",
+  "generatedOutput": "exec-2a146d20-c0f2-44ee-a6cd-5fb23864b247.png",
+  "prompt": "Edit this EXACT transparent 8x8 historical game facial feature atlas. Preserve canvas 1254x1254 and exact grid, all64 cell positions and feature scales. ONLY CORRECT ROW1 and ROW5 (male/female eye pairs). These sixteen eye sprites currently have dark eyebrow-shaped arcs immediately above the eyes, causing double eyebrows in the game. Remove EVERY brow-like dark brown arc above the eyelids and all eyebrow hair strokes from these two rows. Retain the eyeballs, small iris catchlights, upper and lower eyelids, subtle tear ducts, thin eyelid crease and delicate lower-eye age lines. Above the eyelids the skin must be softly lit plain natural skin and then smoothly fade into TRUE TRANSPARENCY, with NO dark band or eyebrow shape. The only dark curved line above each eye should be the actual thin upper eyelid touching eyeball, no second dark arch higher up. Do not erase eyes, change eye geometry, widen eyes, move pupils, remove natural depth or make eyes flat. Preserve existing realistic East Asian rendering and natural quiet expressions. KEEP ROW2/3/4/6/7/8 (separate eyebrows, noses, mouths) EXACTLY UNCHANGED in positions, scale, colours, brushwork and alpha. Only isolated reusable facial parts, no full heads, faces, accessories, text, frames or background. Genuine alpha transparency outside all parts. No dramatic shading, eye makeup or anime styling. Focused defect correction, not a new redesign.",
+  "actualSize": [
+    1254,
+    1254
+  ],
+  "notes": "Eye-only correction was requested. Generation also changed nose/mouth skin values; all 48 skin references were remeasured. Shader softens upper orbital skin and nose-root transparency to remove double-brow and hard cutout effects."
+}

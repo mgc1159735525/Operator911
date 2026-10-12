@@ -30,12 +30,15 @@ namespace Minglu
             {
                 var cell=ClassicPortraitCatalog.Cell(a.parts[0],4,3);
                 mat.SetVector("_BaseUV",new Vector4(cell.x,cell.y,cell.width,cell.height));
+                mat.SetFloat("_HeadTopTrim",ClassicPortraitCatalog.HeadTopTrim(a));
+                mat.SetFloat("_HeadLeftTrim",ClassicPortraitCatalog.HeadLeftTrim(a));
             }
             if(facialPart>=0)
             {
                 mat.SetTexture("_BaseTex",ClassicTexture(a.sex));
                 var baseCell=ClassicPortraitCatalog.Cell(a.parts[0],4,3);mat.SetVector("_BaseUV",new Vector4(baseCell.x,baseCell.y,baseCell.width,baseCell.height));
                 var source=ClassicPortraitCatalog.FeatureCell(a,facialPart);mat.SetVector("_FeatureUV",new Vector4(source.x,source.y,source.width,source.height));
+                mat.SetColor("_FeatureSkin",ClassicPortraitCatalog.FeatureSkin(a,facialPart));
                 var target=ClassicPortraitCatalog.FeatureRect(a,facialPart);var head=ClassicPortraitCatalog.HeadRect;
                 mat.SetVector("_FeatureTarget",new Vector4((target.x-head.x)/head.width,(target.y-head.y)/head.height,target.width/head.width,target.height/head.height));
             }
