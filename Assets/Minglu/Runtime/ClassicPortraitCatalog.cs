@@ -8,7 +8,9 @@ namespace Minglu
         public const int HeadCount=12;
         public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops","Minglu/Art/Classic/brows"};
         public static readonly Rect HeadRect=new Rect(40,12,320,320),OutfitRect=new Rect(0,185,400,400);
-        // Measurements in each 362-pixel head cell: centre x, eye line, mouth.
+        // Frame references in each 362-pixel head cell: face centre x,
+        // upper eye-socket y, lip y. A crop origin is NOT a pupil landmark;
+        // FeatureRect registers the painted pupils and nose base separately.
         static readonly Vector3[] Male={new Vector3(173,191,266),new Vector3(173,190,266),new Vector3(173,196,269),new Vector3(173,191,266),new Vector3(173,191,268),new Vector3(174,192,268),new Vector3(173,197,269),new Vector3(174,192,268),new Vector3(173,194,270),new Vector3(175,194,270),new Vector3(175,194,270),new Vector3(173,197,269)};
         static readonly Vector3[] Female={new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(171,191,265),new Vector3(172,191,266),new Vector3(172,191,266),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(172,194,268),new Vector3(174,196,271),new Vector3(174,196,271),new Vector3(174,196,271)};
         // Shift the whole facial assembly together in source-head pixels:
@@ -35,14 +37,20 @@ namespace Minglu
         public static Rect FeatureRect(Appearance a,int part)
         {
             var p=Landmarks(a);
-            switch(part){case 2:return FromHead(new Rect(p.x-68,p.y-28,136,61));
+            switch(part){case 2:
+                    // Male/female atlas rows have different vertical padding.
+                    // Register the painted pupil line, not the crop centre;
+                    // reusing the male offset makes female lids hit the brows.
+                    const float eyeWidth=126,eyeHeight=52;
+                    float pupilInCrop=a.sex==0?44:29, pupilY=p.y+(a.sex==0?8:3);
+                    return FromHead(new Rect(p.x-eyeWidth*.5f,pupilY-pupilInCrop/64*eyeHeight,eyeWidth,eyeHeight));
                 case 3:return FromHead(new Rect(p.x-69,p.y-17,138,19));
-                // Source nose base is at 87% of the crop height. Register
-                // that visible landmark, not the transparent crop bottom.
-                // Leave room for the philtrum instead of stretching to lips.
+                // Measured columella baselines differ between the two rows
+                // (male ~126 px, female ~118 px of the 148 px crop). Keep
+                // each row's authored nose/lip spacing, excluding its padding.
                 case 4:
-                    float top=p.y-4, noseBase=p.z-22;
-                    return FromHead(new Rect(p.x-38,top,67,(noseBase-top)/.87f));
+                    float top=p.y-7, noseBase=p.z-(a.sex==0?18:22), sourceBase=a.sex==0?126:118;
+                    return FromHead(new Rect(p.x-46,top,84,(noseBase-top)/(sourceBase/148)));
                 default:
                     var lip=MouthAnchor(a);
                     return FromHead(new Rect(lip.x-40,lip.y-49*.44f,80,49));}

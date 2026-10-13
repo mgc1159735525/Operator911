@@ -34,7 +34,7 @@ Shader "Minglu/ClassicPortrait"
       // cannot establish this relationship.
       float2 shape=(i.uv-_FeatureUV.xy)/_FeatureUV.zw;
       float turn=smoothstep(.10,.80,1-shape.y);
-      i.uv.x+=lerp(-.03,.085,turn)*_FeatureUV.z;
+      i.uv.x+=lerp(-.01,.055,turn)*_FeatureUV.z;
     }
     fixed4 c=tex2D(_MainTex,i.uv);float l=dot(c.rgb,float3(.299,.587,.114));
     c.a=saturate((c.a-.055)/.945);
@@ -59,7 +59,22 @@ Shader "Minglu/ClassicPortrait"
     else if(_Mode<1.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=max(Feather(p,float2(.24,.625),float2(.265,.13)),Feather(p,float2(.75,.605),float2(.265,.13)));c.a*=mask*smoothstep(.50,.60,p.y);float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);}
     else if(_Mode<2.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=max(Feather(p,float2(.24,.47),float2(.26,.12)),Feather(p,float2(.75,.46),float2(.26,.12)));float elder=step(.87,frac(i.uv.x));c.a*=mask*(1-smoothstep(.50+elder*.20,.77+elder*.20,l))*.90;c.rgb=FacialHair(l,elder);}
     else if(_Mode<3.5){float3 neutral=lerp(float3(l,l,l),c.rgb,.28);c.rgb=neutral*_Cloth.rgb*1.46;}
-    else if(_Mode>4.5&&_Mode<6.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=_Mode<5.5?Feather(p,float2(.50,.49),float2(.32,.61))*smoothstep(.03,.31,p.y):Feather(p,float2(.50,.51),float2(.46,.24));c.a*=mask;float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);}
+    else if(_Mode>4.5&&_Mode<6.5){
+      float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));
+      // A single broad ellipse leaves a hard strip down the bridge yet
+      // erases its root. Feather the narrow bridge separately from the
+      // wider nasal wings, so the root can meet the inner eye sockets.
+      float bridge=Feather(p,float2(.50,.36),float2(.25,.43));
+      float wings=Feather(p,float2(.50,.76),float2(.39,.25));
+      float mask=_Mode<5.5?max(bridge,wings)*smoothstep(.025,.23,p.y):Feather(p,float2(.50,.51),float2(.46,.24));
+      if(_Mode<5.5){
+        // Female nose artwork ends higher inside its atlas cell. Exclude
+        // the skin pad below each columella; it otherwise forms a pale arc.
+        float female=step(.5,1-i.uv.y);
+        mask*=1-smoothstep(lerp(.84,.77,female),lerp(.94,.88,female),p.y);
+      }
+      c.a*=mask;float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);
+    }
     else if(_Mode>6.5){c.rgb=FacialHair(l,0);c.a*=lerp(.82,1,smoothstep(.16,.40,l));}
     if((_Mode>.5&&_Mode<1.5)||(_Mode>4.5&&_Mode<6.5)){
       // Skin is sampled at the displayed point, not the deformed source.
