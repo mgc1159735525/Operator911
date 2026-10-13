@@ -3,6 +3,7 @@ Shader "Minglu/ClassicPortrait"
  Properties {
   [PerRendererData] _MainTex("Atlas",2D)="white"{} _Color("Color",Color)=(1,1,1,1)
   _BaseTex("Head skin",2D)="white"{} _BaseUV("Head UV",Vector)=(0,0,1,1) _FeatureUV("Feature UV",Vector)=(0,0,1,1) _FeatureTarget("Feature position",Vector)=(0,0,1,1)
+  _FeatureRotation("Feature pivot and rotation",Vector)=(0,0,1,0)
   _Skin("Skin",Color)=(1,1,1,1) _Cloth("Cloth",Color)=(1,1,1,1) _FeatureSkin("Source skin reference",Color)=(.82,.66,.58,1)
   _Mode("Mode",Float)=0 _HairIndex("Hair",Float)=0 _SourceWhite("White source",Float)=0 _Cap("Cap",Float)=0 _HeadTopTrim("Head top gutter",Float)=0 _HeadLeftTrim("Head left gutter",Float)=0
   _StencilComp("Stencil comparison",Float)=8 _Stencil("Stencil",Float)=0 _StencilOp("Stencil operation",Float)=0 _StencilWriteMask("Stencil write mask",Float)=255 _StencilReadMask("Stencil read mask",Float)=255 _ColorMask("Color mask",Float)=15
@@ -19,7 +20,7 @@ Shader "Minglu/ClassicPortrait"
    #include "UnityUI.cginc"
    struct appdata {float4 vertex:POSITION;float4 color:COLOR;float2 uv:TEXCOORD0;};
    struct v2f {float4 pos:SV_POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;float4 world:TEXCOORD1;};
-   sampler2D _MainTex,_BaseTex;fixed4 _Color,_Skin,_Cloth,_FeatureSkin;float4 _ClipRect,_BaseUV,_FeatureUV,_FeatureTarget;float _Mode,_HairIndex,_SourceWhite,_Cap,_HeadTopTrim,_HeadLeftTrim;
+   sampler2D _MainTex,_BaseTex;fixed4 _Color,_Skin,_Cloth,_FeatureSkin;float4 _ClipRect,_BaseUV,_FeatureUV,_FeatureTarget,_FeatureRotation;float _Mode,_HairIndex,_SourceWhite,_Cap,_HeadTopTrim,_HeadLeftTrim;
    v2f vert(appdata v){v2f o;o.world=v.vertex;o.pos=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float3 Hair(float l,float whiteSource){float t=saturate(whiteSource>.5?(l-.15)/.75:(l-.025)*2.6);if(_HairIndex<.5)return lerp(float3(.045,.039,.032),float3(.31,.28,.23),t);if(_HairIndex<1.5)return lerp(float3(.08,.047,.029),float3(.44,.31,.19),t);if(_HairIndex<2.5)return lerp(float3(.18,.19,.18),float3(.7,.7,.65),t);return lerp(float3(.39,.41,.39),float3(.97,.96,.89),t);}
    // Brow and beard originals are mid-tone brown, unlike scalp or white hair.
@@ -80,6 +81,8 @@ Shader "Minglu/ClassicPortrait"
       // Skin is sampled at the displayed point, not the deformed source.
       float2 local=(placementUV-_FeatureUV.xy)/_FeatureUV.zw;local.y=1-local.y;
       float2 head=_FeatureTarget.xy+local*_FeatureTarget.zw;
+      float2 relative=head-_FeatureRotation.xy;
+      head=_FeatureRotation.xy+float2(relative.x*_FeatureRotation.z-relative.y*_FeatureRotation.w,relative.x*_FeatureRotation.w+relative.y*_FeatureRotation.z);
       float3 underlying=tex2D(_BaseTex,_BaseUV.xy+float2(head.x,1-head.y)*_BaseUV.zw).rgb;
       float warm=tex2D(_MainTex,i.uv).r-tex2D(_MainTex,i.uv).g;
       float skin=smoothstep(.012,.045,warm)*smoothstep(.18,.40,l);

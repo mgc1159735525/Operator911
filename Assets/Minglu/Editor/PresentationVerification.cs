@@ -13,6 +13,9 @@ namespace Minglu.EditorTools
                 AppearanceCatalogVerification.Verify();
                 GroomingAgeVerification.Verify();
                 ClassicPortraitVerification.Verify();
+                PortraitCalibrationVerification.Verify();
+                PortraitCalibrationGeometryVerification.Verify();
+                PortraitCalibrationEditorVerification.VerifyDraftOperations();
                 InstitutionVerification.Verify();
                 StrategyVerification.Verify();
                 MissionVerification.Verify();

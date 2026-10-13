@@ -26,6 +26,7 @@ Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 [Files]
 Source: "..\..\Builds\MingluCity\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.log"
 Source: "..\..\Docs\Minglu\安装与游玩指南.html"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Docs\Minglu\人物部件校准器教程.html"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{userdesktop}\{#GameName}"; Filename: "{app}\MingluCity.exe"; WorkingDir: "{app}"

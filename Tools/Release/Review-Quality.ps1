@@ -49,6 +49,15 @@ $rows += Read-Gate 'work-overview-1280x720' 'Logs/qa-work-ui-720.log' 'MINGLU_WO
 $rows += Read-Gate 'grooming-fit-render-coverage' 'Logs/qa-grooming-fit.log' 'MINGLU_GROOMING_FIT_RENDER_SUCCESS' $buildTime
 $rows += Read-Gate 'classic-editor-1600x900' 'Logs/qa-classic-studio.log' 'MINGLU_STUDIO_UI_SUCCESS' $buildTime
 $rows += Read-Gate 'classic-editor-1280x720' 'Logs/qa-classic-studio-720.log' 'MINGLU_STUDIO_UI_SUCCESS' $buildTime
+$rows += Read-Gate 'portrait-calibration-table' 'Logs/release-quality-build.log' 'MINGLU_PORTRAIT_CALIBRATION_VERIFY_SUCCESS' $latestSource
+$rows += Read-Gate 'portrait-calibration-geometry' 'Logs/release-quality-build.log' 'MINGLU_PORTRAIT_CALIBRATION_GEOMETRY_VERIFY_SUCCESS' $latestSource
+$rows += Read-Gate 'portrait-calibration-draft-recovery' 'Logs/release-quality-build.log' 'MINGLU_PORTRAIT_CALIBRATION_EDITOR_RULES_SUCCESS' $latestSource
+# Unity rewrites its cloud-service connection settings on startup, including
+# during the subsequent batch build. They do not affect this offline editor
+# window. Keep every asset, script, graphics/input setting and package in the
+# window freshness check; the main build freshness check above stays stricter.
+$latestPortraitEditorInput = ($sourceFiles | Where-Object { $_.Name -ne 'UnityConnectSettings.asset' } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1).LastWriteTimeUtc
+$rows += Read-Gate 'portrait-calibration-editor-window' 'Logs/calibration-editor-ui.log' 'MINGLU_PORTRAIT_CALIBRATION_EDITOR_UI_SUCCESS' $latestPortraitEditorInput
 $installed = $InstalledPath
 $matching = Test-Path -LiteralPath $binary
 foreach ($relative in @('MingluCity.exe','MingluCity_Data/Managed/Assembly-CSharp.dll','MingluCity_Data/resources.assets','MingluCity_Data/resources.assets.resS')) {
