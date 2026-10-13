@@ -113,9 +113,9 @@ namespace Minglu
             switch(stage)
             {
                 case 0:return "你只安排人员与目标，成员会自行行动。\n\n打开「人事档案」，查看一人的详细档案：情报、潜行、说服、组织决定对应行动的骰子数；表身份等级决定可接任务。\n\n读完后点「返回人事档案」。查看页面不会消耗一夜。";
-                case 1:return "打开第一项任务，点击「比较 / 更换」并亲自选择一人。\n\n每颗六面骰掷出 4、5、6 算一个成功。能力越高，骰子越多；成功数达到任务要求才完成。比较界面显示实际成功率。\n\n再点「签发」。这只是安排指令，成员尚未执行；不要把查看、调查和执行混为一谈。";
+                case 1:return "打开第一项任务，点击「比较人选」并亲自选择一人。\n\n每颗六面骰掷出 4、5、6 算一个成功。能力越高，骰子越多；成功数达到任务要求才完成。比较界面显示实际成功率。\n\n再点「签发」。这只是安排指令，成员尚未执行；不要把查看、调查和执行混为一谈。";
                 case 2:return "第一项指示已签发。先打开「结束今夜」核对表，再确认推进。\n\n只有确认推进才消耗一夜、扣除投入并掷骰。已经执行的成本不会因失败退还；稍后的自主练习中，可在执行前撤回指示。\n\n空闲成员会自己生活与恢复；不需要把每个人都派出去。";
-                case 3:return "刚才的结果来自真实掷骰。失败并不表示你点错了。\n\n打开「值夜报告」，展开全部判定，看骰子、成功数以及实际资源变化；然后返回地图。\n\n任务未成时，期限内可以重新签发；已经完成的阶段会保留。";
+                case 3:return "刚才的结果来自真实掷骰。失败并不表示你点错了。\n\n打开「值夜报告」，查看「完整判定」，看骰子、成功数以及实际资源变化；然后返回地图。\n\n任务未成时，期限内可以重新签发；已经完成的阶段会保留。";
                 case 4:return "现在建立第一条联络链，需要三名不同成员。\n\n内线必须在敌方机构任职；接头看说服，外送看潜行。可参考："+CommandName(t.sourceId)+" → "+CommandName(t.liaisonId)+" → "+CommandName(t.courierId)+"。三个岗位填好后，还要点「启用」。\n\n同一份情报每夜只走一环。第一条链在奇数夜观察：第二夜配好，最快第五夜送达；失败、休假或任务占岗都会延后。";
                 case 5:return "地下工作与日常生活会争用同一个人的时间。\n\n到「"+CommandName(t.restActorId)+"」的个人档案，选择「生活优先」。他会留出时间恢复体力、精神并积累表身份经验。\n\n忙于任务或联络的人不积累日常经验。生活优先也会暂停其地下工作；以后需要工作时，记得改回「平衡安排」。";
                 default:return "现在开放全部操作，不再替你锁定下一步。\n\n在八夜内争取：完成 2 项任务、真实送达 1 份情报、作出一次事件决定。目标始终显示在地图上方，底部建议可以随时定位待办。\n\n链条等待期间，用机动成员做任务。留意期限、连勤与暴露；轮休或任务占岗时可更换成员。第八夜结算后逐项复盘，未达标也能查看原因、重新练习。";
@@ -128,9 +128,9 @@ namespace Minglu
             switch(t.stage)
             {
                 case 0:return modal=="memberDetails"?"看能力与表身份，再看生活与成长。\n\n读完点下方返回。":"点「人事档案」，选一位成员，再查看人物详情。";
-                case 1:return modal=="compareCandidates"?"先比较对应能力、成功率和状态，再点「选此人」。":t.comparedMember?"人选已确定。检查成功率与成本，点击「签发」；失败仍可在期限内重试。":"打开第一项任务，再点「比较 / 更换」。先学比较，之后才开放签发。";
+                case 1:return modal=="compareCandidates"?"先比较对应能力、成功率和状态，再点「选此人」。":t.comparedMember?"人选已确定。检查成功率与成本，点击「签发」；失败仍可在期限内重试。":"打开第一项任务，再点「比较人选」。先学比较，之后才开放签发。";
                 case 2:return "签发不是执行。核对今夜安排，再确认推进一夜；不必让所有成员出勤。";
-                case 3:return "展开全部判定，找到骰子结果与资源变化。读完点「返回城区地图」继续。";
+                case 3:return "查看「完整判定」，找到骰子结果与资源变化。读完点「返回城区地图」继续。";
                 case 4:return "在第一条联络链：\n依次选人，再启用。\n\n内线："+CommandName(t.sourceId)+"\n接头："+CommandName(t.liaisonId)+"\n外送："+CommandName(t.courierId)+"\n\n这是建议人选，\n你可自行比较。";
                 case 5:return "在「"+CommandName(t.restActorId)+"」的详细档案，点「生活优先」。\n\n他负责本次休养练习；保持三位链条成员可出勤。";
                 default:return "已开放全部操作。目标与建议仍在地图上，可随时回看教学说明。";
@@ -171,7 +171,7 @@ namespace Minglu
         void OpenTutorialHelp(){tutorialHelpStage=State.tutorial.stage;tutorialPopup="help";Draw();}
         void DrawTutorialLayer()
         {
-            if(!InTutorial||atTitle||State.ended||modal=="appearance")return;
+            if(!InTutorial||atTitle||State.ended||modal=="appearance"||modal=="commandBriefing")return;
             if(TutorialDialogVisible){DrawTutorialDialog();return;}
             Transform scope=root;foreach(Transform child in root)if(child.name=="CommandShade")scope=child;
             bool strong=State.tutorial.stage<6;
@@ -222,6 +222,7 @@ namespace Minglu
         bool TutorialAllows(string name)
         {
             if(name.StartsWith("Tutorial"))return true;
+            if(name=="MemberGrowthHelp"||name=="MemberHistoryHelp")return true;
             if(State.tutorial.stage==3&&name=="CommandPageClose")return reportAll;
             if(name=="CommandMenu"||name=="CommandResume"||name=="CommandHome"||name=="CommandMenuQuit"||name=="Save")return true;
             if(name.EndsWith("Close")||name.EndsWith("Back")||name.EndsWith("Cancel")||name=="CommandPageClose"||name=="CommandTab_3")return true;

@@ -6,7 +6,7 @@ namespace Minglu
     public static class ClassicPortraitCatalog
     {
         public const int HeadCount=12;
-        public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops","Minglu/Art/Classic/brows"};
+        public static readonly string[] ResourcePaths={"Minglu/Art/Classic/heads-male","Minglu/Art/Classic/heads-female","Minglu/Art/Classic/features","Minglu/Art/Classic/outfits","Minglu/Art/Classic/details","Minglu/Art/Classic/backdrops","Minglu/Art/Classic/brows","Minglu/Art/Classic/eyes"};
         public static readonly Rect HeadRect=new Rect(40,12,320,320),OutfitRect=new Rect(0,185,400,400);
         // Frame references in each 362-pixel head cell: face centre x,
         // upper eye-socket y, lip y. A crop origin is NOT a pupil landmark;
@@ -34,16 +34,32 @@ namespace Minglu
         {return new Rect(x/tw,1-(y+h)/th,w/tw,h/th);}
         public static Rect FromHead(Rect r)
         {float s=HeadRect.width/362;return new Rect(HeadRect.x+r.x*s,HeadRect.y+r.y*s,r.width*s,r.height*s);}
+        // Dedicated eyebrow-free eyes, authored as 4 x 4 pairs on 1254 px.
+        // The pupils sit left of each cell's geometric centre. Register the
+        // painted anatomy, retaining the established midpoint and pupil span.
+        static readonly Vector4[] EyePupils={
+            new Vector4(62.71f,148.90f,213.80f,149.49f),new Vector4(64.24f,148.49f,214.46f,150.71f),new Vector4(65.52f,149.72f,212.53f,149.99f),new Vector4(64.32f,148.17f,214.21f,149.11f),
+            new Vector4(63.83f,148.54f,214.70f,149.23f),new Vector4(64.37f,149.43f,212.98f,150.27f),new Vector4(64.95f,148.59f,214.06f,149.52f),new Vector4(64.76f,148.50f,214.72f,148.87f),
+            new Vector4(63.16f,148.88f,213.56f,149.76f),new Vector4(64.18f,148.60f,214.92f,150.50f),new Vector4(65.61f,149.65f,212.57f,150.11f),new Vector4(64.49f,148.41f,214.58f,149.61f),
+            new Vector4(64.17f,148.68f,214.55f,149.54f),new Vector4(64.52f,149.37f,213.18f,150.15f),new Vector4(65.05f,148.66f,214.10f,149.41f),new Vector4(64.80f,148.54f,214.72f,148.96f)
+        };
+        // x/y midpoint offset from Landmarks, z pupil span, in head pixels.
+        static readonly Vector3[] EyeRegistration={
+            new Vector3(1.28487f,7.14688f,64.40921f),new Vector3(.74605f,6.57812f,61.83947f),new Vector3(1.86513f,6.21250f,65.07237f),new Vector3(1.90658f,7.87812f,60.84474f),
+            new Vector3(1.40921f,9.13750f,62.17105f),new Vector3(1.65789f,8.20312f,62.66842f),new Vector3(1.03618f,9.13750f,64.40921f),new Vector3(.16579f,10.51875f,61.83947f),
+            new Vector3(1.90658f,2.87812f,63.49737f),new Vector3(.87039f,2.22813f,62.58553f),new Vector3(1.07763f,2.75625f,64.49211f),new Vector3(.82895f,3.16250f,63.49737f),
+            new Vector3(1.49211f,3.52813f,64.16053f),new Vector3(1.49211f,2.71563f,63f),new Vector3(.91184f,3.65000f,64.16053f),new Vector3(.78750f,4.62500f,62.08816f)
+        };
+        static Rect EyeRect(Appearance a)
+        {
+            int index=a.sex*8+a.parts[2];var p=Landmarks(a);var pupils=EyePupils[index];var registration=EyeRegistration[index];
+            float sx=registration.z/(pupils.z-pupils.x),sy=.40625f;
+            return FromHead(new Rect(p.x+registration.x-((pupils.x+pupils.z)*.5f-12)*sx,p.y+registration.y-((pupils.y+pupils.w)*.5f-110)*sy,292*sx,88*sy));
+        }
         public static Rect FeatureRect(Appearance a,int part)
         {
             var p=Landmarks(a);
-            switch(part){case 2:
-                    // Male/female atlas rows have different vertical padding.
-                    // Register the painted pupil line, not the crop centre;
-                    // reusing the male offset makes female lids hit the brows.
-                    const float eyeWidth=126,eyeHeight=52;
-                    float pupilInCrop=a.sex==0?44:29, pupilY=p.y+(a.sex==0?8:3);
-                    return FromHead(new Rect(p.x-eyeWidth*.5f,pupilY-pupilInCrop/64*eyeHeight,eyeWidth,eyeHeight));
+            switch(part){case 2:return EyeRect(a);
                 case 3:return FromHead(new Rect(p.x-69,p.y-17,138,19));
                 // Measured columella baselines differ between the two rows
                 // (male ~126 px, female ~118 px of the 148 px crop). Keep
@@ -62,6 +78,7 @@ namespace Minglu
         {var p=Landmarks(a);return new Vector2(p.x-3,p.z);}
         public static Rect FeatureCell(Appearance a,int part)
         {
+            if(part==2){int index=a.sex*8+a.parts[2];return SourcePixels(index%4*313.5f+12,index/4*313.5f+110,292,88,1254,1254);}
             int row=a.sex*4+part-2,col=a.parts[part];float cell=1254f/8;
             var crop=part==2?new Rect(2,60,152,64):part==3?new Rect(2,48,152,54):part==4?new Rect(9,0,140,148):new Rect(5,25,147,119);
             return SourcePixels(col*cell+crop.x,row*cell+crop.y,crop.width,crop.height,1254,1254);
@@ -77,8 +94,16 @@ namespace Minglu
             new Color32(209,167,146,255),new Color32(205,164,142,255),new Color32(208,166,146,255),new Color32(206,164,144,255),new Color32(206,166,145,255),new Color32(206,166,145,255),new Color32(204,164,143,255),new Color32(201,160,139,255),
             new Color32(199,160,142,255),new Color32(197,156,138,255),new Color32(196,155,137,255),new Color32(197,156,138,255),new Color32(200,161,143,255),new Color32(197,157,139,255),new Color32(197,158,140,255),new Color32(194,155,135,255)
         };
+        // Median opaque skin below the lids of each new eye pair. Do not use
+        // the warmer/darker source paint as an uncalibrated face-colour patch.
+        static readonly Color32[] EyeSkinReferences={
+            new Color32(177,131,111,255),new Color32(180,136,114,255),new Color32(177,131,111,255),new Color32(163,122,101,255),
+            new Color32(184,141,120,255),new Color32(178,135,115,255),new Color32(175,131,111,255),new Color32(178,135,115,255),
+            new Color32(180,134,114,255),new Color32(181,136,114,255),new Color32(178,133,114,255),new Color32(164,122,102,255),
+            new Color32(184,140,120,255),new Color32(179,135,115,255),new Color32(175,130,110,255),new Color32(179,135,115,255)
+        };
         public static Color FeatureSkin(Appearance a,int part)
-        {int group=part==2?0:part==4?1:2;return FeatureSkinReferences[a.sex*24+group*8+a.parts[part]];}
+        {if(part==2)return EyeSkinReferences[a.sex*8+a.parts[2]];int group=part==4?1:2;return FeatureSkinReferences[a.sex*24+group*8+a.parts[part]];}
         // The source sheet has unequal top gutters. Register each garment at
         // its own collar, instead of using a nominal grid origin as anatomy.
         static readonly float[] OutfitTop={52,54,51,48,343,342,346,342,650,651,655,651,946,946,946,947};

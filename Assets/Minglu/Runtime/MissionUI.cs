@@ -7,7 +7,7 @@ namespace Minglu
     public partial class CityGameUI
     {
         // Choices have visible boundaries and persistent selection, unlike directory links.
-        void MissionChoice(string name,Transform parent,string title,string detail,float x,float y,float w,float h,Action action,bool enabled,bool selected)
+        void MissionChoice(string name,Transform parent,string title,string detail,float x,float y,float w,float h,Action action,bool enabled,bool selected,string icon="")
         {
             var button=Button(name,parent,"",x,y,w,h,action,enabled,selected);
             Color fill=selected?PaperInset:Paper;
@@ -15,9 +15,19 @@ namespace Minglu
             button.image.CrossFadeColor(enabled?fill:colors.disabledColor,0,true,true);
             Border(button.transform,0,0,w,h,selected?Accent:PaperLine);
             Color text=enabled?PaperInk:PaperMuted;
-            string mark=name=="MissionIntel"?(selected?"☑  ":"□  "):(selected?"●  ":"○  ");
-            Label(button.transform,mark+title,12,detail==""?0:8,w-24,detail==""?h:25,19,text,TextAnchor.MiddleLeft);
+            string mark=name=="MissionIntel"?(selected?"☑":"□"):(selected?"●":"○");
+            if(icon!="")NoirIcon(button.transform,icon,12,detail==""?(h-20)*.5f:10,20,text);
+            float titleX=icon==""?12:42;
+            Label(button.transform,title,titleX,detail==""?0:8,w-titleX-34,detail==""?h:25,19,text,TextAnchor.MiddleLeft);
+            Label(button.transform,mark,w-29,detail==""?0:8,20,detail==""?h:25,17,selected?Accent:PaperMuted,TextAnchor.MiddleCenter);
             if(detail!="")Label(button.transform,detail,12,34,w-24,h-36,17,PaperMuted);
+        }
+        Button MissionIconButton(string name,Transform parent,string icon,string title,float x,float y,float w,float h,Action action,bool enabled=true)
+        {
+            var button=Button(name,parent,"",x,y,w,h,action,enabled);
+            NoirIcon(button.transform,icon,15,(h-20)*.5f,20,enabled?PaperInk:PaperMuted);
+            Label(button.transform,title,45,0,w-57,h,18,enabled?PaperInk:PaperMuted,TextAnchor.MiddleLeft);
+            return button;
         }
         void MissionButtonText(Button button,int size=19)
         {button.GetComponentInChildren<Text>().fontSize=size;}
@@ -27,12 +37,12 @@ namespace Minglu
                 "\n失败另加：暴露 +"+(task.reconnaissance?2:task.failExposure)+" / 压力 +"+(task.reconnaissance?1:2);
         }
         string MissionRequirements(CommandTask task)
-        {return "执行要求："+CommandRules.Skills[task.skill]+" / "+task.required+"成功 / 身份"+task.level+"级"+(string.IsNullOrEmpty(task.profession)?"":" / "+task.profession);}
+        {return "门槛："+CommandRules.Skills[task.skill]+" / "+task.required+"成功 / 身份"+task.level+"级"+(string.IsNullOrEmpty(task.profession)?"":" / "+task.profession);}
         string MissionSynopsis(CommandTask task)
         {
             string first=(task.body??"").Split('\n').FirstOrDefault(line=>!string.IsNullOrWhiteSpace(line))??"查看任务背景，了解本次指示。";
             var text=new System.Globalization.StringInfo(first.Trim());
-            return text.LengthInTextElements>44?text.SubstringByTextElements(0,44)+"…":text.String;
+            return text.LengthInTextElements>30?text.SubstringByTextElements(0,30)+"…":text.String;
         }
         void DrawMissionPlan()
         {
@@ -46,46 +56,50 @@ namespace Minglu
 
             var main=Rect("MissionMainColumn",p,32,128,640,524);
             Label(main,MissionSynopsis(t),0,0,456,60,19).name="MissionBackgroundPreview";
-            MissionButtonText(Button("MissionBackgroundDetails",main,"任务全文  ›",480,6,160,40,()=>{modal="missionBackground";Draw();}),18);
-            Label(main,(t.stepsRequired>1?"全部阶段完成后  ":"目标完成后  ")+CommandRules.TaskReward(t),0,74,640,48,18,Teal).name="AssignmentOutcome";
+            MissionIconButton("MissionBackgroundDetails",main,"report","任务背景",480,6,160,40,()=>{modal="missionBackground";Draw();});
+            NoirIcon(main,"check",0,78,20,Teal);
+            Label(main,(t.stepsRequired>1?"全部完成：":"完成：")+CommandRules.TaskReward(t),30,74,610,48,18,Teal).name="AssignmentOutcome";
             Rule(main,0,125,640);
 
-            Label(main,"负责人",0,138,640,24,17,Muted);
+            Label(main,"执行人",0,138,640,24,17,Muted);
             Portrait(main,a,0,170,50,73);
             Label(main,a.name,70,168,405,33,25,Gold);
             Label(main,person.profession+" "+person.level+"级 · "+CommandRules.Skills[CommandRules.ActionSkill(t)]+" "+new[]{a.intel,a.stealth,a.persuade,a.organize}[CommandRules.ActionSkill(t)],70,208,405,26,19,Muted);
-            var compare=Button("CommandCompare_"+t.id,main,"比较 / 更换 ›",482,183,158,44,()=>{modal="compareCandidates";Draw();},t.actor<0);MissionButtonText(compare);
+            var compare=MissionIconButton("CommandCompare_"+t.id,main,"people","比较人选",482,183,158,44,()=>{modal="compareCandidates";Draw();},t.actor<0);
             Border(compare.transform,0,0,158,44,PaperLine);
 
-            MissionChoice("MissionModeExecute",main,t.reconComplete?"执行 · 已获调查优势":"直接执行目标","",0,254,312,46,()=>{t.reconnaissance=false;Draw();},t.actor<0,!t.reconnaissance);
-            MissionChoice("MissionModeRecon",main,t.reconComplete?"调查已完成":"先调查 · 占用一夜","",328,254,312,46,()=>{t.reconnaissance=true;Draw();},t.actor<0&&!t.reconComplete,t.reconnaissance);
-            string actionHint=t.reconnaissance?"本夜用情报能力调查：需1成功，不推进任务阶段。":t.reconComplete?"调查优势：本阶段 +1骰、暴露−3。":"调查成功后，目标执行 +1骰、暴露−3。";
+            MissionChoice("MissionModeExecute",main,t.reconComplete?"执行 · 调查加成":"执行目标","",0,254,312,46,()=>{t.reconnaissance=false;Draw();},t.actor<0,!t.reconnaissance,"tasks");
+            MissionChoice("MissionModeRecon",main,t.reconComplete?"调查已完成":"先调查 · 1夜","",328,254,312,46,()=>{t.reconnaissance=true;Draw();},t.actor<0&&!t.reconComplete,t.reconnaissance,"intel");
+            string actionHint=t.reconnaissance?"调查：情报判定 / 需1成功 / 不推进阶段":t.reconComplete?"调查加成：+1骰 / 暴露−3":"调查成功：后续执行+1骰 / 暴露−3";
             Label(main,MissionRequirements(t)+"\n"+actionHint,0,312,640,48,18,Muted).name="AssignmentReconValue";
 
             Label(main,"行动方案",0,371,640,24,17,Muted);
-            string[] titles={"常规","充分筹备","紧急推进"};
-            string[] details={"不追加资源","4银两 · +1骰\n暴露−2","+1骰 · 暴露+8\n压力+2"};
-            for(int i=0;i<3;i++){int plan=i;MissionChoice("MissionPlan_"+i,main,titles[i],details[i],i*218,400,204,80,()=>{t.plan=plan;Draw();},t.actor<0,t.plan==i);}
-            MissionChoice("MissionIntel",main,"情报支援 · 1份换 +1骰","",0,488,640,36,()=>{t.intelSupport=!t.intelSupport;Draw();},t.actor<0,t.intelSupport);
+            string[] titles={"常规","筹备","紧急"};
+            string[] icons={"check","money","risk"};
+            string[] details={"无额外消耗","4银两 · +1骰\n暴露−2","+1骰 · 暴露+8\n压力+2"};
+            for(int i=0;i<3;i++){int plan=i;MissionChoice("MissionPlan_"+i,main,titles[i],details[i],i*218,400,204,80,()=>{t.plan=plan;Draw();},t.actor<0,t.plan==i,icons[i]);}
+            MissionChoice("MissionIntel",main,"情报 +1骰 · 消耗1份","",0,488,640,36,()=>{t.intelSupport=!t.intelSupport;Draw();},t.actor<0,t.intelSupport,"intel");
 
             var summary=Box("MissionDecisionColumn",p,704,128,384,524,PaperInset);
-            Label(summary,"本夜执行预览",24,18,336,26,18,Muted);
+            Label(summary,"预计成功率",24,18,336,26,18,Muted);
             int dice=CommandRules.TaskDice(State,a,t);string error=CommandRules.TaskError(State,a.id,t);
             Label(summary,(DispatchRules.Probability(dice,CommandRules.ActionRequired(t))*100).ToString("0.#")+"%",24,50,336,48,36,Gold).name="AssignmentChance";
-            Label(summary,(t.reconnaissance?"调查":t.stepsRequired>1?"阶段"+(t.stepsDone+1)+"/"+t.stepsRequired:"当前阶段")+"成功率 · "+dice+"骰 / 需"+CommandRules.ActionRequired(t)+"成功",24,104,336,27,18,Muted).name="AssignmentRoll";
-            Label(summary,CommandRules.TaskTimingText(State,t),24,146,336,48,19,CommandRules.TaskCanFinish(State,t)?TextColor:Red).name="AssignmentTiming";
+            Label(summary,(t.reconnaissance?"调查":t.stepsRequired>1?"阶段"+(t.stepsDone+1)+"/"+t.stepsRequired:"执行")+" · "+dice+"骰 / 需"+CommandRules.ActionRequired(t)+"成功",24,104,336,27,18,Muted).name="AssignmentRoll";
+            NoirIcon(summary,"clock",24,149,20,CommandRules.TaskCanFinish(State,t)?Muted:Red);
+            Label(summary,CommandRules.TaskTimingText(State,t),56,146,304,48,19,CommandRules.TaskCanFinish(State,t)?TextColor:Red).name="AssignmentTiming";
             Rule(summary,24,201,336);
-            Label(summary,"本夜投入 · 执行后扣除",24,216,336,24,17,Muted);
+            NoirIcon(summary,"money",24,218,20,Muted);
+            Label(summary,"执行消耗",56,216,304,24,17,Muted);
             Label(summary,CommandRules.PlanCost(t)+" 银两 · "+(t.intelSupport?1:0)+" 情报\n体力−"+CommandRules.ActionStaminaCost(State,a)+" · 精神−6",24,250,336,51,20).name="AssignmentCost";
             Label(summary,MissionRiskText(t,a),24,316,336,48,18,Muted).name="AssignmentRisk";
             Label(summary,AssignmentChainText(a.id),24,384,336,48,18,AssignmentChainImpact(a.id)>0?Red:Muted).name="AssignmentChainImpact";
-            Label(summary,person.neglect>=2?"连勤"+(person.neglect+1)+"夜：信任−7 / 可疑+8":"连勤 "+(person.neglect+1)+" 夜 · 未触发家事惩罚",24,439,336,25,17,person.neglect>=2?Red:Muted).name="AssignmentLifeAlert";
-            MissionButtonText(Button("MissionImpactDetails",summary,"后果与规则详情  ›",12,478,360,36,()=>{modal="missionImpact";Draw();}),18);
+            Label(summary,person.neglect>=2?"连勤"+(person.neglect+1)+"夜：信任−7 / 可疑+8":"连勤 "+(person.neglect+1)+" 夜",24,439,336,25,17,person.neglect>=2?Red:Muted).name="AssignmentLifeAlert";
+            MissionIconButton("MissionImpactDetails",summary,"risk","后果详情",12,478,360,36,()=>{modal="missionImpact";Draw();});
 
             Rule(p,32,668,1056);
             MissionButtonText(Button("MissionBack",p,taskReturnModal=="memberDetails"?"返回个人档案":taskReturnModal=="districtDetails"?"返回城区档案":taskReturnModal=="campaignDossier"?"返回主线委任":taskReturnModal=="commandConfirm"?"返回今夜安排":"返回"+CommandPageName(taskReturnTab),24,676,194,48,()=>{CloseTaskDialog();Draw();}));
-            Label(p,t.actor>=0?"已签发给 "+CommandName(t.actor)+"\n撤回后可调整安排。":error!=""?error:"可签发 · 可用 "+(State.money-CommandRules.ReservedMoney(State,t.id))+" 银两 / "+(State.intelligence-CommandRules.ReservedIntel(State,t.id))+" 情报\n结束今夜后，由成员执行。",238,679,438,49,17,error==""?Muted:Red).name="AssignmentBlockReason";
-            if(t.actor>=0)MissionButtonText(Button("CommandCancel_"+t.id,p,"撤回授权 · 释放预留",704,676,384,48,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();}));
+            Label(p,t.actor>=0?"已签发给 "+CommandName(t.actor)+" · 可撤回":error!=""?error:"可用 "+(State.money-CommandRules.ReservedMoney(State,t.id))+" 银两 / "+(State.intelligence-CommandRules.ReservedIntel(State,t.id))+" 情报\n签发后，结束今夜执行。",238,679,438,49,17,error==""?Muted:Red).name="AssignmentBlockReason";
+            if(t.actor>=0)MissionButtonText(Button("CommandCancel_"+t.id,p,"撤回 · 释放预留",704,676,384,48,()=>{t.actor=-1;toast="授权已撤回，释放成员及预留资源。";Save(false);Draw();}));
             else MissionButtonText(Button("CommandAuthorize",p,(t.reconnaissance?"授权调查 · ":"签发给 ")+a.name,704,676,384,48,()=>{toast=CommandRules.Assign(State,a.id,t.id);if(toast==""){toast="已签发"+(t.reconnaissance?"调查":"执行")+"给 "+a.name+"；结束今夜后执行。";CloseTaskDialog();Save(false);}Draw();},error=="",true),20);
         }
         void DrawMissionBackground()

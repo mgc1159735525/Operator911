@@ -8,25 +8,29 @@ namespace Minglu
             var a=CommandRules.Agent(State,selectedAgent);var member=CommandRules.Person(State,selectedAgent);
             var p=CommandModal(a.name+" / 人物档案",850);
             DrawLook(p,EffectiveMemberLook(a),28,99,192,280);
-            Label(p,member.profession+" · "+member.level+"级 / "+member.age+"岁 / "+MemberStatus(a),248,99,624,29,21,Gold);
-            Label(p,"任职："+CommandRules.Employment(member)+" · 地下岗位："+CommandRole(a.id),248,140,624,27,18);
-            Label(p,"情报 "+a.intel+" / 潜行 "+a.stealth+" / 说服 "+a.persuade+" / 组织 "+a.organize,248,179,624,28,20);
-            Label(p,"体力 "+a.stamina+" / 精神 "+a.spirit+" / 暴露 "+a.exposure+" / 信任 "+member.loyalty,248,221,624,26,18,Muted);
-            Label(p,CommandRules.TemperEffect(member),248,260,624,26,18,Muted);
-            var detail=Scroll(p,"PersonDetails_"+a.id,248,303,624,92,92);
-            var text=Label(detail,"生活牵挂："+member.life+" · 连勤 "+member.neglect+" 夜\n近期情况："+member.last,0,0,592,92,18,Muted);
-            float h=UnityEngine.Mathf.Max(92,text.preferredHeight+8);text.rectTransform.sizeDelta=new UnityEngine.Vector2(592,h);detail.sizeDelta=new UnityEngine.Vector2(detail.sizeDelta.x,h);
-            Rule(p,28,415,844);Label(p,"两种成长，需要轮换安排",28,431,844,27,21,TextColor);
+            Label(p,member.profession+" "+member.level+"级 · "+member.age+"岁 · "+MemberStatus(a),248,99,624,29,21,Gold);
+            Label(p,CommandRules.Employment(member)+" · "+CommandRole(a.id),248,144,624,27,18);
+            string[] skills={"情报","潜行","说服","组织"};string[] icons={"intel","lock","people","routes"};int[] values={a.intel,a.stealth,a.persuade,a.organize};
+            for(int i=0;i<4;i++)CompactMetric(p,icons[i],skills[i],values[i].ToString(),248+i*156,191,145,TextColor);
+            Rule(p,248,263,624);
+            Label(p,"体力 "+a.stamina+"     精神 "+a.spirit+"     暴露 "+a.exposure+"     信任 "+member.loyalty,248,283,624,27,18,a.exposure>=State.command.strategy.config.warning?Red:Muted).name="MemberVitals";
+            Label(p,CommandRules.TemperEffect(member),248,327,624,27,18,Muted);
+            IconButton("MemberHistoryHelp",p,"report","生活与近况",248,367,220,39,()=>OpenBriefing(a.name+" / 生活与近况","生活牵挂："+member.life+"\n连勤 "+member.neglect+" 夜\n\n近期情况："+member.last));
+            Label(p,"连勤 "+member.neglect+" 夜"+(member.neglect>=2?" · 留意生活":""),486,375,386,27,18,member.neglect>=2?Red:Muted);
+            Rule(p,28,426,844);Label(p,"成长",28,446,404,27,21,TextColor);
+            IconButton("MemberGrowthHelp",p,"report","成长规则",700,435,172,40,()=>OpenBriefing("成员成长与轮休","地下能力\n完成任务或岗位成功累计4次，对应能力+1，能力上限6。中间阶段与调查不计经验。\n\n表身份\n空闲一夜获得1点身份经验；升级所需经验为 "+State.command.config.coverXP+" × 当前等级，等级上限4。\n\n日常恢复\n体力+20、精神+15、暴露−10。连勤第三夜起：信任−7、可疑+8。执行地下工作时不享受日常恢复。"));
             int[] xp=a.skillExperience??new int[4];
-            Label(p,"地下能力 / 成功经验",28,474,404,25,18,Gold);
-            Label(p,"完成任务或岗位成功累计4次，对应能力+1。\n情报 "+xp[0]+"/4 · 潜行 "+xp[1]+"/4 · 说服 "+xp[2]+"/4 · 组织 "+xp[3]+"/4\n能力上限6；中间阶段与调查不计经验。",28,508,404,84,17,Muted).name="MemberSkillGrowth";
-            Label(p,"表身份 / 日常经验",468,474,404,25,18,Gold);
-            Label(p,(member.level>=4?"身份已达4级上限。":"经验 "+member.xp+" / "+(State.command.config.coverXP*member.level)+"；空闲一夜+1。")+"\n日常恢复体力20、精神15，暴露−10。\n连勤第三夜起：信任−7、可疑+8。",468,508,404,84,17,Muted).name="MemberGrowthChoice";
+            Label(p,"能力经验",28,492,404,25,18,Gold);
+            Label(p,"情报 "+xp[0]+"/4     潜行 "+xp[1]+"/4\n说服 "+xp[2]+"/4     组织 "+xp[3]+"/4",28,528,404,58,18,Muted).name="MemberSkillGrowth";
+            Label(p,"身份经验",468,492,404,25,18,Gold);
+            Label(p,(member.level>=4?"4级 · 已满级":"Lv."+member.level+"   "+member.xp+" / "+(State.command.config.coverXP*member.level))+"\n空闲夜：成长与恢复",468,528,404,58,18,Muted).name="MemberGrowthChoice";
             string[] policies={"平衡安排","生活优先","主动发现"};
-            for(int i=0;i<3;i++){int policy=i;Button("LifePolicy_"+i,p,policies[i],28+i*284,612,272,41,()=>{CommandRules.SetPolicy(State,member.id,policy);toast="已设为"+policies[policy]+"。";Save(false);Draw();},a.condition==Condition.Active,member.policy==i);}
-            Label(p,member.policy==1?"生活优先：撤回已签发任务；今夜处理日常，原联络岗位等待，可安排替补。":member.policy==2?"主动发现：空闲时可能上报新机会，仍由你授权；执行地下工作时不享受日常恢复。":"平衡安排：有任务或联络待办就出勤；没有地下工作时，自动处理日常并恢复。",28,669,844,46,18,Muted);
-            Button("CommandEmployment",p,CommandRules.HasInstitution(member)?"已任职 · 可担任情报链内线":"建立机构任职 / 查看任职任务  ›",28,728,548,43,OpenEmployment,!CommandRules.HasInstitution(member)&&a.condition==Condition.Active);
-            Button("CommandEditLook",p,"编辑人物外观  ›",596,728,276,43,()=>OpenAppearance(a.id));
+            string[] policyIcons={"routes","home","intel"};
+            for(int i=0;i<3;i++){int policy=i;IconButton("LifePolicy_"+i,p,policyIcons[i],policies[i],28+i*284,611,272,41,()=>{CommandRules.SetPolicy(State,member.id,policy);toast="已设为"+policies[policy]+"。";Save(false);Draw();},a.condition==Condition.Active,member.policy==i);}
+            Label(p,"生活优先会撤回任务、暂停岗位。",312,657,278,25,15,Muted).name="MemberPolicyWarning";
+            Label(p,member.policy==1?"今夜恢复体力与精神；原联络岗位等待。":member.policy==2?"空闲时寻找机会，仍需你签发。":"有安排就出勤，空闲时自动恢复。",28,691,844,26,18,Muted);
+            IconButton("CommandEmployment",p,"home",CommandRules.HasInstitution(member)?"已任职 · 可作内线":a.condition!=Condition.Active?"任职需可行动成员":"机构任职",28,736,548,43,OpenEmployment,!CommandRules.HasInstitution(member)&&a.condition==Condition.Active);
+            IconButton("CommandEditLook",p,"people","外观",596,736,276,43,()=>OpenAppearance(a.id));
             Button("MemberDetailsClose",p,returnToWorkOverview?"返回今夜安排":"返回"+CommandPageName(commandTab),28,789,276,42,()=>{if(returnToWorkOverview)ReturnToWorkOverview();else{modal="";Draw();}});
         }
         void DrawCommandOverview()

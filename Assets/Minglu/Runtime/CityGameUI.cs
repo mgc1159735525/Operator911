@@ -64,6 +64,7 @@ namespace Minglu
             // A failed write needs an explicit retry/stay decision. Shortcuts
             // must not replace the unsaved in-memory run behind this dialog.
             if(PersistenceFailurePending)return;
+            if(HandleBriefingKeyboard())return;
             if(HandleTutorialKeyboard())return;
             if((atTitle&&homePage=="appearance"||modal=="appearance")&&Input.GetKeyDown(KeyCode.Escape)){RequestCloseAppearance();return;}
             if(modal=="appearance"&&Input.GetKeyDown(KeyCode.F9)){lookNotice="请先应用或取消外观修改，再读取存档。";Draw();return;}
@@ -353,6 +354,8 @@ namespace Minglu
             string[] args=Environment.GetCommandLineArgs();int capture=Array.IndexOf(args,"--minglu-capture");if(capture<0||capture+1>=args.Length)yield break;
             Application.runInBackground=true;UnityEngine.Rendering.SplashScreen.Stop(UnityEngine.Rendering.SplashScreen.StopBehavior.StopImmediate);yield return null;yield return null;
             string path=args[capture+1];Capture(path);
+            if(Array.IndexOf(args,"--compact-ui-only")>=0){yield return CompactUiSmoke(path);Application.Quit();yield break;}
+            if(Array.IndexOf(args,"--eye-layer-only")>=0){yield return EyeLayerSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--tutorial-only")>=0){yield return TutorialSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--work-overview-only")>=0){yield return WorkOverviewSmoke(path);Application.Quit();yield break;}
             if(Array.IndexOf(args,"--keyboard-scroll-probe")>=0){yield return KeyboardScrollSmoke(path,true);Application.Quit();yield break;}

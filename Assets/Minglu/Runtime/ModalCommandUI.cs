@@ -38,6 +38,7 @@ namespace Minglu
         // Call before the generic Escape handling in CityGameUI.Update.
         bool HandleCommandModalEscape()
         {
+            if(modal=="commandBriefing"){CloseBriefing();return true;}
             if(State==null||State.command==null||State.command.eventKind!=0||State.ended||State.command.notices.Count>0)return false;
             if(modal=="missionPlan"){CloseTaskDialog();Draw();return true;}
             if(modal=="missionImpact"||modal=="missionBackground"){modal="missionPlan";Draw();return true;}

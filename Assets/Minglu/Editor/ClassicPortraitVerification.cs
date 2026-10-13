@@ -37,7 +37,7 @@ namespace Minglu.EditorTools
                 // skin patches may legitimately repeat across head options.
                 VerifyCell(source,ClassicPortraitCatalog.NeckUV(look),"neck "+index+"/"+head,null);
             }
-            else if(index==2)for(int sex=0;sex<2;sex++)for(int category=2;category<=5;category++)
+            else if(index==2)for(int sex=0;sex<2;sex++)for(int category=4;category<=5;category++)
             {
                 variants.Clear();var look=AppearanceRules.Randomize(430,sex,0);
                 for(int option=0;option<8;option++){look.parts[category]=option;VerifyCell(source,ClassicPortraitCatalog.FeatureCell(look,category),"feature "+sex+"/"+category+"/"+option,variants);}
@@ -55,6 +55,11 @@ namespace Minglu.EditorTools
             {
                 variants.Clear();var look=AppearanceRules.Randomize(430,sex,0);
                 for(int option=0;option<8;option++){look.parts[3]=option;VerifyCell(source,ClassicPortraitCatalog.FeatureCell(look,3),"painted brow "+sex+"/"+option,variants);}
+            }
+            else if(index==7)for(int sex=0;sex<2;sex++)
+            {
+                variants.Clear();var look=AppearanceRules.Randomize(430,sex,0);
+                for(int option=0;option<8;option++){look.parts[2]=option;VerifyCell(source,ClassicPortraitCatalog.FeatureCell(look,2),"eyebrow-free eyes "+sex+"/"+option,variants);}
             }
         }
         static void VerifyTexture(string resource,HashSet<ulong> signatures)
@@ -102,15 +107,21 @@ namespace Minglu.EditorTools
             string city=File.ReadAllText(Path.Combine(Application.dataPath,"Minglu/Runtime/CityGameUI.cs"));
             Require(!city.Contains("raw.texture = portraits")&&!city.Contains("Asset(\"portraits\")"),"roster still has an old static portrait fallback");
         }
-        // Independent measurements of the 2026-10-13 features.png source,
-        // in top-left pixels of its 156.75 px cells, not target rectangles.
-        // Pupil centres were measured from opaque dark pixels around each
-        // iris; the female row is about 14 px higher than the male row.
-        static readonly Vector4[] SourcePupils={
+        // Previous measured pupils retain the geometry regression reference.
+        // These are not sampled from the now-retired eyes in features.png.
+        static readonly Vector4[] PreviousPupils={
             new Vector4(40.7f,104,118.4f,101.9f),new Vector4(41.6f,102.9f,116.2f,101.6f),new Vector4(41,102.9f,119.5f,100.7f),new Vector4(43.6f,105.2f,117,102.5f),
             new Vector4(42.2f,107,117.2f,103.8f),new Vector4(42.2f,105.1f,117.8f,103.4f),new Vector4(40.4f,105.7f,118.1f,105.1f),new Vector4(40.9f,107.8f,115.5f,106.4f),
             new Vector4(42,89.3f,118.6f,88.4f),new Vector4(41.3f,88.7f,116.8f,87.4f),new Vector4(40.4f,89.7f,118.2f,87.7f),new Vector4(40.7f,90.3f,117.3f,88.1f),
             new Vector4(41.1f,91,118.5f,88.3f),new Vector4(41.8f,89.1f,117.8f,88.2f),new Vector4(40.4f,90.7f,117.8f,88.9f),new Vector4(41.5f,91.5f,116.4f,90.5f)
+        };
+        // New eyebrow-free eyes.png measurements in 313.5 px local cells.
+        // Dark opaque iris centroids, independent of target rectangles.
+        static readonly Vector4[] SourcePupils={
+            new Vector4(62.71f,148.90f,213.80f,149.49f),new Vector4(64.24f,148.49f,214.46f,150.71f),new Vector4(65.52f,149.72f,212.53f,149.99f),new Vector4(64.32f,148.17f,214.21f,149.11f),
+            new Vector4(63.83f,148.54f,214.70f,149.23f),new Vector4(64.37f,149.43f,212.98f,150.27f),new Vector4(64.95f,148.59f,214.06f,149.52f),new Vector4(64.76f,148.50f,214.72f,148.87f),
+            new Vector4(63.16f,148.88f,213.56f,149.76f),new Vector4(64.18f,148.60f,214.92f,150.50f),new Vector4(65.61f,149.65f,212.57f,150.11f),new Vector4(64.49f,148.41f,214.58f,149.61f),
+            new Vector4(64.17f,148.68f,214.55f,149.54f),new Vector4(64.52f,149.37f,213.18f,150.15f),new Vector4(65.05f,148.66f,214.10f,149.41f),new Vector4(64.80f,148.54f,214.72f,148.96f)
         };
         // Columella's lower dark-to-skin edge, not a nostril centroid or the
         // transparent bottom of the nose crop. Small noses differ by design.
@@ -118,11 +129,14 @@ namespace Minglu.EditorTools
         // Visible upper eyelid and lower brow envelopes measured inside the
         // painted eye/brow columns (3rd/97th percentile of opaque pixels).
         // Their transparent sprite margins are allowed to overlap.
-        static readonly float[] SourceLidTop={92,92,97,92,92,92,92,93,79.8f,84,84,85,79,84,86,88};
+        static readonly float[] SourceLidTop={133,139,132,133,136,130,137,137,134,138,130,134,136,131,135,137};
         static readonly float[] SourceBrowBottom={83.2f,84.2f,84.2f,85.2f,85.2f,83.2f,84.2f,83.2f,76.2f,74.2f,75.2f,75.2f,75.2f,74.2f,72.2f,73.2f};
         static bool Finite(float value){return !float.IsNaN(value)&&!float.IsInfinity(value);}
         static Vector2 AtlasPoint(int sex,int part,int option,Vector2 point)
-        {return new Vector2(option*156.75f+point.x,(sex*4+part-2)*156.75f+point.y);}
+        {
+            if(part==2){int index=sex*8+option;return new Vector2(index%4*313.5f+point.x,index/4*313.5f+point.y);}
+            return new Vector2(option*156.75f+point.x,(sex*4+part-2)*156.75f+point.y);
+        }
         static Vector2 ProjectSource(Rect sourceUV,Rect target,Vector2 atlasPoint)
         {
             float left=sourceUV.x*1254,top=(1-sourceUV.yMax)*1254;
@@ -147,16 +161,18 @@ namespace Minglu.EditorTools
         {return Finite(distance)&&Finite(pupilSpan)&&pupilSpan>0&&distance>=pupilSpan*.58f&&distance<=pupilSpan*1.12f;}
         static void VerifyAnatomicalRegistration()
         {
-            var source=new Texture2D(2,2,TextureFormat.RGBA32,false);
+            var source=new Texture2D(2,2,TextureFormat.RGBA32,false);var eyes=new Texture2D(2,2,TextureFormat.RGBA32,false);
             try
             {
                 Require(source.LoadImage(File.ReadAllBytes(Path.Combine(Application.dataPath,"Minglu/Resources/Minglu/Art/Classic/features.png"))),"cannot read anatomy measurement source");
                 Require(source.width==1254&&source.height==1254,"anatomy atlas changed size; remeasure source anchors");
+                Require(eyes.LoadImage(File.ReadAllBytes(Path.Combine(Application.dataPath,"Minglu/Resources/Minglu/Art/Classic/eyes.png"))),"cannot read dedicated eye measurement source");
+                Require(eyes.width==1254&&eyes.height==1254,"eye atlas changed size; remeasure source anchors");
                 for(int sex=0;sex<2;sex++)for(int option=0;option<8;option++)
                 {
                     var p=SourcePupils[sex*8+option];
-                    VisibleAnchor(source,AtlasPoint(sex,2,option,new Vector2(p.x,p.y)),"left pupil "+sex+"/"+option,true);
-                    VisibleAnchor(source,AtlasPoint(sex,2,option,new Vector2(p.z,p.w)),"right pupil "+sex+"/"+option,true);
+                    VisibleAnchor(eyes,AtlasPoint(sex,2,option,new Vector2(p.x,p.y)),"left pupil "+sex+"/"+option,true);
+                    VisibleAnchor(eyes,AtlasPoint(sex,2,option,new Vector2(p.z,p.w)),"right pupil "+sex+"/"+option,true);
                     VisibleAnchor(source,AtlasPoint(sex,4,option,new Vector2(74,SourceNoseBase[sex*8+option])),"nose base "+sex+"/"+option);
                 }
                 float minRatio=float.PositiveInfinity,maxRatio=0,minBrowGap=float.PositiveInfinity;
@@ -170,6 +186,12 @@ namespace Minglu.EditorTools
                     string label="sex="+sex+" head="+head+" eyes="+eye;
                     Require(Finite(eyeLine)&&Finite(pupilSpan)&&pupilSpan>headRect.width*.12f&&pupilSpan<headRect.width*.27f,"invalid pupil projection: "+label);
                     Require(headRect.Contains(left)&&headRect.Contains(right),"pupil projection leaves its head: "+label);
+                    var old=PreviousPupils[sex*8+eye];var anchor=ClassicPortraitCatalog.Landmarks(look);
+                    float oldMidX=anchor.x-63+((old.x+old.z)*.5f-2)*126/152;
+                    float oldMidY=anchor.y+(sex==0?8:3)+((old.y+old.w)*.5f-(sex==0?104:89))*52/64;
+                    var previousMid=ClassicPortraitCatalog.FromHead(new Rect(oldMidX,oldMidY,1,1));
+                    float previousSpan=(old.z-old.x)*126/152*headRect.width/362;
+                    Require(Mathf.Abs((left.x+right.x)*.5f-previousMid.x)<.01f&&Mathf.Abs(eyeLine-previousMid.y)<.01f&&Mathf.Abs(pupilSpan-previousSpan)<.01f,"dedicated eye art changed the existing pupil midpoint or spacing: "+label);
                     for(int brow=0;brow<8;brow++)
                     {
                         look.parts[3]=brow;
@@ -214,7 +236,7 @@ namespace Minglu.EditorTools
                 Require(!PlausibleEyeNose(oldBase.y-(oldLeft.y+oldRight.y)*.5f,oldRight.x-oldLeft.x),"regression guard no longer rejects the recorded compressed-face geometry");
                 Debug.Log("MINGLU_CLASSIC_ANATOMY_VERIFY: 1536 sex/head/eye/nose combinations; measured source pixels, eye/nose ratio "+minRatio.ToString("F3")+".."+maxRatio.ToString("F3")+", minimum painted brow/lid gap "+minBrowGap.ToString("F2")+" px. Automatic structural checks do not establish artistic naturalness; shader shading/perspective still require rendered review.");
             }
-            finally{UnityEngine.Object.DestroyImmediate(source);}
+            finally{UnityEngine.Object.DestroyImmediate(source);UnityEngine.Object.DestroyImmediate(eyes);}
         }
         public static void Verify()
         {

@@ -92,7 +92,7 @@ namespace Minglu
             Layer(art,a,PortraitPart.Neck,a.sex,ClassicPortraitCatalog.NeckUV(a),scale,8,tint);
             Layer(art,a,PortraitPart.Head,a.sex,ClassicPortraitCatalog.Cell(a.parts[0],4,3),scale,0,tint);
             Layer(art,a,PortraitPart.Outfit,3,ClassicPortraitCatalog.OutfitUV(a),scale,3,tint);
-            for(int p=2;p<=5;p++)Layer(art,a,(PortraitPart)((int)PortraitPart.Eyes+p-2),p==3?6:2,ClassicPortraitCatalog.FeatureCell(a,p),scale,p==2?1:p==3?2:p==4?5:6,tint);
+            for(int p=2;p<=5;p++)Layer(art,a,(PortraitPart)((int)PortraitPart.Eyes+p-2),p==2?7:p==3?6:2,ClassicPortraitCatalog.FeatureCell(a,p),scale,p==2?1:p==3?2:p==4?5:6,tint);
             if(a.sex==0&&a.parts[6]>0)Layer(art,a,PortraitPart.Beard,4,ClassicPortraitCatalog.DetailUV(a.parts[6]-1),scale,7,tint);
             if(a.parts[8]==2)
             {

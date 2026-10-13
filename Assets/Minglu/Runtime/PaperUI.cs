@@ -79,7 +79,7 @@ namespace Minglu
         }
         Button PrintButton(string name,Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled,bool selected)
         {
-            bool paper=PaperSurface(parent),nav=name.StartsWith("CommandTab_"),choice=ChoiceControl(name),quiet=QuietControl(name),photo=name.StartsWith("LookOption_")||name.StartsWith("LookSlot_")||name.StartsWith("CommandAgent_");
+            bool paper=PaperSurface(parent),nav=name.StartsWith("CommandTab_"),choice=ChoiceControl(name),quiet=QuietControl(name)||name.StartsWith("DeskMetric_")||name.EndsWith("Help")||name=="DeskAdviceInfo",photo=name.StartsWith("LookOption_")||name.StartsWith("LookSlot_")||name.StartsWith("CommandAgent_");
             bool submit=RedAction(name);
             if(submit)quiet=false;
             Color ground=paper?Paper:Ink,foreground=paper?PaperInk:TextColor;

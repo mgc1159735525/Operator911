@@ -29,14 +29,14 @@ namespace Minglu
         void DrawCommandMenu()
         {
             var p=CommandModal("设置与存档",630);
-            Label(p,"第 "+State.turn+" 夜 · 当前安排保留\nF5 保存 / F9 读取 / Esc 返回；查看界面不会推进夜晚。",28,100,844,58,18,Muted);
-            Button("Save",p,"保存当前进度",28,184,408,44,Save);
-            Button("Load",p,"读取存档",456,184,416,44,Load,System.IO.File.Exists(SavePath)||System.IO.File.Exists(SavePath+".bak"));
-            Button("CommandGuide",p,"玩法指南  ›",28,256,408,44,()=>{modal="commandHelp";Draw();});
-            Button("CommandSettings",p,"声音与显示  ›",456,256,416,44,()=>{modal="commandSettings";Draw();});
+            Label(p,"第 "+State.turn+" 夜 · 已暂停",28,106,844,28,18,Muted);
+            IconButton("Save",p,"save","保存  ·  F5",28,184,408,44,Save);
+            IconButton("Load",p,"report","读档  ·  F9",456,184,416,44,Load,System.IO.File.Exists(SavePath)||System.IO.File.Exists(SavePath+".bak"));
+            IconButton("CommandGuide",p,"tasks","玩法指南",28,256,408,44,()=>{modal="commandHelp";Draw();});
+            IconButton("CommandSettings",p,"settings","声音与显示",456,256,416,44,()=>{modal="commandSettings";Draw();});
             Rule(p,28,326,844);
-            Button("CommandHome",p,"保存并返回主菜单",28,348,844,44,ReturnHome);
-            Button("CommandMenuQuit",p,"保存并退出游戏",28,408,844,44,QuitGame);
+            IconButton("CommandHome",p,"home","保存并返回主菜单",28,348,844,44,ReturnHome);
+            IconButton("CommandMenuQuit",p,"close","保存并退出",28,408,844,44,QuitGame);
             Label(p,toast,28,476,844,47,16,Muted);
             Button("CommandResume",p,"返回"+CommandPageName(commandTab),28,550,276,48,()=>{modal="";Draw();});
         }

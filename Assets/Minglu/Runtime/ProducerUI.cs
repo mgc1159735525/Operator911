@@ -99,15 +99,25 @@ namespace Minglu
             Button("ReportNext",panel,"下一夜",711,24,99,34,()=>{reportNight=Mathf.Min(latest,night+1);Draw();},night<latest);
             var rows=ReportRows(night,true);
             int finished=rows.Count(r=>r.Contains("完成「")),expired=rows.Count(r=>r.Contains("任务到期：")),delivered=rows.Count(r=>r.Contains("情报链")&&r.Contains("送达1份"));
-            Label(panel,"任务完成 "+finished+" / 情报送达 "+delivered+" / 任务到期 "+expired,28,76,530,24,16,Muted);
-            Button("ReportNotices",panel,"要报留档  ›",600,70,210,34,()=>{modal="noticeArchive";Draw();});
-            Button("ReportSummary",panel,"结果与原因",28,116,384,34,()=>{reportAll=false;Draw();},true,!reportAll);
-            Button("ReportAll",panel,"展开全部判定",426,116,384,34,()=>{reportAll=true;Draw();},true,reportAll);
+            CompactMetric(panel,"check","完成",finished.ToString(),28,79,166,TextColor);
+            CompactMetric(panel,"intel","送达",delivered.ToString(),208,79,166,TextColor);
+            CompactMetric(panel,"clock","到期",expired.ToString(),388,79,166,expired>0?Red:TextColor);
+            IconButton("ReportHelp",panel,"report","报告说明",600,71,210,34,()=>OpenBriefing("如何阅读值夜报告","签发任务 → 结束今夜 → 在这里查看结果。\n\n「结果摘要」保留执行结果与原因；「完整判定」展开方案、骰面等过程。上方可切换夜晚，阅读不会推进时间。\n\n失败、暂停与任务到期标为朱红。任务失败时先看原因，再决定重试、换人或休养；成功率不是成功承诺。\n\n「要报留档」保留已读的重要消息，可再次打开相关任务或成员档案。"));
+            IconButton("ReportNotices",panel,"report","要报留档",600,111,210,34,()=>{modal="noticeArchive";Draw();});
+            IconButton("ReportSummary",panel,"tasks","结果摘要",28,163,384,34,()=>{reportAll=false;Draw();},true,!reportAll);
+            IconButton("ReportAll",panel,"report","完整判定",426,163,384,34,()=>{reportAll=true;Draw();},true,reportAll);
             if(!reportAll)rows=ReportRows(night,false);
-            if(rows.Count==0)rows.Add("还没有执行报告。先比较人选、签发一项任务，再结束今夜查看结果。\n第二夜再配置机构情报链；产出、接头与外送至少跨三次结算。");
-            var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,28,174,782,376,Mathf.Max(378,rows.Count*65));float y=0;
-            foreach(var row in rows){var text=Label(content,row,0,y,756,50,18,row.Contains("未成")||row.Contains("暂停")||row.Contains("到期")?Red:TextColor);float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(756,h);y+=h+8;}
-            content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(376,y));
+            if(rows.Count==0)rows.Add("暂无执行报告\n签发一项任务 → 结束今夜 → 查看结果");
+            var content=Scroll(panel,"CommandReport_"+night+"_"+reportAll,28,216,782,334,Mathf.Max(334,rows.Count*65));float y=0;
+            foreach(var row in rows)
+            {
+                bool warning=row.Contains("未成")||row.Contains("暂停")||row.Contains("到期");
+                string icon=warning?"risk":row.Contains("送达1份")?"intel":row.Contains("完成「")?"check":"report";
+                NoirIcon(content,icon,0,y+6,19,warning?Red:Muted);
+                var text=Label(content,Regex.Replace(row,@"^\[\d+\]\s*",""),31,y,725,50,18,warning?Red:TextColor);
+                float h=Mathf.Max(44,text.preferredHeight+10);text.rectTransform.sizeDelta=new Vector2(725,h);y+=h+8;
+            }
+            content.sizeDelta=new Vector2(content.sizeDelta.x,Mathf.Max(334,y));
         }
         void DrawEndingReview()
         {

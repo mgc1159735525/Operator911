@@ -57,7 +57,10 @@ Shader "Minglu/ClassicPortrait"
       float cap=(_Cap>.5&&cell.y<.49)?1:0;float3 hair=Hair(l,_SourceWhite);
       c.rgb=lerp(c.rgb*lerp(float3(1,1,1),_Skin.rgb,skin),hair,hairArea*(1-skin)*(1-cap));
     }
-    else if(_Mode<1.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=max(Feather(p,float2(.24,.625),float2(.265,.13)),Feather(p,float2(.75,.605),float2(.265,.13)));c.a*=mask*smoothstep(.50,.60,p.y);float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);}
+    // Eye art has its own transparent 4 x 4 atlas, with no painted brows.
+    // Its authored alpha preserves the lids; the retired 8 x 8 eyebrow
+    // suppression mask would slice this new sheet at the wrong positions.
+    else if(_Mode<1.5){float skin=smoothstep(.015,.07,c.r-c.g);c.rgb=lerp(c.rgb,c.rgb*_Skin.rgb,skin);}
     else if(_Mode<2.5){float2 p=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));float mask=max(Feather(p,float2(.24,.47),float2(.26,.12)),Feather(p,float2(.75,.46),float2(.26,.12)));float elder=step(.87,frac(i.uv.x));c.a*=mask*(1-smoothstep(.50+elder*.20,.77+elder*.20,l))*.90;c.rgb=FacialHair(l,elder);}
     else if(_Mode<3.5){float3 neutral=lerp(float3(l,l,l),c.rgb,.28);c.rgb=neutral*_Cloth.rgb*1.46;}
     else if(_Mode>4.5&&_Mode<6.5){
@@ -92,12 +95,6 @@ Shader "Minglu/ClassicPortrait"
       // Match before applying the palette so dark skin is not lifted by gain.
       float3 gain=clamp(underlying/max(_FeatureSkin.rgb,float3(.08,.08,.08)),.65,1.35);
       float3 matched=tex2D(_MainTex,i.uv).rgb*gain*_Skin.rgb;
-      if(_Mode<1.5){
-        // Upper orbital shading must not read as a second eyebrow. Retain
-        // lid/iris detail while softening only the surrounding upper skin.
-        float eyeY=1-frac(i.uv.y*8);
-        matched=lerp(underlying*_Skin.rgb,matched,lerp(.30,1,smoothstep(.55,.67,eyeY)));
-      }
       c.rgb=lerp(c.rgb,matched,skin);
     }
     c*=i.color;

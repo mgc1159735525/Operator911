@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-13",
+  "request": "眼睛的美术资源不要有眉毛重合了",
+  "tool": "image_gen.imagegen (built-in, transparent_background=true)",
+  "asset": "Assets/Minglu/Resources/Minglu/Art/Classic/eyes.png",
+  "source": "C:/Users/11597/.codex/generated_images/01a0de8a-f2d0-76d1-995d-350ef10dc241/exec-2b360beb-733c-43e9-842b-be74c58f3f0d.png",
+  "layout": "4 columns × 4 rows; first 8 masculine eye pairs, last 8 feminine eye pairs",
+  "processing": "Generated PNG copied without pixel editing. Runtime UV and pupil registration are calibrated separately. Eyebrows remain in the independent brows texture; noses and mouths keep the existing features texture.",
+  "rejectedCandidates": [
+    {"file": "exec-6f4e8b4d-25c2-48a5-a022-94ffcb10e17f.png", "reason": "Original-atlas edit retained painted eyebrows in eye patches; rejected."},
+    {"file": "exec-afa128a0-a9b7-4adf-ac00-b587ae634491.png", "reason": "Reference-based 4×4 eye sheet still contained eyebrow arcs; rejected."}
+  ],
+  "prompt": "A transparent sprite sheet containing ONLY sixteen PAIRS OF HUMAN EYES, neatly aligned in an exact 4-column 4-row grid. Each component is a very tightly trimmed almond-shaped eye including eyeball, dark brown iris and pupil, eyelashes, and thin upper and lower eyelid skin rims. NOTHING ABOVE THE UPPER EYELID RIM. DO NOT DRAW EYEBROWS. DO NOT DRAW FOREHEAD OR UPPER EYE SOCKET OR BROW BONE. The empty area above each eye must be completely transparent, like a cutout tracing the shape of an almond eye with just a narrow 2 pixel skin outline. NOT a rectangular photo patch. No isolated curved lines above the eyes. Visually realistic painterly game character facial components, natural small Asian adult eyes, subtle warm skin outline and lashes, fine detail, modest iris size. First eight pairs are masculine; last eight pairs are feminine. Variants: balanced, narrow, round, deep-set, long, alert, mature, elder. Consistent same gentle turn to viewer-left, consistent gaze, consistent light from upper left. Square sheet 1024x1024. Each 256x256 cell: left pupil center x64 y128, right pupil center x192 y128, each eye width94 height34, total content including thin lids height at most52. Identical centers and scale across all16 cells. Exactly32 eyeballs total. Top80 and bottom80 pixels of EVERY cell must be empty alpha. Genuine transparent background. No eyebrows, no surrounding facial skin patches, no nose, no mouth, no labels, no grid, no text, no colored artifacts, no watermark.",
+  "verification": "See QA质检报告.html#qa-28 for accepted render scope and remaining limitations; generation itself is not approval. Actual image size must be read from PNG rather than assumed from the prompt."
+}

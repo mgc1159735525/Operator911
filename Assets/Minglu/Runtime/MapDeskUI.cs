@@ -9,15 +9,19 @@ namespace Minglu
             Box("DeskHeader",root,0,0,1600,78,Panel);
             Label(root,"明路 · 地下",24,20,235,36,26,Gold);
             Label(root,InTutorial?"新手演练":"新京地区",248,26,140,25,16,Muted);
-            string[] labels={"行动成果","可用情报","可用经费","追查 / 阈值","民心"};
+            string[] labels={"成果","可用情报","可用经费","追查 / 阈值","民心"};
+            string[] metricIcons={"check","intel","money","risk","alliance"};
             string[] values={State.progress.ToString("00"),(State.intelligence-CommandRules.ReservedIntel(State))+" 份",(State.money-CommandRules.ReservedMoney(State))+" 银两",State.command.strategy.trace+" / "+State.command.strategy.config.raid,State.command.strategy.hearts.ToString()};
             for(int i=0;i<5;i++)
             {
                 float x=450+i*184;Box("HeaderDivider",root,x-20,18,1,42,Line);
-                Label(root,labels[i],x,12,165,21,13,Muted);
-                Label(root,values[i],x,36,165,29,21,i==3&&State.command.strategy.trace>=State.command.strategy.config.raid-15?Red:TextColor);
+                int metric=i;
+                var metricButton=Button("DeskMetric_"+i,root,"",x-6,6,174,65,()=>OpenBriefing(labels[metric],DeskMetricDetails(metric)));
+                NoirIcon(metricButton.transform,metricIcons[i],7,10,19,Muted);
+                Label(metricButton.transform,labels[i],34,4,134,23,14,Muted);
+                Label(metricButton.transform,values[i],34,30,134,29,21,i==3&&State.command.strategy.trace>=State.command.strategy.config.raid-15?Red:TextColor);
             }
-            Button("CommandMenu",root,"设置",1410,21,164,38,()=>{modal="menu";Draw();});
+            IconButton("CommandMenu",root,"settings","设置",1410,21,164,38,()=>{modal="menu";Draw();});
             Rule(root,0,77,1600,Gold);
             Box("DeskNavigation",root,0,78,180,712,Ink);
             DrawLook(root,State.chiefLook,53,100,74,100);
@@ -40,9 +44,24 @@ namespace Minglu
             var step=NextCommandStep();
             Label(root,step.ready?"等待你的指示":"当前重点",24,805,156,26,18,Gold);
             Label(root,step.message,200,803,812,48,16,TextColor);
-            Label(root,toast,200,854,812,30,13,Muted);
+            // Persistent seed/help prose belongs in a read-only receipt. Keep live
+            // action results visible in a single bounded line, with the full text a click away.
+            bool routine=string.IsNullOrWhiteSpace(toast)||toast.StartsWith("本局种子");
+            string feedback=routine?"查看不耗时 · 结束今夜后执行":toast.Replace('\n',' ');
+            var feedbackText=new System.Globalization.StringInfo(feedback);
+            if(feedbackText.LengthInTextElements>43)feedback=feedbackText.SubstringByTextElements(0,43)+"…";
+            Label(root,feedback,200,855,654,29,15,Muted).name="DeskFeedback";
+            IconButton("DeskAdviceInfo",root,"report","详情",864,849,148,38,()=>OpenBriefing("当前指示与反馈",step.message+"\n\n"+toast));
             Button("CommandNextAction",root,step.label,1040,817,232,48,GoNextCommand,step.enabled,!step.ready);
             Button("CommandEnd",root,"结束今夜  →",1292,817,282,48,OpenWorkOverview,!State.ended&&State.command.eventKind==0,step.ready);
+        }
+        string DeskMetricDetails(int metric)
+        {
+            if(metric==0)return GateProgress()+"\n\n任务完成、联络送达与组织成长共同推动本局目标。可从左下目标入口查看完整条件。";
+            if(metric==1)return "可用 "+(State.intelligence-CommandRules.ReservedIntel(State))+" 份\n已预留 "+CommandRules.ReservedIntel(State)+" 份\n\n只有敌方机构内线产出内部情报，沿联络链外送抵达后才入库。任务投入会预留库存；撤回授权释放预留。";
+            if(metric==2)return "可用 "+(State.money-CommandRules.ReservedMoney(State))+" 银两\n已预留 "+CommandRules.ReservedMoney(State)+" 银两\n\n签发任务后预留预算，结束今夜才结算。撤回未执行的授权可释放预算；已执行的投入不返还。";
+            if(metric==3)return "追查 "+State.command.strategy.trace+" / "+State.command.strategy.config.raid+"\n\n达到阈值会触发清剿，需要决定撤离方式。地下行动增加追查；全员休整每夜降低5，民心达到60时每夜再降低2。\n\n成员个人暴露另行计算，可在人事档案查看并安排休养。";
+            return "民心 "+State.command.strategy.hearts+"\n\n民心达到60时，每夜额外降低2追查。地方事务与任务结果会影响民心；具体收益和代价在签发前展示。";
         }
         void DossierHeading(UnityEngine.Transform panel,string title,float width=900)
         {
