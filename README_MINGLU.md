@@ -1,5 +1,7 @@
 # 明路·地下 0.17.2
 
+> 新开发者从 [SourceTree 协作与拉取指南](Docs/Minglu/SourceTree协作与拉取指南.html) 开始。远程创建及首次推送状态以该指南为准；下文 0.17.2 验证数字是历史记录，当前交付证据请看 [制作验收看板](Docs/Minglu/制作验收看板.html)。
+
 单机回合制谍战组织经营游戏。玩家担任地区负责人，安排人员、授权目标和经营联络网；具体行动由成员执行。
 
 **目标售价：Steam 国区约 50 元。当前处于内部验证阶段，尚未完成商业发行验收或 Steam 提交。** 自动测试证明特定规则与流程，真实玩家的上手难度、内容深度和游玩时长另行验收。
@@ -60,7 +62,7 @@
 - 剧情配置在新局中快照；修改源配置不会重写已保存对局的剧情合同。
 - 构建安装包：`Tools/Installer/Build-Installer.ps1`；已构建游戏时可用 `-SkipGameBuild` 仅打包安装程序。需要 Unity 与 Inno Setup 6。
 - 规则验证包括 `CampaignCommandVerification`、`SaveRecoveryVerification` 与既有系统验证；主线交互 smoke 为 `--campaign-experience-only`，需配合 `--minglu-capture` 使用隔离存档。
-- SourceTree 添加当前项目目录即可查看本地 Git。当前未配置远程仓库；本地提交不等于远程备份。
+- SourceTree 已添加当前项目目录，可查看本地 Git。最新远程状态、克隆地址与协作步骤见 [SourceTree 协作与拉取指南](Docs/Minglu/SourceTree协作与拉取指南.html)；本地提交不等于远程备份。
 
 本轮已验证的证据：
 
