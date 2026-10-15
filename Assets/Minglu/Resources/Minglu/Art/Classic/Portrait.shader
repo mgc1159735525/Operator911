@@ -20,13 +20,23 @@ Shader "Minglu/ClassicPortrait"
    #include "UnityUI.cginc"
    struct appdata {float4 vertex:POSITION;float4 color:COLOR;float2 uv:TEXCOORD0;};
    struct v2f {float4 pos:SV_POSITION;fixed4 color:COLOR;float2 uv:TEXCOORD0;float4 world:TEXCOORD1;};
-   sampler2D _MainTex,_BaseTex;fixed4 _Color,_Skin,_Cloth,_FeatureSkin;float4 _ClipRect,_BaseUV,_FeatureUV,_FeatureTarget,_FeatureRotation;float _Mode,_HairIndex,_SourceWhite,_Cap,_HeadTopTrim,_HeadLeftTrim;
+   sampler2D _MainTex,_BaseTex;fixed4 _Color,_Skin,_Cloth,_FeatureSkin;float4 _ClipRect,_BaseUV,_FeatureUV,_FeatureTarget,_FeatureRotation,_MainTex_TexelSize;float _Mode,_HairIndex,_SourceWhite,_Cap,_HeadTopTrim,_HeadLeftTrim;
    v2f vert(appdata v){v2f o;o.world=v.vertex;o.pos=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
    float3 Hair(float l,float whiteSource){float t=saturate(whiteSource>.5?(l-.15)/.75:(l-.025)*2.6);if(_HairIndex<.5)return lerp(float3(.045,.039,.032),float3(.31,.28,.23),t);if(_HairIndex<1.5)return lerp(float3(.08,.047,.029),float3(.44,.31,.19),t);if(_HairIndex<2.5)return lerp(float3(.18,.19,.18),float3(.7,.7,.65),t);return lerp(float3(.39,.41,.39),float3(.97,.96,.89),t);}
    // Brow and beard originals are mid-tone brown, unlike scalp or white hair.
    // Keep their painted strand contrast instead of crushing it into one fill.
    float3 FacialHair(float l,float whiteSource){float t=saturate(whiteSource>.5?(l-.36)/.50:(l-.18)/.42);t=smoothstep(0,1,t);if(_HairIndex<.5)return lerp(float3(.05,.044,.036),float3(.28,.24,.185),t);if(_HairIndex<1.5)return lerp(float3(.10,.06,.034),float3(.43,.29,.17),t);float silver=saturate(whiteSource>.5?(l-.30)/.65:(l-.12)/.78);if(_HairIndex<2.5)return lerp(float3(.22,.215,.195),float3(.68,.66,.61),silver);return lerp(float3(.46,.445,.405),float3(.94,.92,.86),silver);}
    float Feather(float2 p,float2 centre,float2 radius){return 1-smoothstep(.60,1.12,length((p-centre)/radius));}
+   float HeadSkinWeight(float3 colour){float light=dot(colour,float3(.299,.587,.114));return smoothstep(.035,.085,colour.r-colour.g)*smoothstep(.09,.16,colour.r-colour.b)*smoothstep(.16,.31,light);}
+   float SkinEdge(float2 uv){
+     // Feather the authored alpha contour, including opaque skin cut-outs.
+     // Work in source texels so editor zoom and calibration scaling agree.
+     float2 d=_MainTex_TexelSize.xy*3;
+     float edge=tex2D(_MainTex,uv).a;
+     edge=min(edge,tex2D(_MainTex,uv+float2(d.x,0)).a);edge=min(edge,tex2D(_MainTex,uv-float2(d.x,0)).a);
+     edge=min(edge,tex2D(_MainTex,uv+float2(0,d.y)).a);edge=min(edge,tex2D(_MainTex,uv-float2(0,d.y)).a);
+     return smoothstep(.08,.92,edge);
+   }
    fixed4 frag(v2f i):SV_Target {
     float2 placementUV=i.uv;
     if(_Mode>4.5&&_Mode<5.5){
@@ -42,7 +52,7 @@ Shader "Minglu/ClassicPortrait"
     if(_Mode<.5||_Mode>7.5){
       // Warm white hair is not skin. Require both red/green and red/blue
       // separation, otherwise palette changes leave noisy undyed strands.
-      float skin=smoothstep(.035,.085,c.r-c.g)*smoothstep(.09,.16,c.r-c.b)*smoothstep(.16,.31,l);
+      float skin=HeadSkinWeight(c.rgb);
       float2 cell=saturate((i.uv-_BaseUV.xy)/_BaseUV.zw);cell.y=1-cell.y;
       c.a*=smoothstep(.018,.042,cell.x)*(1-smoothstep(.975,.993,cell.x));
       if(_Mode<.5){
@@ -87,14 +97,41 @@ Shader "Minglu/ClassicPortrait"
       float2 relative=head-_FeatureRotation.xy;
       head=_FeatureRotation.xy+float2(relative.x*_FeatureRotation.z-relative.y*_FeatureRotation.w,relative.x*_FeatureRotation.w+relative.y*_FeatureRotation.z);
       float3 underlying=tex2D(_BaseTex,_BaseUV.xy+float2(head.x,1-head.y)*_BaseUV.zw).rgb;
-      float warm=tex2D(_MainTex,i.uv).r-tex2D(_MainTex,i.uv).g;
-      float skin=smoothstep(.012,.045,warm)*smoothstep(.18,.40,l);
-      if(_Mode>5.5)skin*=1-smoothstep(.13,.19,warm);
-      // Per-sprite bare-skin calibration preserves the painted relative
-      // shadows/highlights instead of rebuilding a flat face from luminance.
-      // Match before applying the palette so dark skin is not lifted by gain.
-      float3 gain=clamp(underlying/max(_FeatureSkin.rgb,float3(.08,.08,.08)),.65,1.35);
-      float3 matched=tex2D(_MainTex,i.uv).rgb*gain*_Skin.rgb;
+      float3 source=tex2D(_MainTex,i.uv).rgb;
+      float warm=source.r-source.g;
+      float skin=smoothstep(.008,.035,warm)*smoothstep(.18,.34,l);
+      if(_Mode<1.5){
+        // Each eye is a separate half crop. Protect the sclera, iris and
+        // eyelid opening by anatomy, not warmth (painted whites are warm).
+        float2 eye=(i.uv-_FeatureUV.xy)/_FeatureUV.zw;eye.y=1-eye.y;
+        float core=1-smoothstep(.76,1.15,length((eye-float2(.40,.46))/float2(.39,.235)));
+        skin*=1-core;
+      }
+      else if(_Mode<5.5)skin=smoothstep(.10,.28,l);
+      if(_Mode>5.5){
+        // Warm surrounding skin is not lip pigment. Restrict protection
+        // to the painted lips, otherwise elder mouth pads stay pale.
+        float2 mouth=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));
+        float lips=1-smoothstep(.76,1.12,length((mouth-float2(.50,.51))/float2(.43,.12)));
+        skin=smoothstep(.16,.32,l)*(1-lips);
+      }
+      float edge=SkinEdge(i.uv);
+      c.a*=lerp(1,edge,skin);
+      // A fixed RGB gain leaves each sprite's warm/bright skin pad visible.
+      // Use the displayed face's chroma and the SAME palette mask as the
+      // head. Keep bounded neutral relief, fading it at the cut-out edge.
+      // Dark iris/lash/nostril pixels and red lip pigment retain source art.
+      float3 face=underlying*lerp(float3(1,1,1),_Skin.rgb,HeadSkinWeight(underlying));
+      float reference=dot(_FeatureSkin.rgb,float3(.299,.587,.114));
+      float relief=clamp((l-reference)/max(reference,.1),-.55,.30);
+      relief*=(_Mode<1.5?.30:(_Mode<5.5?1:.45))*edge*smoothstep(.05,.75,c.a);
+      if(_Mode>4.5){
+        float2 feature=float2(frac(i.uv.x*8),1-frac(i.uv.y*8));
+        float noseRelief=max(Feather(feature,float2(.50,.43),float2(.15,.38)),Feather(feature,float2(.50,.69),float2(.29,.21)));
+        float mouthRelief=Feather(feature,float2(.50,.51),float2(.32,.13));
+        relief*=_Mode<5.5?noseRelief:mouthRelief;
+      }
+      float3 matched=face*(1+relief);
       c.rgb=lerp(c.rgb,matched,skin);
     }
     c*=i.color;

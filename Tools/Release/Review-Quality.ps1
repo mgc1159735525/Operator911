@@ -64,6 +64,7 @@ $rows += Read-Gate 'portrait-calibration-draft-recovery' 'Logs/release-quality-b
 # window freshness check; the main build freshness check above stays stricter.
 $latestPortraitEditorInput = ($sourceFiles | Where-Object { $_.Name -ne 'UnityConnectSettings.asset' } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1).LastWriteTimeUtc
 $rows += Read-Gate 'portrait-calibration-editor-window' 'Logs/calibration-editor-ui.log' 'MINGLU_PORTRAIT_CALIBRATION_EDITOR_UI_SUCCESS' $latestPortraitEditorInput
+$rows += Read-Gate 'portrait-skin-preview-coverage' 'Logs/skin-preview-after.log' 'MINGLU_PORTRAIT_SKIN_PREVIEW_SUCCESS' $latestPortraitEditorInput
 $installed = $InstalledPath
 $matching = Test-Path -LiteralPath $binary
 foreach ($relative in @('MingluCity.exe','MingluCity_Data/Managed/Assembly-CSharp.dll','MingluCity_Data/resources.assets','MingluCity_Data/resources.assets.resS')) {

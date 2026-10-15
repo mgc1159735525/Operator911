@@ -111,7 +111,7 @@ namespace Minglu.EditorTools
         }
 
         static void Mouse(EventType type, Vector2 point)
-        { window.SendEvent(new Event { type = type, mousePosition = point, button = 0 }); window.Repaint(); }
+        { Debug.Log("MINGLU_CALIBRATION_SEND phase="+phase+" type="+type+" point="+point); window.SendEvent(new Event { type = type, mousePosition = point, button = 0 }); window.Repaint(); }
         static void Tick()
         {
             if (EditorApplication.timeSinceStartup < nextTick) return;

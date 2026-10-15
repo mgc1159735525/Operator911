@@ -353,6 +353,8 @@ namespace Minglu.EditorTools
         {
             var e = Event.current; Rect selected = DisplayPartRect(canvas);
             int id = GUIUtility.GetControlID("PortraitCalibrationDrag".GetHashCode(), FocusType.Keyboard, viewport);
+            if(disableDraftPersistence && (e.type==EventType.MouseDown||e.type==EventType.MouseDrag||e.type==EventType.MouseUp))
+                Debug.Log("MINGLU_CALIBRATION_INPUT type="+e.type+" point="+e.mousePosition+" selected="+selected+" viewport="+viewport+" control="+id+" hot="+GUIUtility.hotControl+" drag="+dragMode+" value="+JsonUtility.ToJson(CurrentTransform()));
             Rect handle = new Rect(selected.xMax - 9, selected.yMax - 9, 18, 18);
             if (e.type == EventType.MouseDown && e.button == 0 && viewport.Contains(e.mousePosition) && (selected.Contains(e.mousePosition) || handle.Contains(e.mousePosition)))
             {
