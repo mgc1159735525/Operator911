@@ -1,6 +1,6 @@
 # 明路·地下 0.17.2
 
-> 新开发者从 [SourceTree 协作与拉取指南](Docs/Minglu/SourceTree协作与拉取指南.html) 开始。私有仓库：https://github.com/mgc1159735525/Operator911；SourceTree 克隆地址：`https://github.com/mgc1159735525/Operator911.git`。开发者须先接受仓库邀请；下文 0.17.2 验证数字是历史记录，当前交付证据请看 [制作验收看板](Docs/Minglu/制作验收看板.html)。
+> 新开发者从 [SourceTree 协作与拉取指南](Docs/Minglu/SourceTree协作与拉取指南.html) 开始。公开仓库：https://github.com/mgc1159735525/Operator911；SourceTree 克隆地址：`https://github.com/mgc1159735525/Operator911.git`。浏览和克隆无需邀请，直接推送仍需授权；下文 0.17.2 验证数字是历史记录，当前交付证据请看 [制作验收看板](Docs/Minglu/制作验收看板.html)。
 
 单机回合制谍战组织经营游戏。玩家担任地区负责人，安排人员、授权目标和经营联络网；具体行动由成员执行。
 
